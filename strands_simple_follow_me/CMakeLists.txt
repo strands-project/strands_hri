@@ -4,7 +4,7 @@ project(strands_simple_follow_me)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp strands_perception_people_msgs)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp strands_perception_people_msgs actionlib tf move_base_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

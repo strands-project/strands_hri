@@ -1,9 +1,11 @@
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Point.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <tf/transform_datatypes.h>
+#include <actionlib/client/simple_action_client.h>
 
-#include <string.h>
-#include <vector>
 #include <math.h>
 
 #include "strands_perception_people_msgs/PedestrianLocations.h"
@@ -11,29 +13,43 @@
 using namespace std;
 using namespace strands_perception_people_msgs;
 
-ros::Publisher pub_cmd_vel;
-
-double l_scale, a_scale;
+geometry_msgs::Point polarToCartesian(float dist, float angle) {
+    geometry_msgs::Point output;
+    output.x = dist * cos(angle);
+    output.y = dist * sin(angle);
+    output.z = 0.0;
+    return output;
+}
 
 void locationCallback(const PedestrianLocations::ConstPtr &pl)
 {
-    bool subs = pub_cmd_vel.getNumSubscribers();
-    if(!subs) {
-        ROS_DEBUG("No subscribers. Skipping calculation.");
-        return;
+    //tell the action client that we want to spin a thread by default
+    actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base", true);
+
+    //wait for the action server to come up
+    while(!ac.waitForServer(ros::Duration(5.0))){
+        ROS_INFO("Waiting for the move_base action server to come up");
     }
 
-    geometry_msgs::Twist twist;
+    move_base_msgs::MoveBaseGoal goal;
 
-    twist.angular.z = pl->min_distance_angle > 1.0 ? 1.0 : pl->min_distance_angle;
-    twist.angular.z *= a_scale;
+    goal.target_pose.header.frame_id = "base_link";
+    goal.target_pose.header.stamp = ros::Time::now();
 
-    twist.linear.x  = pl->min_distance - 1.0;
-    twist.linear.x  = twist.linear.x < 0 ? 0.0 : twist.linear.x;
-    twist.linear.x  = twist.linear.x > 1.0 ? 1.0 : twist.linear.x;
-    twist.linear.x *= l_scale;
+    geometry_msgs::Point point = polarToCartesian(pl->min_distance, pl->min_distance_angle);
 
-    pub_cmd_vel.publish(twist);
+    goal.target_pose.pose.position.x = point.x;
+    goal.target_pose.pose.position.y = point.y;
+
+
+    tf::Quaternion quat(tf::Vector3(0,0,1),pl->min_distance_angle);
+    goal.target_pose.pose.orientation.w=quat.getW();
+    goal.target_pose.pose.orientation.x=quat.getX();
+    goal.target_pose.pose.orientation.y=quat.getY();
+    goal.target_pose.pose.orientation.z=quat.getZ();
+
+    ROS_DEBUG_STREAM("Sending goal " << goal);
+    ac.sendGoal(goal);
 
 }
 
@@ -45,21 +61,15 @@ int main(int argc, char **argv)
 
     // Declare variables that can be modified by launch file or command line.
     string pl_topic;
-    string pub_topic;
 
     // Initialize node parameters from launch file or command line.
     // Use a private node handle so that multiple instances of the node can be run simultaneously
     // while using different parameters.
     ros::NodeHandle private_node_handle_("~");
     private_node_handle_.param("pedestrian_location", pl_topic, string("/pedestrian_localisation/localisations"));
-    private_node_handle_.param("l_scale", l_scale, 0.6);
-    private_node_handle_.param("a_scale", a_scale, 0.6);
 
     // Create a subscriber.
     ros::Subscriber pl_sub = n.subscribe(pl_topic.c_str(), 10, &locationCallback);
-
-    private_node_handle_.param("cmd_vel", pub_topic, string("/cmd_vel"));
-    pub_cmd_vel = n.advertise<geometry_msgs::Twist>(pub_topic.c_str(), 10);
 
     ros::spin();
     return 0;
