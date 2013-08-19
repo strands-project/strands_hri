@@ -13,6 +13,8 @@ using namespace strands_perception_people_msgs;
 
 ros::Publisher pub_cmd_vel;
 
+double l_scale, a_scale;
+
 void locationCallback(const PedestrianLocations::ConstPtr &pl)
 {
     bool subs = pub_cmd_vel.getNumSubscribers();
@@ -23,8 +25,13 @@ void locationCallback(const PedestrianLocations::ConstPtr &pl)
 
     geometry_msgs::Twist twist;
 
-    twist.angular.z = pl->min_distance_angle*0.7;
-    twist.linear.x  = (pl->min_distance-1.0)*0.7;
+    twist.angular.z = pl->min_distance_angle > 1.0 ? 1.0 : pl->min_distance_angle;
+    twist.angular.z *= a_scale;
+
+    twist.linear.x  = pl->min_distance - 1.0;
+    twist.linear.x  = twist.linear.x < 0 ? 0.0 : twist.linear.x;
+    twist.linear.x  = twist.linear.x > 1.0 ? 1.0 : twist.linear.x;
+    twist.linear.x *= l_scale;
 
     pub_cmd_vel.publish(twist);
 
@@ -45,6 +52,8 @@ int main(int argc, char **argv)
     // while using different parameters.
     ros::NodeHandle private_node_handle_("~");
     private_node_handle_.param("pedestrian_location", pl_topic, string("/pedestrian_localisation/localisations"));
+    private_node_handle_.param("l_scale", l_scale, 0.6);
+    private_node_handle_.param("a_scale", a_scale, 0.6);
 
     // Create a subscriber.
     ros::Subscriber pl_sub = n.subscribe(pl_topic.c_str(), 10, &locationCallback);
