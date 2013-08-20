@@ -33,15 +33,18 @@ void callback(const geometry_msgs::Twist::ConstPtr &msg)
                 new_msg.linear.x = speed;
                 new_msg.angular.z  = msg->angular.z;
                 ROS_DEBUG_STREAM("Publishing: " << new_msg);
+                //Publish and return to skip publishing at the end
                 cmd_pub.publish(new_msg);
-            } else {
-                cmd_pub.publish(*msg);
+                return;
             }
+        } else {
+            ROS_DEBUG("No current observation");
         }
     } else {
         ROS_DEBUG("No observation");
-        cmd_pub.publish(*msg);
     }
+    //Publish something in any case
+    cmd_pub.publish(*msg);
 }
 
 void cacheCallback(const PedestrianLocations::ConstPtr &msg)
