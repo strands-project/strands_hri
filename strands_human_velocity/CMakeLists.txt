@@ -4,7 +4,8 @@ project(strands_human_aware_velocity)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp rospy strands_perception_people_msgs)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
+    rospy strands_perception_people_msgs dynamic_reconfigure)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
