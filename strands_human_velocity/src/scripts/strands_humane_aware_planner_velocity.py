@@ -22,13 +22,13 @@ class DynamicVelocityReconfigure():
 
     def callback(self, pl):
         if len(pl.poses) > 0:
-            rospy.loginfo("Found pedestrian: ")
+            rospy.logdebug("Found pedestrian: ")
             #if not self.slow:
             #if pl.min_distance < 2.0:
             rospy.loginfo(" Pedestrian distance: %s", pl.min_distance)
-            speed = pl.min_distance - 1.5
+            speed = pl.min_distance - 1.0
             speed = speed if speed > 0.0 else 0.0
-            speed /= 2.0
+            speed /= 4.0
             speed = 1.0 if speed > 1.0 else speed
             speed *= 0.55
             speed = round(speed, 2)
@@ -44,13 +44,13 @@ class DynamicVelocityReconfigure():
                 #rospy.loginfo(" Already slow")
             self.timeout = rospy.get_time() + self.threshold
         elif rospy.get_time() > self.timeout:
-            rospy.loginfo("Not found any pedestrians:")
+            rospy.logdebug("Not found any pedestrians:")
             if not self.fast:
                 rospy.loginfo(" Setting parameters: %s", self.fast_param)
                 self.client.update_configuration(self.fast_param)
                 self.fast = True
             else:
-                rospy.loginfo(" Already fast")
+                rospy.logdebug(" Already fast")
 
 
 if __name__ == '__main__':
