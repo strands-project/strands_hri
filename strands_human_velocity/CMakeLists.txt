@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(strands_human_aware_cmd_vel)
+project(strands_human_aware_velocity)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp strands_perception_people_msgs)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp rospy strands_perception_people_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
