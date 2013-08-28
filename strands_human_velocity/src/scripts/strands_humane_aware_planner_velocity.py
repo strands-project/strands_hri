@@ -10,10 +10,10 @@ class DynamicVelocityReconfigure():
     def __init__(self):
         rospy.init_node("human_aware_planner_velocities")
         rospy.loginfo("Starting human_aware_planner_velocity")
-        rospy.Subscriber('/pedestrian_localisation/localisations', PedestrianLocations, self.callback)
+        rospy.Subscriber('/pedestrian_localisation/localisations', PedestrianLocations, self.callback, None, 5)
         self.threshold = 5.0
         self.timeout = rospy.get_time() + self.threshold
-        #self.slow = False
+        self.fast = True
         rospy.loginfo("Creating dynamic reconfigure client")
         self.client = dynamic_reconfigure.client.Client("/move_base/DWAPlannerROS")
         self.slow_param = {'max_vel_x' : 0.1}
@@ -31,12 +31,13 @@ class DynamicVelocityReconfigure():
             speed /= 2.0
             speed = 1.0 if speed > 1.0 else speed
             speed *= 0.55
+            speed = round(speed, 2)
             rospy.loginfo("Calculated speed: %s", speed)
             if not speed == 0.55:
                 self.slow_param = {'max_vel_x' : speed}
-                #self.client.update_configuration(self.slow_param)
+                self.client.update_configuration(self.slow_param)
                 rospy.loginfo(" Setting parameters: %s", self.slow_param)
-            #self.slow = True
+                self.fast = False
             #else:
                 #rospy.loginfo(" Pedestrian too far away to be a problem: %s", pl.min_distance)
             #else:
@@ -44,12 +45,12 @@ class DynamicVelocityReconfigure():
             self.timeout = rospy.get_time() + self.threshold
         elif rospy.get_time() > self.timeout:
             rospy.loginfo("Not found any pedestrians:")
-            #if self.slow:
-            rospy.loginfo(" Setting parameters: %s", self.fast_param)
-            #self.client.update_configuration(self.fast_param)
-            #self.slow = False
-            #else:
-                #rospy.loginfo(" Already fast")
+            if not self.fast:
+                rospy.loginfo(" Setting parameters: %s", self.fast_param)
+                self.client.update_configuration(self.fast_param)
+                self.fast = True
+            else:
+                rospy.loginfo(" Already fast")
 
 
 if __name__ == '__main__':
