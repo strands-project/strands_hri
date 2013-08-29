@@ -16,3 +16,4 @@
 server.log
 *.user
 *.swp
+*.swo
