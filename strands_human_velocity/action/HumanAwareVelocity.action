@@ -3,7 +3,7 @@ int32 seconds     #Runtime. 0 for indefinite.
 float32 max_vel_x #Maximum velocity when no humans in close vicinity.
 float32 max_dist  #Maximum distance of detected humans. Everything above will be ignored and the max_vel_x value will be used.
 float32 min_dist  #The distance to a human at which the robot will stop (have 0.0 velocity).
-float32 threshold #The time it takes while no human is detected to resume to 'max_vel_x' speed.
+float32 time_to_reset #The time it takes while no human is detected to resume to 'max_vel_x' speed.
 ---
 #result definition
 bool expired #Returns true when the time 'seconds' is up.

@@ -31,8 +31,8 @@ class DynamicVelocityReconfigure():
         rospy.loginfo(" ...done")
 
     def resetSpeed(self):
-        rospy.loginfo("Resetting speed to max:")
-        rospy.loginfo(" Setting parameters: %s", self.fast_param)
+        rospy.logdebug("Resetting speed to max:")
+        rospy.logdebug(" Setting parameters: %s", self.fast_param)
         self.client.update_configuration(self.fast_param)
 
     def pedestrianCallback(self, pl):
@@ -45,7 +45,7 @@ class DynamicVelocityReconfigure():
 
         if len(pl.poses) > 0:
             rospy.logdebug("Found pedestrian: ")
-            rospy.loginfo(" Pedestrian distance: %s", pl.min_distance)
+            rospy.logdebug(" Pedestrian distance: %s", pl.min_distance)
             self._feedback.min_dist = pl.min_distance
             speed = pl.min_distance - self.min_dist
             speed = speed if speed > 0.0 else 0.0
@@ -53,12 +53,12 @@ class DynamicVelocityReconfigure():
             speed = 1.0 if speed > 1.0 else speed
             speed *= self.max_vel_x
             speed = round(speed, 2)
-            rospy.loginfo("Calculated speed: %s", speed)
+            rospy.logdebug("Calculated speed: %s", speed)
             self._feedback.current_speed = speed
             if not speed == self.max_vel_x:
                 self.slow_param = {'max_vel_x' : speed}
                 self.client.update_configuration(self.slow_param)
-                rospy.loginfo(" Setting parameters: %s", self.slow_param)
+                rospy.logdebug(" Setting parameters: %s", self.slow_param)
                 self.fast = False
             self.timeout = rospy.get_time() + self.threshold
         elif rospy.get_time() > self.timeout:
@@ -76,7 +76,7 @@ class DynamicVelocityReconfigure():
         self._as.publish_feedback(self._feedback)
 
         if rospy.get_time() > self.end_time and self.end_time > 0:
-            rospy.loginfo("Execution time has been reached.")
+            rospy.loginfo("Execution time has been reached. Goal terminated successful")
             self.resetSpeed()
             self._result.expired = True
             self._as.set_succeeded(self._result)
@@ -84,7 +84,7 @@ class DynamicVelocityReconfigure():
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
         rospy.loginfo("Received goal:\n%s", self._goal)
-        self.threshold = self._goal.threshold
+        self.threshold = self._goal.time_to_reset
         current_time = rospy.get_time()
         self.timeout = current_time + self.threshold
         self.end_time = current_time + self._goal.seconds if self._goal.seconds > 0 else -1.0
