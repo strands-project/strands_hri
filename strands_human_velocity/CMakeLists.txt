@@ -5,7 +5,7 @@ project(strands_human_aware_velocity)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
-    rospy strands_perception_people_msgs dynamic_reconfigure)
+    rospy strands_perception_people_msgs dynamic_reconfigure actionlib actionlib_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -19,6 +19,12 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
 #######################################
 ## Declare ROS messages and services ##
 #######################################
+
+## Generate actions in the 'action' folder
+add_action_files(
+    DIRECTORY action
+    FILES HumanAwareVelocity.action
+)
 
 ## Generate messages in the 'msg' folder
 # add_message_files(
@@ -35,10 +41,10 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   strands_perception_people_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  actionlib_msgs std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -52,7 +58,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES strands_human_aware_cmd_vel
 #  CATKIN_DEPENDS geometry_msgs message_filters roscpp strands_perception_people_msgs
-#  DEPENDS system_lib
+  DEPENDS actionlib_msgs
 )
 
 ###########
@@ -75,7 +81,10 @@ add_executable(human_aware_cmd_vel src/main.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(human_aware_cmd_vel strands_perception_people_msgs_generate_messages_cpp strands_perception_people_msgs_gencpp)
+add_dependencies(human_aware_cmd_vel
+    strands_perception_people_msgs_generate_messages_cpp
+    strands_perception_people_msgs_gencpp
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(human_aware_cmd_vel

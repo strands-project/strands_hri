@@ -1,58 +1,108 @@
 #!/usr/bin/env python
 
 import rospy
+import actionlib
 import dynamic_reconfigure.client
 from strands_perception_people_msgs.msg import PedestrianLocations
+import strands_human_aware_velocity.msg
 
 class DynamicVelocityReconfigure():
     "A calss to reconfigure the velocity of the DWAPlannerROS."
 
-    def __init__(self):
-        rospy.init_node("human_aware_planner_velocities")
-        rospy.loginfo("Starting human_aware_planner_velocity")
-        rospy.Subscriber('/pedestrian_localisation/localisations', PedestrianLocations, self.callback, None, 5)
-        self.threshold = 5.0
-        self.timeout = rospy.get_time() + self.threshold
+    # Create feedback and result messages
+    _feedback = strands_human_aware_velocity.msg.HumanAwareVelocityFeedback()
+    _result   = strands_human_aware_velocity.msg.HumanAwareVelocityResult()
+
+    def __init__(self, name):
+        rospy.loginfo("Starting %s", name)
+        self._action_name = name
+        rospy.loginfo("Creating action server.")
+        self._as = actionlib.SimpleActionServer(self._action_name, strands_human_aware_velocity.msg.HumanAwareVelocityAction, execute_cb = None, auto_start = False)
+        self._as.register_goal_callback(self.goalCallback)
+        self._as.register_preempt_callback(self.preemptCallback)
+        rospy.loginfo(" ...starting")
+        self._as.start()
+        rospy.loginfo(" ...done")
+        sub_topic = rospy.get_param("~pedestrian_locations", '/pedestrian_localisation/localisations')
+        rospy.Subscriber(sub_topic, PedestrianLocations, self.pedestrianCallback, None, 5)
         self.fast = True
         rospy.loginfo("Creating dynamic reconfigure client")
         self.client = dynamic_reconfigure.client.Client("/move_base/DWAPlannerROS")
-        self.slow_param = {'max_vel_x' : 0.1}
-        self.fast_param = {'max_vel_x' : 0.55}
         rospy.loginfo(" ...done")
 
-    def callback(self, pl):
+    def resetSpeed(self):
+        rospy.loginfo("Resetting speed to max:")
+        rospy.loginfo(" Setting parameters: %s", self.fast_param)
+        self.client.update_configuration(self.fast_param)
+
+    def pedestrianCallback(self, pl):
+        if not self._as.is_active():
+            rospy.logdebug("No active goal")
+            return
+
+        self._feedback.num_found_humans = len(pl.poses)
+        self._feedback.min_dist = 0.0
+
         if len(pl.poses) > 0:
             rospy.logdebug("Found pedestrian: ")
-            #if not self.slow:
-            #if pl.min_distance < 2.0:
             rospy.loginfo(" Pedestrian distance: %s", pl.min_distance)
-            speed = pl.min_distance - 1.0
+            self._feedback.min_dist = pl.min_distance
+            speed = pl.min_distance - self.min_dist
             speed = speed if speed > 0.0 else 0.0
-            speed /= 4.0
+            speed /= (self.max_dist - self.min_dist)
             speed = 1.0 if speed > 1.0 else speed
-            speed *= 0.55
+            speed *= self.max_vel_x
             speed = round(speed, 2)
             rospy.loginfo("Calculated speed: %s", speed)
-            if not speed == 0.55:
+            self._feedback.current_speed = speed
+            if not speed == self.max_vel_x:
                 self.slow_param = {'max_vel_x' : speed}
                 self.client.update_configuration(self.slow_param)
                 rospy.loginfo(" Setting parameters: %s", self.slow_param)
                 self.fast = False
-            #else:
-                #rospy.loginfo(" Pedestrian too far away to be a problem: %s", pl.min_distance)
-            #else:
-                #rospy.loginfo(" Already slow")
             self.timeout = rospy.get_time() + self.threshold
         elif rospy.get_time() > self.timeout:
             rospy.logdebug("Not found any pedestrians:")
+            self._feedback.current_speed = self.max_vel_x
             if not self.fast:
-                rospy.loginfo(" Setting parameters: %s", self.fast_param)
-                self.client.update_configuration(self.fast_param)
+                self.resetSpeed()
                 self.fast = True
             else:
                 rospy.logdebug(" Already fast")
 
+        self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else float('Inf')
+        self._feedback.time_to_reset = self.timeout - rospy.get_time()
+        self._feedback.time_to_reset = self._feedback.time_to_reset if self._feedback.time_to_reset > 0.0 else 0.0
+        self._as.publish_feedback(self._feedback)
+
+        if rospy.get_time() > self.end_time and self.end_time > 0:
+            rospy.loginfo("Execution time has been reached.")
+            self.resetSpeed()
+            self._result.expired = True
+            self._as.set_succeeded(self._result)
+
+    def goalCallback(self):
+        self._goal = self._as.accept_new_goal()
+        rospy.loginfo("Received goal:\n%s", self._goal)
+        self.threshold = self._goal.threshold
+        current_time = rospy.get_time()
+        self.timeout = current_time + self.threshold
+        self.end_time = current_time + self._goal.seconds if self._goal.seconds > 0 else -1.0
+        self.max_vel_x = round(self._goal.max_vel_x, 2)
+        self.max_dist = self._goal.max_dist
+        self.min_dist = self._goal.min_dist
+        self.fast_param = {'max_vel_x' : self.max_vel_x}
+        self._feedback.current_speed = self.max_vel_x
+        self.resetSpeed()
+
+    def preemptCallback(self):
+        rospy.loginfo("Cancelled execution of goal:\n%s", self._goal)
+        self.resetSpeed()
+        self._result.expired = False
+        self._as.set_preempted(self._result)
+
 
 if __name__ == '__main__':
-    dvr = DynamicVelocityReconfigure()
+    rospy.init_node("human_aware_planner_velocities")
+    dvr = DynamicVelocityReconfigure(rospy.get_name())
     rospy.spin()
