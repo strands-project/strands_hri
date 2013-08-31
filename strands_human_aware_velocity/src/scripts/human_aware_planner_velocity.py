@@ -56,7 +56,7 @@ class DynamicVelocityReconfigure():
             rospy.logdebug("Calculated speed: %s", speed)
             self._feedback.current_speed = speed
             if not speed == self.max_vel_x:
-                self.slow_param = {'max_vel_x' : speed}
+                self.slow_param = {'max_vel_x' : speed, 'max_trans_vel' : speed}
                 self.client.update_configuration(self.slow_param)
                 rospy.logdebug(" Setting parameters: %s", self.slow_param)
                 self.fast = False
@@ -91,7 +91,7 @@ class DynamicVelocityReconfigure():
         self.max_vel_x = round(self._goal.max_vel_x, 2)
         self.max_dist = self._goal.max_dist
         self.min_dist = self._goal.min_dist
-        self.fast_param = {'max_vel_x' : self.max_vel_x}
+        self.fast_param = {'max_vel_x' : self.max_vel_x, 'max_trans_vel' : self.max_vel_x}
         self._feedback.current_speed = self.max_vel_x
         self.resetSpeed()
 
