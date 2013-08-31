@@ -76,7 +76,7 @@ class DynamicVelocityReconfigure():
         self._as.publish_feedback(self._feedback)
 
         if rospy.get_time() > self.end_time and self.end_time > 0:
-            rospy.loginfo("Execution time has been reached. Goal terminated successful")
+            rospy.loginfo("Execution time has been reached. Goal terminated successfully")
             self.resetSpeed()
             self._result.expired = True
             self._as.set_succeeded(self._result)
