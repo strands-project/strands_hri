@@ -23,15 +23,18 @@ bool once = false;
 string target_frame;
 double end_time;
 
+// Set the endtime for the new goal. 0 = indefinit
 void goalCallback() {
     goal_ = as_->acceptNewGoal();
-    ROS_INFO_STREAM("Received goal:\n" << *goal_);
+    ROS_DEBUG_STREAM("Received goal:\n" << *goal_);
     end_time = goal_->runtime_sec > 0 ? ros::Time::now().toSec() + goal_->runtime_sec : 0.0;
 }
 
+// Cancel current goal
 void preemptCallback() {
-    ROS_INFO("%s: Preempted", action_name_.c_str());
-    // set the action state to preempted
+    ROS_DEBUG("%s: Preempted", action_name_.c_str());
+
+    // Publish a zero position to reset the head
     sensor_msgs::JointState state;
     state.header.frame_id = "/head_base_frame";
     state.header.stamp = ros::Time::now();
@@ -43,19 +46,23 @@ void preemptCallback() {
     state.position.push_back(0.0);
 
     head_pose_pub.publish(state);
+
+    // set the action state to preempted
     result_.expired = false;
     as_->setPreempted(result_);
 }
 
+//Give feedback about the currently gazed at pose and the remaining run time.
 void inline feedback(geometry_msgs::Pose pose) {
     feedback_.target = pose;
     feedback_.remaining_time = end_time > 0 ? end_time - ros::Time::now().toSec() : INFINITY;
     as_->publishFeedback(feedback_);
 }
 
+//Check if run time is up.
 void inline checkTime() {
     if(ros::Time::now().toSec() > end_time && end_time > 0.0) {
-        ROS_INFO("Execution time has been reached. Goal terminated successfully");
+        ROS_DEBUG("Execution time has been reached. Goal terminated successfully");
         result_.expired = true;
         as_->setSucceeded(result_);
     }
@@ -67,10 +74,11 @@ void callback(const geometry_msgs::PoseArray::ConstPtr &msg)
     if (!as_->isActive())
         return;
 
-    ROS_INFO_STREAM("Received posearray:\n" << *msg);
+    ROS_DEBUG_STREAM("Received posearray:\n" << *msg);
 
     bool found = false;
 
+    // Find closest pose
     geometry_msgs::PoseStamped closest;
     closest.header = msg->header;
     closest.pose.position.z = 10000;
@@ -85,9 +93,9 @@ void callback(const geometry_msgs::PoseArray::ConstPtr &msg)
 
     geometry_msgs::PoseStamped closest_head_coord;
     if(found) {
-        ROS_INFO_STREAM("Found closest point at:\n" << closest);
+        ROS_DEBUG_STREAM("Found closest point at:\n" << closest);
 
-        //Transform
+        //Transform into /head_base_frame coordinate system
         try {
             ROS_DEBUG("Transforming received position into %s coordinate system.", target_frame.c_str());
             listener->waitForTransform(closest.header.frame_id, target_frame, ros::Time(), ros::Duration(3.0));
@@ -98,10 +106,11 @@ void callback(const geometry_msgs::PoseArray::ConstPtr &msg)
             return;
         }
 
-        ROS_INFO_STREAM("Transformed into:\n" << closest_head_coord);
+        ROS_DEBUG_STREAM("Transformed into:\n" << closest_head_coord);
         feedback(closest_head_coord.pose);
         checkTime();
     } else if(!once){
+        // Create a zero pose only once after a closest pose was found
         closest_head_coord = closest;
         closest_head_coord.header.frame_id = target_frame;
         closest_head_coord.pose.position.z = 0;
@@ -109,12 +118,13 @@ void callback(const geometry_msgs::PoseArray::ConstPtr &msg)
         once = true;
         checkTime();
     } else {
+        // Still giving feedback even if no poses are published
         feedback(closest_head_coord.pose);
         checkTime();
         return;
     }
 
-
+    // Create ajoint state to move the head and publish it
     sensor_msgs::JointState state;
     state.header = closest_head_coord.header;
     state.name.push_back("HeadPan");
@@ -137,6 +147,7 @@ int main(int argc, char **argv)
 
     listener = new tf::TransformListener();
 
+    ROS_INFO("Creating gazing action server");
     as_ = new actionlib::SimpleActionServer<strands_gazing::GazeAtPoseAction>(n, action_name_, false);
     as_->registerGoalCallback(boost::bind(&goalCallback));
     as_->registerPreemptCallback(boost::bind(&preemptCallback));
@@ -156,9 +167,12 @@ int main(int argc, char **argv)
     // Create a subscriber.
     ros::Subscriber pose_array_sub = n.subscribe(pose_array_topic.c_str(), 10, &callback);
 
+    // Create a publisher
     head_pose_pub = n.advertise<sensor_msgs::JointState>(head_pose_topic.c_str(), 10);
 
+    // Start action server
     as_->start();
+    ROS_INFO(" ...done");
 
     ros::spin();
     return 0;
