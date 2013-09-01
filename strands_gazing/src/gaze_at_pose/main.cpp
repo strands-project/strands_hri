@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     // Use a private node handle so that multiple instances of the node can be run simultaneously
     // while using different parameters.
     ros::NodeHandle private_node_handle_("~");
-    private_node_handle_.param("pose_array", pose_array_topic, string("/upper_body_detector/bounding_box_centres"));
+    private_node_handle_.param("pose_array", pose_array_topic, string("/gaze_at_pose/pose_array"));
     private_node_handle_.param("head_pose", head_pose_topic, string("/head/commanded_state"));
     private_node_handle_.param("head_frame", target_frame, string("/head_base_frame"));
 
