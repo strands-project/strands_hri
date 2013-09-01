@@ -11,7 +11,7 @@ using namespace strands_perception_people_msgs;
 
 int threshold;
 double scale;
-double min_dist;
+double max_dist, min_dist;
 
 ros::Publisher cmd_pub;
 message_filters::Cache<PedestrianLocations> *cache;
@@ -19,12 +19,17 @@ message_filters::Cache<PedestrianLocations> *cache;
 void callback(const geometry_msgs::Twist::ConstPtr &msg)
 {
     ROS_DEBUG_STREAM("Received cmd_vel:\n" << *msg);
+
+    // Take last element from cache and check if there is any
     PedestrianLocations::ConstPtr pl = cache->getElemBeforeTime(ros::Time::now());
     if(pl != NULL) {
+        // Check if detection is too old using the threshold
         if(pl->header.stamp.sec > ros::Time::now().sec-threshold) {
             ROS_DEBUG_STREAM("Found pedestrian localisation msg:\n" << *pl);
-            double speed = pl->min_distance-1.5;
+            // Calculate new speed using max speed and the location
+            double speed = pl->min_distance - min_dist;
             speed = speed > 0.0 ? speed : 0.0;
+            speed /= (max_dist - min_dist);
             speed = speed > 1.0 ? 1.0 : speed;
             speed *= scale;
             ROS_DEBUG_STREAM("New speed: " << speed);
@@ -43,13 +48,8 @@ void callback(const geometry_msgs::Twist::ConstPtr &msg)
     } else {
         ROS_DEBUG("No observation");
     }
-    //Publish something in any case
+    //Publish original message if no person is found
     cmd_pub.publish(*msg);
-}
-
-void cacheCallback(const PedestrianLocations::ConstPtr &msg)
-{
-    ROS_INFO_STREAM("Got ppl loc:\n" << *msg);
 }
 
 int main(int argc, char **argv)
@@ -69,21 +69,22 @@ int main(int argc, char **argv)
     ros::NodeHandle private_node_handle_("~");
     private_node_handle_.param("pedestrian_location", pl_topic, string("/pedestrian_localisation/localisations"));
     private_node_handle_.param("cmd_vel_in", cmd_vel_in_topic, string("/human_aware_cmd_vel/input/cmd_vel"));
-    private_node_handle_.param("cmd_vel_out", cmd_vel_out_topic, string("/human_aware_cmd_vel/output/cmd_vel"));
+    private_node_handle_.param("cmd_vel_out", cmd_vel_out_topic, string("/cmd_vel"));
     private_node_handle_.param("threshold", threshold, 3);
     private_node_handle_.param("max_speed", scale, 0.7);
+    private_node_handle_.param("max_dist", max_dist, 5.0);
     private_node_handle_.param("min_dist", min_dist, 1.5);
 
+    // Creating a cache for the pedestrian locations because we do not ant to synchronise
+    // the /cmd_vel input and the pedestrian localisation. This would prevent the /cmd_vel
+    // from being published when there are no humans around.
     message_filters::Subscriber<PedestrianLocations> sub(n, pl_topic.c_str(), 1);
     cache = new message_filters::Cache<PedestrianLocations>(sub, 10);
-    const PedestrianLocations::ConstPtr dummy;
-//    cache->add(dummy);
-//    cache->registerCallback(boost::bind(&cacheCallback, _1));
 
     // Create a subscriber.
     ros::Subscriber cmd_sub = n.subscribe(cmd_vel_in_topic.c_str(), 10, &callback);
-//    ros::Subscriber test_sub = n.subscribe(pl_topic.c_str(), 10, &cacheCallback);
 
+    // Create a publisher
     cmd_pub = n.advertise<geometry_msgs::Twist>(cmd_vel_out_topic.c_str(), 10);
 
     ros::spin();
