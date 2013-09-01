@@ -1,0 +1,9 @@
+#goal definition
+int32 runtime_sec
+---
+#result definition
+bool expired
+---
+#feedback
+float32 remaining_time
+geometry_msgs/Pose target
