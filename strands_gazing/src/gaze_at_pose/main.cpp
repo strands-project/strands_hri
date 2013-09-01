@@ -119,9 +119,9 @@ void callback(const geometry_msgs::PoseArray::ConstPtr &msg)
     state.header = closest_head_coord.header;
     state.name.push_back("HeadPan");
     state.name.push_back("HeadTilt");
-    state.position.push_back(std::atan2(closest_head_coord.pose.position.y, closest_head_coord.pose.position.x) * 180.0 / M_PI * 0.8);
+    state.position.push_back(std::atan2(closest_head_coord.pose.position.y, closest_head_coord.pose.position.x) * 180.0 / M_PI);
     state.position.push_back(std::atan2(closest_head_coord.pose.position.z, closest_head_coord.pose.position.x) * 180.0 / M_PI);
-    state.position.push_back(std::atan2(closest_head_coord.pose.position.y, closest_head_coord.pose.position.x) * 180.0 / M_PI * 0.2);
+//    state.position.push_back(std::atan2(closest_head_coord.pose.position.y, closest_head_coord.pose.position.x) * 100); Does not work propperly. TODO: fix
 
     head_pose_pub.publish(state);
 }
