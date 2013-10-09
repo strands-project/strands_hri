@@ -30,6 +30,7 @@ find_package(catkin REQUIRED COMPONENTS rospy std_msgs message_generation action
 add_service_files(
   FILES
   ros_mary.srv
+  SetVoice.srv
 )
 
 add_action_files(

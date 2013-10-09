@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<marytts-install xmlns="http://mary.dfki.de/installer">
+    <voice gender="male" locale="en-GB" name="dfki-spike-hsmm"
+        type="hsmm" version="5.0-SNAPSHOT">
+        <description>A male en_GB Hidden semi-Markov model voice</description>
+        <license href="http://mary.dfki.de/download/by-nd-3.0.html"/>
+        <package filename="voice-dfki-spike-hsmm-5.0-SNAPSHOT.zip"
+            md5sum="2682ece3f2d4dbcdbe5a637c8e3e8e76" size="2717738">
+            <location folder="true" href="http://mary.dfki.de/download/5.0-SNAPSHOT/"/>
+            <location folder="false" href="https://docs.google.com/uc?id=0BzQslox9iFCzMGpvUXRfc0ZtYVk"/>
+            <location folder="true" href="http://dl.dropbox.com/u/77978669/"/>
+        </package>
+        <files>lib/, lib/voices/, lib/voices/dfki-spike-hsmm/, lib/voices/dfki-spike-hsmm/mix_excitation_filters.txt, lib/voices/dfki-spike-hsmm/vocalization_f0_feature_definition.txt, lib/voices/dfki-spike-hsmm/vocalization_feature_definition.txt, lib/voices/dfki-spike-hsmm/vocalization_features.mry, lib/voices/dfki-spike-hsmm/vocalization_intonation.mry, lib/voices/dfki-spike-hsmm/vocalization_mlsa_features.mry, lib/voices/dfki-spike-hsmm/vocalization_units.mry, lib/voice-dfki-spike-hsmm-5.0-SNAPSHOT.jar</files>
+        <depends language="en-GB" version="5.0-SNAPSHOT"/>
+    </voice>
+</marytts-install>

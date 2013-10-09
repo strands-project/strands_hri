@@ -14,27 +14,45 @@ import logging
 
 from ros_mary_tts.srv import *
 import rospy
+import roslib
 
 import actionlib
 import ros_mary_tts.msg
-
-
-
-
-
+import os
 
 
 speakQueue = Queue()
 replyQueue=Queue()
 
-def speak(req):
 
-    speakQueue.put(req.text)
-    return True
+class RosMary(object):
+    def __init__(self, mary_client):
+        self.mary_client=mary_client
+        s = rospy.Service('ros_mary', ros_mary, self.speak)
+        voice_srv = rospy.Service('ros_mary/set_voice', SetVoice, self.set_voice)
 
-def speak_server():
-    s = rospy.Service('ros_mary', ros_mary, speak)
-    print "Ready to speak."
+        # What voices are available?
+        self._voices = os.listdir(os.path.join(roslib.packages.get_pkg_dir("ros_mary_tts"),
+                                               "marytts-5.0/lib/voices"))
+        print "Ready to speak."
+        print "Voices: "
+        for i in self._voices:
+            print " - ",i
+        
+    def speak(self,req):
+        """ Speak service handler """
+        speakQueue.put(req.text)
+        return True
+
+    def set_voice(self,req):
+        """ Voice setting service handle """
+        if not req.voice_name in self._voices:
+            rospy.logwarn("Trying to set voice to unknown:  %s", req.voice_name)
+            return False
+        rospy.loginfo("Setting voice to %s", req.voice_name)
+        self.mary_client.set_voice(req.voice_name)
+        return True
+
 
 
 
@@ -257,7 +275,8 @@ if __name__ == "__main__":
     rospy.init_node('mary_tts')
 
     client = maryclient()
-    speak_server()
+    rosmary = RosMary(client)
+    #speak_server(client)
     client.set_locale ("en_US")
     # client.set_locale ("de")
     client.set_voice ("cmu-slt-hsmm")
