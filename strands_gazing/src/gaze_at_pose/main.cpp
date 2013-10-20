@@ -22,6 +22,8 @@ std::string action_name_;
 bool once = false;
 string target_frame;
 double end_time;
+int timeToBlink = 0;
+int timeToUnBlink = 0;
 
 // Set the endtime for the new goal. 0 = indefinit
 void goalCallback() {
@@ -41,9 +43,13 @@ void preemptCallback() {
     state.name.push_back("HeadPan");
     state.name.push_back("HeadTilt");
     state.name.push_back("EyesPan");
+    state.name.push_back("EyeLidRight");
+    state.name.push_back("EyeLidLeft");
     state.position.push_back(0.0);
     state.position.push_back(0.0);
     state.position.push_back(0.0);
+    state.position.push_back(100);
+    state.position.push_back(100);
 
     head_pose_pub.publish(state);
 
@@ -131,6 +137,19 @@ void callback(const geometry_msgs::PoseArray::ConstPtr &msg)
     state.name.push_back("HeadTilt");
     state.position.push_back(std::atan2(closest_head_coord.pose.position.y, closest_head_coord.pose.position.x) * 180.0 / M_PI);
     state.position.push_back(std::atan2(closest_head_coord.pose.position.z, closest_head_coord.pose.position.x) * 180.0 / M_PI);
+    if (ros::Time::now().toSec() >= timeToBlink){
+	    state.name.push_back("EyeLidLeft");
+	    state.name.push_back("EyeLidRight");
+	    state.position.push_back(0);
+	    state.position.push_back(0);
+	    timeToUnBlink=ros::Time::now().toSec();
+	    timeToBlink=ros::Time::now().toSec()+rand()%25+20;
+    }else if (ros::Time::now().toSec() >= timeToUnBlink){
+	    state.name.push_back("EyeLidLeft");
+	    state.name.push_back("EyeLidRight");
+	    state.position.push_back(100);
+	    state.position.push_back(100);
+    } 
 //    state.position.push_back(std::atan2(closest_head_coord.pose.position.y, closest_head_coord.pose.position.x) * 100); Does not work propperly. TODO: fix
 
     head_pose_pub.publish(state);
