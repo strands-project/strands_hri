@@ -1,0 +1,3 @@
+[submodule "scitos_lights/src/sound_to_lights/contrib/pulse"]
+	path = scitos_lights/src/sound_to_lights/contrib/pulse
+	url = https://github.com/Valodim/python-pulseaudio.git

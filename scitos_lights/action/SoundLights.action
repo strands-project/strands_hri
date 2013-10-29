@@ -1,0 +1,9 @@
+#goal definition
+int32 seconds     #Runtime. 0 for indefinite.
+---
+#result definition
+bool expired #Returns true when the time 'seconds' is up.
+---
+#feedback
+float32 remaining_runtime #The remaining run time. -1 if indefinite.
+int32 output_level  #The current output level
