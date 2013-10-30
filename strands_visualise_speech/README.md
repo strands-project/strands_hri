@@ -11,6 +11,8 @@ soundcard and translates this to control commands for the head lights. The loude
  * `git submodule update`
 
 ### Usage
+_Cannot be run remotely. Needs to access the robots hardware._
+
 This node is a action server and needs a goal to start doing anything. The only parameter of the goal is the runtime of 
 the system:
 * seconds: run time in seconds. 0 for infinite (until preempted)
