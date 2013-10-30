@@ -6,12 +6,6 @@ from ctypes import POINTER, c_ubyte, c_void_p, c_ulong, cast
 # From https://github.com/Valodim/python-pulseaudio
 from pulseaudio.lib_pulseaudio import *
 
-SINK_NAME = 'alsa_output.pci-0000_00_1b.0.analog-stereo'  # edit to match your sink
-METER_RATE = 344
-MAX_SAMPLE_VALUE = 127
-DISPLAY_SCALE = 2
-MAX_SPACES = MAX_SAMPLE_VALUE >> DISPLAY_SCALE
-
 class PeakMonitor(object):
 
     def __init__(self, sink_name, rate):
@@ -45,17 +39,17 @@ class PeakMonitor(object):
         state = pa_context_get_state(context)
 
         if state == PA_CONTEXT_READY:
-            print "Pulseaudio connection ready..."
+            rospy.loginfo("Pulseaudio connection ready...")
             # Connected to Pulseaudio. Now request that sink_info_cb
             # be called with information about the available sinks.
             o = pa_context_get_sink_info_list(context, self._sink_info_cb, None)
             pa_operation_unref(o)
 
         elif state == PA_CONTEXT_FAILED :
-            print "Connection failed"
+            rospy.logfatal("Connection failed")
 
         elif state == PA_CONTEXT_TERMINATED:
-            print "Connection terminated"
+            rospy.logerror("Connection terminated")
 
     def sink_info_cb(self, context, sink_info_p, _, __):
         if not sink_info_p:
@@ -70,9 +64,7 @@ class PeakMonitor(object):
         if sink_info.name == self.sink_name:
             # Found the sink we want to monitor for peak levels.
             # Tell PA to call stream_read_cb with peak samples.
-            print
             print 'setting up peak recording using', sink_info.monitor_source_name
-            print
             samplespec = pa_sample_spec()
             samplespec.channels = 1
             samplespec.format = PA_SAMPLE_U8
@@ -98,14 +90,3 @@ class PeakMonitor(object):
             self._samples.put(data[i] - 128)
         pa_stream_drop(stream)
 
-def main():
-    monitor = PeakMonitor(SINK_NAME, METER_RATE)
-    for sample in monitor:
-        sample = sample >> DISPLAY_SCALE
-        bar = '>' * sample
-        spaces = ' ' * (MAX_SPACES - sample)
-        print ' %3d %s%s\r' % (sample, bar, spaces),
-        sys.stdout.flush()
-
-if __name__ == '__main__':
-    main()
