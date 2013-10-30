@@ -1,0 +1,3 @@
+[submodule "strands_visualise_speech/src/sound_to_lights/contrib/pulse"]
+	path = strands_visualise_speech/src/sound_to_lights/contrib/pulse
+	url = https://github.com/Valodim/python-pulseaudio.git
