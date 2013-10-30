@@ -1,5 +1,8 @@
+# Author: Menno Smits
+# URL: http://freshfoo.com/blog/pulseaudio_monitoring
+# Altered for use with ROS by Christian Dondrup (cdondrup@lincoln.ac.uk)
+
 import rospy
-import sys
 from Queue import Queue
 from ctypes import POINTER, c_ubyte, c_void_p, c_ulong, cast
 
