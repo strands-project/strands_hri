@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>scitos_lights</name>
+  <name>strands_visualise_speech</name>
   <version>0.0.0</version>
-  <description>The scitos_lights package</description>
+  <description>The strands_visualise_speech package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

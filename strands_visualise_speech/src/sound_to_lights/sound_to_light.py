@@ -2,7 +2,7 @@
 
 import rospy
 import actionlib
-import scitos_lights.msg
+import strands_visualise_speech.msg
 import thread
 
 from peak_detect.peak_detect import PeakMonitor
@@ -12,14 +12,14 @@ class SoundLights():
     "A class to make the lights on the robot head move according to the output level of the sound card."
 
     # Create feedback and result messages
-    _feedback = scitos_lights.msg.SoundLightsFeedback()
-    _result   = scitos_lights.msg.SoundLightsResult()
+    _feedback = strands_visualise_speech.msg.SoundLightsFeedback()
+    _result   = strands_visualise_speech.msg.SoundLightsResult()
 
     def __init__(self, name):
         rospy.loginfo("Starting %s", name)
         self._action_name = name
         rospy.loginfo("Creating action server.")
-        self._as = actionlib.SimpleActionServer(self._action_name, scitos_lights.msg.SoundLightsAction, execute_cb = None, auto_start = False)
+        self._as = actionlib.SimpleActionServer(self._action_name, strands_visualise_speech.msg.SoundLightsAction, execute_cb = None, auto_start = False)
         self._as.register_goal_callback(self.goalCallback)
         self._as.register_preempt_callback(self.preemptCallback)
         rospy.loginfo(" ...starting")
