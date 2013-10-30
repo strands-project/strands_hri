@@ -8,8 +8,6 @@ import thread
 from peak_detect.peak_detect import PeakMonitor
 from scitos_msgs.msg import HeadLightState
 
-SINK_NAME = 'alsa_output.usb-Hewlett-Packard_HP_Premium_Digital_Headset-00-Headset.analog-stereo'
-
 class SoundLights():
     "A class to make the lights on the robot head move according to the output level of the sound card."
 
@@ -29,7 +27,7 @@ class SoundLights():
         rospy.loginfo(" ...done")
         pub_topic = rospy.get_param("~cmd_head_light", '/head/cmd_light_state')
         self.pub = rospy.Publisher(pub_topic, HeadLightState)
-        self.sink_name = rospy.get_param("~sink_name", 'alsa_output.usb-Hewlett-Packard_HP_Premium_Digital_Headset-00-Headset.analog-stereo')
+        self.sink_name = rospy.get_param("~sink_name", 'alsa_output.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00-CODEC.analog-stereo')
         self.meter_rate = 344
         self.max_sample_value = 127
         self.display_scale = 2
@@ -86,7 +84,7 @@ class SoundLights():
     def grabAudioLevel(self):
         monitor = PeakMonitor(self.sink_name, self.meter_rate)
         for sample in monitor:
-            lights = float(sample) / float(self.max_sample_value) * 5
+            lights = float(sample) / float(self.max_sample_value) * 20
             sample = sample >> self.display_scale
             bar = '>' * sample
             spaces = ' ' * (self.max_spaces - sample)
