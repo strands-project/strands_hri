@@ -13,6 +13,7 @@
 using namespace std;
 
 ros::Publisher head_pose_pub;
+ros::Subscriber pose_array_sub;
 tf::TransformListener* listener;
 actionlib::SimpleActionServer<strands_gazing::GazeAtPoseAction> *as_;
 boost::shared_ptr<const strands_gazing::GazeAtPoseGoal> goal_;
@@ -25,8 +26,11 @@ double end_time;
 int timeToBlink = 0;
 int timeToUnBlink = 0;
 
+void callback(const geometry_msgs::PoseArray::ConstPtr &msg);
+
 // Set the endtime for the new goal. 0 = indefinit
-void goalCallback() {
+void goalCallback(ros::NodeHandle &n, string topic) {
+    pose_array_sub = n.subscribe(topic.c_str(), 10, &callback);
     goal_ = as_->acceptNewGoal();
     ROS_DEBUG_STREAM("Received goal:\n" << *goal_);
     end_time = goal_->runtime_sec > 0 ? ros::Time::now().toSec() + goal_->runtime_sec : 0.0;
@@ -35,6 +39,8 @@ void goalCallback() {
 // Cancel current goal
 void preemptCallback() {
     ROS_DEBUG("%s: Preempted", action_name_.c_str());
+
+    pose_array_sub.shutdown();
 
     // Publish a zero position to reset the head
     sensor_msgs::JointState state;
@@ -69,6 +75,7 @@ void inline feedback(geometry_msgs::Pose pose) {
 void inline checkTime() {
     if(ros::Time::now().toSec() > end_time && end_time > 0.0) {
         ROS_DEBUG("Execution time has been reached. Goal terminated successfully");
+        pose_array_sub.shutdown();
         result_.expired = true;
         as_->setSucceeded(result_);
     }
@@ -166,11 +173,6 @@ int main(int argc, char **argv)
 
     listener = new tf::TransformListener();
 
-    ROS_INFO("Creating gazing action server");
-    as_ = new actionlib::SimpleActionServer<strands_gazing::GazeAtPoseAction>(n, action_name_, false);
-    as_->registerGoalCallback(boost::bind(&goalCallback));
-    as_->registerPreemptCallback(boost::bind(&preemptCallback));
-
     // Declare variables that can be modified by launch file or command line.
     string pose_array_topic;
     string head_pose_topic;
@@ -183,8 +185,13 @@ int main(int argc, char **argv)
     private_node_handle_.param("head_pose", head_pose_topic, string("/head/commanded_state"));
     private_node_handle_.param("head_frame", target_frame, string("/head_base_frame"));
 
+    ROS_INFO("Creating gazing action server");
+    as_ = new actionlib::SimpleActionServer<strands_gazing::GazeAtPoseAction>(n, action_name_, false);
+    as_->registerGoalCallback(boost::bind(&goalCallback, boost::ref(n), pose_array_topic));
+    as_->registerPreemptCallback(boost::bind(&preemptCallback));
+
+
     // Create a subscriber.
-    ros::Subscriber pose_array_sub = n.subscribe(pose_array_topic.c_str(), 10, &callback);
 
     // Create a publisher
     head_pose_pub = n.advertise<sensor_msgs::JointState>(head_pose_topic.c_str(), 10);
