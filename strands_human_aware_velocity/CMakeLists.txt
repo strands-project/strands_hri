@@ -83,8 +83,7 @@ add_executable(human_aware_cmd_vel src/main.cpp)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(human_aware_cmd_vel
-    strands_perception_people_msgs_generate_messages_cpp
-    strands_perception_people_msgs_gencpp
+    ${catkin_EXPORTED_TARGETS}
 )
 
 ## Specify libraries to link a library or executable target against

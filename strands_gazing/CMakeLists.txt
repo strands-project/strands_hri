@@ -83,7 +83,7 @@ add_executable(gaze_at_pose src/gaze_at_pose/gaze_at_pose.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(gaze_at_pose strands_gazing_generate_messages_cpp)
+add_dependencies(gaze_at_pose ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(gaze_at_pose
