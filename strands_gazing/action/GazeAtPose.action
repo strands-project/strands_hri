@@ -1,5 +1,6 @@
 #goal definition
 int32 runtime_sec
+string topic_name
 ---
 #result definition
 bool expired
