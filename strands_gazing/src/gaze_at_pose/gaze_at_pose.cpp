@@ -134,16 +134,12 @@ void GazeAtPose::transform() {
                 state.position.push_back(std::atan2(head_coord.pose.position.y, head_coord.pose.position.x) * 180.0 / M_PI);
                 state.position.push_back(std::atan2(head_coord.pose.position.z, head_coord.pose.position.x) * 180.0 / M_PI);
                 if (ros::Time::now().toSec() >= timeToBlink){
-                    state.name.push_back("EyeLidLeft");
-                    state.name.push_back("EyeLidRight");
-                    state.position.push_back(0);
+                    state.name.push_back("EyeLids");
                     state.position.push_back(0);
                     timeToUnBlink=ros::Time::now().toSec();
                     timeToBlink=ros::Time::now().toSec()+rand()%28+5;
                 }else if (ros::Time::now().toSec() >= timeToUnBlink){
-                    state.name.push_back("EyeLidLeft");
-                    state.name.push_back("EyeLidRight");
-                    state.position.push_back(100);
+                    state.name.push_back("EyeLids");
                     state.position.push_back(100);
                 }
 
