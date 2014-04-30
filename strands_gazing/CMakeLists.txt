@@ -4,7 +4,7 @@ project(strands_gazing)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp sensor_msgs tf actionlib actionlib_msgs std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS genmsg geometry_msgs roscpp sensor_msgs tf actionlib actionlib_msgs std_msgs message_generation)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -20,8 +20,8 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp sensor_msgs tf acti
 #######################################
 
 add_action_files(
-	DIRECTORY 
-	action 
+#	DIRECTORY
+#	action
 	FILES 
 	GazeAtPose.action
 )
@@ -59,7 +59,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES strands_gazing
-#  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs
+  CATKIN_DEPENDS geometry_msgs sensor_msgs actionlib_msgs
 #  DEPENDS system_lib
 )
 
@@ -83,7 +83,7 @@ add_executable(gaze_at_pose src/gaze_at_pose/gaze_at_pose.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(gaze_at_pose ${catkin_EXPORTED_TARGETS})
+add_dependencies(gaze_at_pose strands_gazing_generate_messages_cpp)# ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(gaze_at_pose
