@@ -114,8 +114,8 @@ void GazeAtPose::transform() {
                 //Transform into /head_base_frame coordinate system
                 try {
                     ROS_DEBUG("Transforming received position into %s coordinate system.", target_frame.c_str());
-                    listener->waitForTransform(p->header.frame_id, target_frame, ros::Time(), ros::Duration(3.0));
-                    listener->transformPose(target_frame, *p, head_coord);
+                    listener->waitForTransform(p->header.frame_id, target_frame, ros::Time(0), ros::Duration(3.0));
+                    listener->transformPose(target_frame, ros::Time(0), *p, p->header.frame_id, head_coord);
                 }
                 catch(tf::TransformException ex) {
                     ROS_WARN("Failed transform: %s", ex.what());
@@ -134,16 +134,12 @@ void GazeAtPose::transform() {
                 state.position.push_back(std::atan2(head_coord.pose.position.y, head_coord.pose.position.x) * 180.0 / M_PI);
                 state.position.push_back(std::atan2(head_coord.pose.position.z, head_coord.pose.position.x) * 180.0 / M_PI);
                 if (ros::Time::now().toSec() >= timeToBlink){
-                    state.name.push_back("EyeLidLeft");
-                    state.name.push_back("EyeLidRight");
-                    state.position.push_back(0);
+                    state.name.push_back("EyeLids");
                     state.position.push_back(0);
                     timeToUnBlink=ros::Time::now().toSec();
-                    timeToBlink=ros::Time::now().toSec()+rand()%25+20;
+                    timeToBlink=ros::Time::now().toSec()+rand()%28+5;
                 }else if (ros::Time::now().toSec() >= timeToUnBlink){
-                    state.name.push_back("EyeLidLeft");
-                    state.name.push_back("EyeLidRight");
-                    state.position.push_back(100);
+                    state.name.push_back("EyeLids");
                     state.position.push_back(100);
                 }
 
