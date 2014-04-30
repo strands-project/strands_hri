@@ -114,8 +114,8 @@ void GazeAtPose::transform() {
                 //Transform into /head_base_frame coordinate system
                 try {
                     ROS_DEBUG("Transforming received position into %s coordinate system.", target_frame.c_str());
-                    listener->waitForTransform(p->header.frame_id, target_frame, ros::Time(), ros::Duration(3.0));
-                    listener->transformPose(target_frame, *p, head_coord);
+                    listener->waitForTransform(p->header.frame_id, target_frame, ros::Time(0), ros::Duration(3.0));
+                    listener->transformPose(target_frame, ros::Time(0), *p, p->header.frame_id, head_coord);
                 }
                 catch(tf::TransformException ex) {
                     ROS_WARN("Failed transform: %s", ex.what());
