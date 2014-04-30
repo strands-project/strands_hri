@@ -139,7 +139,7 @@ void GazeAtPose::transform() {
                     state.position.push_back(0);
                     state.position.push_back(0);
                     timeToUnBlink=ros::Time::now().toSec();
-                    timeToBlink=ros::Time::now().toSec()+rand()%25+20;
+                    timeToBlink=ros::Time::now().toSec()+rand()%28+5;
                 }else if (ros::Time::now().toSec() >= timeToUnBlink){
                     state.name.push_back("EyeLidLeft");
                     state.name.push_back("EyeLidRight");
