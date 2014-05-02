@@ -63,7 +63,7 @@ void GazeAtPose::preemptCallback() {
 
     pose_array_sub.shutdown();
 
-    resetHead();
+    //resetHead();
 }
 
 void GazeAtPose::resetHead() {
@@ -99,7 +99,7 @@ void inline GazeAtPose::checkTime() {
         result_.expired = true;
         as_->setSucceeded(result_);
         pose_array_sub.shutdown();
-        resetHead();
+        //resetHead();
     }
 }
 
