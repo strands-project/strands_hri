@@ -63,7 +63,7 @@ void GazeAtPose::preemptCallback() {
 
     pose_array_sub.shutdown();
 
-    resetHead();
+    //resetHead();
 }
 
 void GazeAtPose::resetHead() {
@@ -99,7 +99,7 @@ void inline GazeAtPose::checkTime() {
         result_.expired = true;
         as_->setSucceeded(result_);
         pose_array_sub.shutdown();
-        resetHead();
+        //resetHead();
     }
 }
 
@@ -114,7 +114,7 @@ void GazeAtPose::transform() {
                 //Transform into /head_base_frame coordinate system
                 try {
                     ROS_DEBUG("Transforming received position into %s coordinate system.", target_frame.c_str());
-                    listener->waitForTransform(p->header.frame_id, target_frame, ros::Time(0), ros::Duration(3.0));
+                    listener->waitForTransform(p->header.frame_id, target_frame, p->header.stamp, ros::Duration(3.0));
                     listener->transformPose(target_frame, ros::Time(0), *p, p->header.frame_id, head_coord);
                 }
                 catch(tf::TransformException ex) {
@@ -132,7 +132,7 @@ void GazeAtPose::transform() {
                 state.name.push_back("HeadPan");
                 state.name.push_back("HeadTilt");
                 state.position.push_back(std::atan2(head_coord.pose.position.y, head_coord.pose.position.x) * 180.0 / M_PI);
-                state.position.push_back(std::atan2(head_coord.pose.position.z, head_coord.pose.position.x) * 180.0 / M_PI);
+                state.position.push_back(std::atan2(head_coord.pose.position.z, std::abs(head_coord.pose.position.x)) * 180.0 / M_PI);
                 if (ros::Time::now().toSec() >= timeToBlink){
                     state.name.push_back("EyeLids");
                     state.position.push_back(0);

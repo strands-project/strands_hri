@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(strands_human_aware_velocity)
+project(strands_human_aware_navigation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
     rospy strands_perception_people_msgs dynamic_reconfigure actionlib
-    actionlib_msgs message_generation)
+    actionlib_msgs message_generation move_base_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -22,10 +22,10 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
 #######################################
 
 ## Generate actions in the 'action' folder
-add_action_files(
-    DIRECTORY action
-    FILES HumanAwareVelocity.action
-)
+#add_action_files(
+    #DIRECTORY action
+    #FILES HumanAwareVelocity.action
+#)
 
 ## Generate messages in the 'msg' folder
 # add_message_files(
@@ -42,10 +42,10 @@ add_action_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  actionlib_msgs std_msgs
-)
+#generate_messages(
+  #DEPENDENCIES
+  #actionlib_msgs std_msgs move_base_msgs
+#)
 
 ###################################
 ## catkin specific configuration ##
@@ -59,7 +59,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES strands_human_aware_cmd_vel
 #  CATKIN_DEPENDS geometry_msgs message_filters roscpp strands_perception_people_msgs
-  DEPENDS actionlib_msgs
+  #DEPENDS actionlib_msgs
 )
 
 ###########
@@ -84,7 +84,7 @@ add_executable(human_aware_cmd_vel src/main.cpp)
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(human_aware_cmd_vel
     ${catkin_EXPORTED_TARGETS}
-    strands_human_aware_velocity_generate_messages_cpp
+    #strands_human_aware_velocity_generate_messages_cpp
 )
 
 ## Specify libraries to link a library or executable target against

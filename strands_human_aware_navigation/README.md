@@ -1,10 +1,10 @@
 # Human aware velocities
 This package adjusts the velocity of the robot in the presence of humans.
 
-## Human aware planner velocity
-This node adjusts the velocity move_base/DWAPlannerROS uses to move the robot to a goal. This is achieved by using the 
+## Human aware navigation
+This node sets a navigation target and adjusts the velocity move_base/DWAPlannerROS uses to move the robot to a goal. This is achieved by using the 
 dynamic reconfigure callback of the DWAPlannerROS to set the `max_vel_x`, `max_rot_vel`, and `max_trans_vel` according
-to the diastance of the robot to the closest human. As a consequence the robot will not be able to move linear or 
+to the distance of the robot to the closest human. As a consequence the robot will not be able to move linear or 
 angular if a human is too close and will graduately slow down when approaching humans. The rotation speed is only 
 adjusted to prevent the robot from spinning in place when not being able to move forward because this behaviour was 
 observed even if the clearing rotation recovery behaviour is turnd off.
@@ -14,6 +14,9 @@ This is implemented as an action server.
 ### Parameters
 * `pedestrian_locations` _Default: /pedestrian_localisation/localisations_: The topic on which the actual pedestrian 
 locations are published by the pedestrian localisation package (strands_perception_people_msgs/PedestrianLocations).
+* `/human_aware_navigation/max_dist` _Default: 5.0_: maximum distance in metres to a human before altering the speed.
+* `/human_aware_navigation/min_dist` _Default: 1.2_: minimum distance in metres to a human. Robot stops at that distance.
+* `/human_aware_navigation/timeout` _Default: 5.0_: time in seconds after which speed is reseted if no human is detected any more.
 
 ### Running
 ```
@@ -21,24 +24,7 @@ rosrun strands_human_aware_velocity human_aware_planner_velocity.py
 ```
 To start the actual functionality you have to use the actionlib client architecture, 
 e.g. `rosrun actionlib axclient.py /human_aware_planner_velocities`
-* goal _Cancelling a goal will reset the speeds to the given max values._
- * `int32 seconds`: Run time of the functionality. Set to 0 for infinit runtime (has to be cancelled to stop).
- * `float32 max_vel_x`: Maximum translation velocity.
- * `float32 max_rot_vel`: Maximum rotation velocity.
- * `float32 max_dist`: Maximum distance of detected humans. Everything above will be ignored and the max_vel_x value 
-will be used.
- * `float32 min_dist`: The distance to a human at which the robot will stop (have 0.0 velocity, it might stop before 
-reaching 0.0 according to your min_trans_vel value).
- * `float32 time_to_reset`: The time it takes for no human to be detected to resume to 'max_vel_x' speed.
-* result
- * `bool expired`: true if run time is up, false if cancelled.
-* feedback
- * `int32 num_found_humans`: Number of currently detected humans.
- * `float64 min_dist`: The distance of the closest human to the robot.
- * `float32 current_speed`: The current speed of the robot.
- * `float32 current_rot`: The current rotational speed of the robot.
- * `float32 remaining_runtime`: The remaining run time. Inf if indefinite.
- * `float32 time_to_reset`: The time until the speed will be reset to 'max_vel_x' (see goal)
+* goal type: move_base/MoveBaseGoal
 
 ## Human aware cmd_vel
 A node to adjust the velocity of the robot by taking the /cmd_vel topic and republishing it. In order for this to work 

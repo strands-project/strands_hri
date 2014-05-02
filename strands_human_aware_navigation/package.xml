@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>strands_human_aware_velocity</name>
+  <name>strands_human_aware_navigation</name>
   <version>0.0.0</version>
   <description>The strands_human_aware_velocity package</description>
 
@@ -21,6 +21,7 @@
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>actionlib_msgs</build_depend>
+  <build_depend>move_base_msgs</build_depend>
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
@@ -30,6 +31,7 @@
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
+  <run_depend>move_base_msgs</run_depend>
 
   <export/>
 </package>
