@@ -114,14 +114,15 @@ class DynamicVelocityReconfigure():
         ret = self.moveBase(goal)
         self.resetSpeed()
         if not self._as.is_preempt_requested() and ret:
-            self._as.set_succeeded()
+            self._as.set_succeeded(self.result)
         elif not ret:
-            self._as.set_aborted()
+            self._as.set_aborted(self.result)
 
     def moveBase(self,goal):
         rospy.loginfo('Moving robot to goal: %s', goal)
-        self.baseClient.send_goal(goal)
+        self.baseClient.send_goal(goal, feedback_cb=self.moveBaseFeedbackCallback)
         self.baseClient.wait_for_result()
+        self.result = self.baseClient.get_result()
         rospy.loginfo("Moved")
         if self.baseClient.get_state() != actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             return False
@@ -129,6 +130,8 @@ class DynamicVelocityReconfigure():
         rospy.sleep(rospy.Duration.from_sec(0.3)) #avoid jumping out of a state immediately after entering it - actionlib bug
         return True
 
+    def moveBaseFeedbackCallback(self,fb):
+       self._as.publish_feedback(fb)
 
 if __name__ == '__main__':
     rospy.init_node("human_aware_navigation")
