@@ -58,11 +58,11 @@ class DynamicVelocityReconfigure():
             'min_trans_vel' : min_trans_vel,
             'min_rot_vel' : min_rot_vel
         }
-        rospy.loginfo("Found following default values for move_base: %s", self.fast_param)
+        #rospy.loginfo("Found following default values for move_base: %s", self.fast_param)
 
     def resetSpeed(self):
         rospy.logdebug("Resetting speeds to max:")
-        rospy.loginfo(" Setting parameters: %s", self.fast_param)
+        rospy.logdebug(" Setting parameters: %s", self.fast_param)
         self.client.update_configuration(self.fast_param)
 
     def pedestrianCallback(self, pl):
@@ -100,30 +100,29 @@ class DynamicVelocityReconfigure():
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
         self.getCurrentSettings()
-        rospy.loginfo("Received goal:\n%s", self._goal)
+        rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
         thread.start_new_thread(self.moveBaseThread,(self._goal,))
 
     def preemptCallback(self):
-        rospy.loginfo("Cancelled execution of goal:\n%s", self._goal)
-        self.resetSpeed()
+        rospy.logdebug("Cancelled execution of goal:\n%s", self._goal)
         self.baseClient.cancel_all_goals()
         self._as.set_preempted()
+        self.resetSpeed()
 
     def moveBaseThread(self,goal):
         ret = self.moveBase(goal)
         self.resetSpeed()
         if not self._as.is_preempt_requested() and ret:
             self._as.set_succeeded(self.result)
-        elif not ret:
+        elif not self._as.is_preempt_requested() and not ret:
             self._as.set_aborted(self.result)
 
     def moveBase(self,goal):
-        rospy.loginfo('Moving robot to goal: %s', goal)
+        rospy.logdebug('Moving robot to goal: %s', goal)
         self.baseClient.send_goal(goal, feedback_cb=self.moveBaseFeedbackCallback)
         self.baseClient.wait_for_result()
         self.result = self.baseClient.get_result()
-        rospy.loginfo("Moved")
         if self.baseClient.get_state() != actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             return False
 
