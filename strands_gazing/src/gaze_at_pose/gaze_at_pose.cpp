@@ -40,8 +40,6 @@ void GazeAtPose::init() {
     as_->start();
     ROS_INFO(" ...done");
 
-    pose_array_sub = n.subscribe("/bla", 10, &GazeAtPose::callback, this);
-
     transform_thread = boost::thread(&GazeAtPose::transform, this);
 }
 
