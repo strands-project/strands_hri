@@ -46,7 +46,7 @@ void GazeAtPose::init() {
 // Set the endtime for the new goal. 0 = indefinit
 void GazeAtPose::goalCallback(ros::NodeHandle &n) {
     goal_ = as_->acceptNewGoal();
-    ROS_INFO_STREAM("Received goal:\n" << *goal_);
+    ROS_DEBUG_STREAM("Received goal:\n" << *goal_);
     pose_array_sub = n.subscribe(goal_->topic_name.c_str(), 10, &GazeAtPose::callback, this);
     end_time = goal_->runtime_sec > 0 ? ros::Time::now().toSec() + goal_->runtime_sec : 0.0;
 }
@@ -164,7 +164,7 @@ void GazeAtPose::callback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     if (!as_->isActive())
         return;
 
-    ROS_INFO_STREAM("Setting:\n" << *msg);
+    ROS_DEBUG_STREAM("Setting:\n" << *msg);
     setPose(msg);
 
 
