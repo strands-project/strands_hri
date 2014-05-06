@@ -1,0 +1,5 @@
+<launch>
+	<node name="idle_server" pkg="strands_interaction_behaviours" type="idle_server.py" output="screen"/>
+	<node name="behaviour_switch" pkg="strands_interaction_behaviours" type="behaviour_switch.py" output="screen"/>
+	<node name="idle_behaviour" pkg="strands_interaction_behaviours" type="idle_behaviour.py" output="screen"/>
+</launch>
