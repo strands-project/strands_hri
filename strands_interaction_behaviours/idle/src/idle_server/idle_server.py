@@ -6,7 +6,6 @@ import strands_interaction_behaviours.msg
 import std_msgs
 import geometry_msgs.msg
 import ros_mary_tts.msg
-import ros_mary_tts.srv
 import strands_gazing.msg
 import strands_webserver.client_utils
 from ros_datacentre.message_store import MessageStoreProxy
@@ -39,8 +38,6 @@ class IdleServer(object):
         self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
         self.maryClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
-        rospy.loginfo("%s: Setting voice.", name)
-        self.setVoice()
 
         # Gaze client
         rospy.loginfo("%s: Creating gaze client", name)
@@ -60,19 +57,7 @@ class IdleServer(object):
         self.sentences = self.loadDialogue(dialogue_option)
         #print self.sentences
 
-    def setVoice(self):
-        rospy.wait_for_service('ros_mary/set_locale')
-        rospy.wait_for_service('ros_mary/set_voice')
-        try:
-            set_locale = rospy.ServiceProxy('ros_mary/set_locale', ros_mary_tts.srv.SetLocale)
-            set_voice  = rospy.ServiceProxy('ros_mary/set_voice', ros_mary_tts.srv.SetVoice)
-            set_locale('de')
-            set_voice('dfki-pavoque-neutral-hsmm')
-            return
-        except rospy.ServiceException, e:
-            rospy.logerr("Service call failed: %s",e)
-
-    def loadDialogue(self, dialogue_name):
+    def loadDialogue(self, dialogue_name): #TODO: Use dynamic reconfigure?!
         msg_store = MessageStoreProxy(collection="hri_behaviours")
 
         query_meta = {}
@@ -93,7 +78,6 @@ class IdleServer(object):
 
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
-        strands_webserver.client_utils.display_content(self.display_no, '<title>Waiting...</title>')
         self.loop = True
         current_time = rospy.get_time()
         self.end_time = current_time + self._goal.runtime_seconds if self._goal.runtime_seconds > 0 else -1.0
@@ -104,12 +88,12 @@ class IdleServer(object):
         thread.start_new_thread(self.idle_behaviour, ())
 
     def preemptCallback(self):
-        rospy.loginfo("Cancelled execution of goal.")
+        rospy.logdebug("Cancelled execution of goal.")
         self.loop = False
         self._as.set_preempted()
 
     def look(self):
-        rospy.loginfo("Execute: Look around")
+        rospy.logdebug("Execute: Look around")
         pose = geometry_msgs.msg.PoseStamped()
         pose.header.frame_id = '/head_xtion_depth_optical_frame'
         pose.header.stamp = rospy.Time.now()
@@ -144,11 +128,11 @@ class IdleServer(object):
         rospy.sleep(3)
 
     def speak(self):
-        rospy.loginfo("Speak")
+        rospy.logdebug("Speak")
         mary_goal = ros_mary_tts.msg.maryttsGoal
-        sentence = self.sentences[randint(0, len(self.sentences-1))]
+        sentence = self.sentences[randint(0, len(self.sentences)-1)]
         mary_goal.text = sentence
-        strands_webserver.client_utils.display_content(self.display_no, "<h1>"+sentence+"</h1>")
+        strands_webserver.client_utils.display_content(self.display_no, "<center><h1>"+sentence+"</h1></center>")
         self.maryClient.send_goal(mary_goal)
         self.maryClient.wait_for_result()
 
@@ -158,19 +142,19 @@ class IdleServer(object):
             self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else -1
             if self.look_trigger == 0:
                 thread.start_new_thread(self.look,())
-                self.look_trigger = randint(20,30)
+                self.look_trigger = randint(10,20)
             self.look_trigger -= 1
             self._feedback.next_look = self.look_trigger
             if self.speak_trigger == 0:
                 thread.start_new_thread(self.speak,())
-                self.speak_trigger = randint(30,50)
+                self.speak_trigger = randint(20,50)
             self.speak_trigger -= 1
             self._feedback.next_speak = self.speak_trigger
             self._as.publish_feedback(self._feedback)
             rospy.sleep(1)
             if rospy.get_time() > self.end_time and self.end_time > 0:
-                rospy.loginfo("Execution time has been reached. Goal terminated successfully")
-                rospy.loginfo('%s: Succeeded' % self._action_name)
+                rospy.logdebug("Execution time has been reached. Goal terminated successfully")
+                rospy.logdebug('%s: Succeeded' % self._action_name)
                 self._as.set_succeeded()
                 break
 

@@ -5,6 +5,7 @@ import actionlib
 import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
 import flir_pantilt_d46.msg
+import ros_mary_tts.srv
 
 class IdleBehaviour(object):
 # create messages that are used to publish feedback/result
@@ -16,13 +17,17 @@ class IdleBehaviour(object):
         self.mode = 0
 
         #Getting parameters
-        self.runtime = rospy.get_param(self._action_name + "/runtime", 0)
+        self.runtime = rospy.get_param("~runtime", 0)
+        self.locale = rospy.get_param("~speak_locale", "de")
+        self.voice = rospy.get_param("~speak_voice", "dfki-pavoque-neutral-hsmm")
 
         # BehaviourSwitch client
         rospy.loginfo("%s: Creating behaviour_switch client", name)
         self.bsClient = actionlib.SimpleActionClient('behaviour_switch', strands_interaction_behaviours.msg.BehaviourSwitchAction)
         self.bsClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
+        rospy.loginfo("%s: Setting voice.", name)
+        self.setVoice()
 
         # PTU client
         rospy.loginfo("%s: Creating PTU client", name)
@@ -37,6 +42,17 @@ class IdleBehaviour(object):
         self._as.start()
         rospy.loginfo("%s: ...done.", name)
 
+    def setVoice(self):
+        rospy.wait_for_service('ros_mary/set_locale')
+        rospy.wait_for_service('ros_mary/set_voice')
+        try:
+            set_locale = rospy.ServiceProxy('ros_mary/set_locale', ros_mary_tts.srv.SetLocale)
+            set_voice  = rospy.ServiceProxy('ros_mary/set_voice', ros_mary_tts.srv.SetVoice)
+            set_locale(self.locale)
+            set_voice(self.voice)
+            return
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s",e)
 
     def exCallback(self, goal):
         #self.turnPTU() #TODO: Need to figure out the problem with turning the PTU first
