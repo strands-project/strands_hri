@@ -1,0 +1,9 @@
+#goal definition
+int32 runtime_seconds
+---
+#result definition
+---
+#feedback
+int32 remaining_runtime
+int32 next_look
+int32 next_speak
