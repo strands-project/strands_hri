@@ -31,5 +31,3 @@ class IdleBehaviour(object):
 if __name__ == '__main__':
     rospy.init_node('set_voice')
     IdleBehaviour(rospy.get_name())
-    rospy.spin()
-
