@@ -30,7 +30,7 @@ class DynamicVelocityReconfigure():
         rospy.loginfo("Reading move_base parameters")
         self.getCurrentSettings()
         rospy.loginfo("Reading parameters")
-        self.threshold = rospy.get_param(name+"/timeout",5.0)
+        self.threshold = rospy.get_param(name+"/timeout",2.0)
         current_time = rospy.get_time()
         self.timeout = current_time + self.threshold
         self.max_dist = rospy.get_param(name+"/max_dist",5.0)
@@ -77,13 +77,13 @@ class DynamicVelocityReconfigure():
             factor = factor if factor > 0.0 else 0.0
             factor /= (self.max_dist - self.min_dist)
             factor = 1.0 if factor > 1.0 else factor
-            trans_speed = factor * self.max_vel_x
+            trans_speed = factor * self.fast_param['max_vel_x']
             trans_speed = round(trans_speed, 2)
             rospy.logdebug("Calculated translational speed: %s", trans_speed)
-            rot_speed = factor * self.max_rot_vel
+            rot_speed = factor * self.fast_param['max_rot_vel']
             rot_speed = round(rot_speed, 2)
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
-            if not trans_speed == self.max_vel_x and not rot_speed == self.max_rot_vel:
+            if not trans_speed == self.fast_param['max_vel_x'] and not rot_speed == self.fast_param['max_rot_vel']:
                 self.slow_param = {'max_vel_x' : trans_speed, 'max_trans_vel' : trans_speed, 'max_rot_vel' : rot_speed}
                 self.client.update_configuration(self.slow_param)
                 rospy.logdebug(" Setting parameters: %s", self.slow_param)
