@@ -7,6 +7,7 @@ from strands_perception_people_msgs.msg import PedestrianLocations
 import move_base_msgs.msg
 import thread
 import actionlib_msgs.msg
+import strands_gazing.msg
 
 class DynamicVelocityReconfigure():
     "A calss to reconfigure the velocity of the DWAPlannerROS."
@@ -24,6 +25,12 @@ class DynamicVelocityReconfigure():
             move_base_msgs.msg.MoveBaseAction
         )
         self.baseClient.wait_for_server()
+        rospy.loginfo("Creating gaze client.")
+        self.gazeClient = actionlib.SimpleActionClient(
+            'gaze_at_pose',
+            strands_gazing.msg.GazeAtPoseAction
+        )
+        self.gazeClient.wait_for_server()
         rospy.loginfo("...done")
         rospy.loginfo("Reading move_base parameters")
         self.getCurrentSettings()
@@ -63,7 +70,21 @@ class DynamicVelocityReconfigure():
     def resetSpeed(self):
         rospy.logdebug("Resetting speeds to max:")
         rospy.logdebug(" Setting parameters: %s", self.fast_param)
-        self.client.update_configuration(self.fast_param)
+        try:
+            self.client.update_configuration(self.fast_param)
+        except rospy.ServiceException as exc:
+            rospy.logerr("Caught service exception: %s", exc)
+            try:
+                self.client.update_configuration(self.fast_param)
+            except rospy.ServiceException as exc:
+                rospy.logerr("Caught service exception: %s", exc)
+                try:
+                    self.client.update_configuration(self.fast_param)
+                except rospy.ServiceException as exc:
+                    rospy.logerr("Caught service exception: %s", exc)
+                    self.baseClient.cancel_all_goals()
+                    self.gazeClient.cancel_all_goals()
+                    self._as.set_aborted()
 
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
@@ -85,7 +106,10 @@ class DynamicVelocityReconfigure():
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
             if not trans_speed == self.fast_param['max_vel_x'] and not rot_speed == self.fast_param['max_rot_vel']:
                 self.slow_param = {'max_vel_x' : trans_speed, 'max_trans_vel' : trans_speed, 'max_rot_vel' : rot_speed}
-                self.client.update_configuration(self.slow_param)
+                try:
+                    self.client.update_configuration(self.slow_param)
+                except rospy.ServiceException as exc:
+                    rospy.logerr("Caught service exception: %s", exc)
                 rospy.logdebug(" Setting parameters: %s", self.slow_param)
                 self.fast = False
             self.timeout = rospy.get_time() + self.threshold
@@ -102,11 +126,16 @@ class DynamicVelocityReconfigure():
         self.getCurrentSettings()
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
+        gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
+        gaze_goal.runtime_sec = 0
+        gaze_goal.topic_name = "/pose_extractor/pose"
+        self.gazeClient.send_goal(gaze_goal)
         thread.start_new_thread(self.moveBaseThread,(self._goal,))
 
     def preemptCallback(self):
         rospy.logdebug("Cancelled execution of goal:\n%s", self._goal)
         self.baseClient.cancel_all_goals()
+        self.gazeClient.cancel_all_goals()
         self._as.set_preempted()
         self.resetSpeed()
 
