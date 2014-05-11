@@ -7,7 +7,6 @@ import std_msgs
 import geometry_msgs.msg
 import ros_mary_tts.msg
 import strands_gazing.msg
-import strands_webserver.client_utils
 from ros_datacentre.message_store import MessageStoreProxy
 
 import thread
@@ -132,7 +131,6 @@ class IdleServer(object):
         mary_goal = ros_mary_tts.msg.maryttsGoal
         sentence = self.sentences[randint(0, len(self.sentences)-1)]
         mary_goal.text = sentence
-        strands_webserver.client_utils.display_content(self.display_no, "<center><h1>"+sentence+"</h1></center>")
         self.maryClient.send_goal(mary_goal)
         self.maryClient.wait_for_result()
 
@@ -147,7 +145,7 @@ class IdleServer(object):
             self._feedback.next_look = self.look_trigger
             if self.speak_trigger == 0:
                 thread.start_new_thread(self.speak,())
-                self.speak_trigger = randint(20,50)
+                self.speak_trigger = randint(60,120)
             self.speak_trigger -= 1
             self._feedback.next_speak = self.speak_trigger
             self._as.publish_feedback(self._feedback)
