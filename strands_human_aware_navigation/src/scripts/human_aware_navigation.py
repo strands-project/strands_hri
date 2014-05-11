@@ -142,6 +142,7 @@ class DynamicVelocityReconfigure():
     def moveBaseThread(self,goal):
         ret = self.moveBase(goal)
         self.resetSpeed()
+        self.gazeClient.cancel_all_goals()
         if not self._as.is_preempt_requested() and ret:
             self._as.set_succeeded(self.result)
         elif not self._as.is_preempt_requested() and not ret:
