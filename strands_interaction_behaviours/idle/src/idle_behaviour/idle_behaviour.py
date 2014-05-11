@@ -58,6 +58,7 @@ class IdleBehaviour(object):
         self.bsClient.send_goal(idle_goal)
         self.bsClient.wait_for_result()
         self.turnPTU(0)
+        self.createPage()
         if self.bsClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
