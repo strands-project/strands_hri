@@ -14,13 +14,6 @@ class DynamicVelocityReconfigure():
     def __init__(self, name):
         rospy.loginfo("Starting %s", name)
         self._action_name = name
-        rospy.loginfo("Creating action server.")
-        self._as = actionlib.SimpleActionServer(self._action_name, move_base_msgs.msg.MoveBaseAction, execute_cb = None, auto_start = False)
-        self._as.register_goal_callback(self.goalCallback)
-        self._as.register_preempt_callback(self.preemptCallback)
-        rospy.loginfo(" ...starting")
-        self._as.start()
-        rospy.loginfo(" ...done")
         sub_topic = rospy.get_param("~pedestrian_locations", '/pedestrian_localisation/localisations')
         rospy.Subscriber(sub_topic, PedestrianLocations, self.pedestrianCallback, None, 5)
         self.fast = True
@@ -42,6 +35,13 @@ class DynamicVelocityReconfigure():
         self.timeout = current_time + self.threshold
         self.max_dist = rospy.get_param(name+"/max_dist",5.0)
         self.min_dist = rospy.get_param(name+"/min_dist",1.2)
+        rospy.loginfo("Creating action server.")
+        self._as = actionlib.SimpleActionServer(self._action_name, move_base_msgs.msg.MoveBaseAction, execute_cb = None, auto_start = False)
+        self._as.register_goal_callback(self.goalCallback)
+        self._as.register_preempt_callback(self.preemptCallback)
+        rospy.loginfo(" ...starting")
+        self._as.start()
+        rospy.loginfo(" ...done")
 
     def getCurrentSettings(self):
         max_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
