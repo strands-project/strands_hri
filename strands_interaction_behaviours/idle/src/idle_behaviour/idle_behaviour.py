@@ -9,6 +9,7 @@ import actionlib_msgs.msg
 import flir_pantilt_d46.msg
 import std_srvs.srv
 import strands_webserver.client_utils
+import strands_webserver.page_utils
 #import y1_interfaces.page_utils
 import std_msgs.msg
 
@@ -72,7 +73,7 @@ class IdleBehaviour(object):
         goal = flir_pantilt_d46.msg.PtuGotoGoal()
         goal.pan = pan
         goal.tilt = 0
-        goal.pan_vel = 25
+        goal.pan_vel = 35
         goal.tilt_vel = 0
         self.ptuClient.send_goal_and_wait(goal)
 
@@ -86,7 +87,7 @@ class IdleBehaviour(object):
         #y1_interfaces.page_utils.generate_interface_page(page, left=left_html, right=right_html)
         service_prefix = '/idle_behaviour'
         content = strands_webserver.page_utils.generate_alert_button_page(left_html, buttons, service_prefix)
-        strands_webserver.client_utils.display_relative_page(self.display_no, page)
+        #strands_webserver.client_utils.display_relative_page(self.display_no, page)
         strands_webserver.client_utils.display_content(self.display_no, content)
 
     def engage(self,req):

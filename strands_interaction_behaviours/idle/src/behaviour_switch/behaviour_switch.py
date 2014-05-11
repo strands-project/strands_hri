@@ -79,7 +79,7 @@ class BehaviourSwitch(object):
         if len(pl.poses) == 0 and self.mode != 1:
             goal = strands_interaction_behaviours.msg.InteractionIdleGoal
             goal.runtime_seconds = 0
-            #print 'goal:', goal
+            print 'goal:', goal
             self.idleClient.send_goal(goal)
             self._feedback.person_found = False
             self.mode = 1
@@ -88,7 +88,7 @@ class BehaviourSwitch(object):
             goal = strands_gazing.msg.GazeAtPoseGoal
             goal.topic_name = self.people_closest_topic
             goal.runtime_sec = 0
-            #print 'goal:', goal
+            print 'goal:', goal
             self.gazeClient.send_goal(goal)
             self._feedback.person_found = True
             self.mode = -1
@@ -96,6 +96,8 @@ class BehaviourSwitch(object):
         rospy.sleep(1)
 
     def engagementCallback(self, eng):
+        if not self._as.is_active() or self.engaged:
+            return
         if eng.data == True:
             self.engaged = True
             rospy.logdebug("Engaged")
