@@ -88,7 +88,7 @@ class IdleBehaviour(object):
         strands_webserver.client_utils.display_relative_page(self.display_no, page)
         strands_webserver.client_utils.display_content(self.display_no, content)
 
-    def enage(self,req):
+    def engage(self,req):
         a = std_msgs.msg.Bool()
         a.data = True
         self.pub.publish(a)
