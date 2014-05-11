@@ -14,8 +14,6 @@ class DynamicVelocityReconfigure():
     def __init__(self, name):
         rospy.loginfo("Starting %s", name)
         self._action_name = name
-        sub_topic = rospy.get_param("~pedestrian_locations", '/pedestrian_localisation/localisations')
-        rospy.Subscriber(sub_topic, PedestrianLocations, self.pedestrianCallback, None, 5)
         self.fast = True
         rospy.loginfo("Creating dynamic reconfigure client")
         self.client = dynamic_reconfigure.client.Client("/move_base/DWAPlannerROS")
@@ -42,6 +40,8 @@ class DynamicVelocityReconfigure():
         rospy.loginfo(" ...starting")
         self._as.start()
         rospy.loginfo(" ...done")
+        sub_topic = rospy.get_param("~pedestrian_locations", '/pedestrian_localisation/localisations')
+        rospy.Subscriber(sub_topic, PedestrianLocations, self.pedestrianCallback, None, 5)
 
     def getCurrentSettings(self):
         max_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
