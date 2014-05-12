@@ -10,6 +10,7 @@ import std_srvs.srv
 import os
 import strands_webserver.page_utils
 import strands_webserver.client_utils
+import strands_hri_utils.msg
 
 class EngagedServer(object):
 # create messages that are used to publish feedback/result
@@ -25,9 +26,15 @@ class EngagedServer(object):
         self.display_no = rospy.get_param("~display", 0)
 
         # Mary client
-        rospy.loginfo("%s: Creating mary client", name)
-        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
-        self.maryClient.wait_for_server()
+        #rospy.loginfo("%s: Creating mary client", name)
+        #self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        #self.maryClient.wait_for_server()
+        #rospy.loginfo("%s: ...done", name)
+
+        # Lights client
+        rospy.loginfo("%s: Creating lights client", name)
+        self.lightsClient = actionlib.SimpleActionClient('visual_speech', strands_hri_utils.msg.VisualSpeechAction)
+        self.lightsClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
         # Starting server
@@ -43,25 +50,29 @@ class EngagedServer(object):
         rospy.Service(name+'/show_info', std_srvs.srv.Empty, self.showInfo)
 
         # tell the webserver where it should look for web files to serve
-        http_root = os.path.join(roslib.packages.get_pkg_dir("strands_webserver"), "data")
-        strands_webserver.client_utils.set_http_root(http_root)
+        #http_root = os.path.join(roslib.packages.get_pkg_dir("strands_webserver"), "data")
+	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
+        #strands_webserver.client_utils.set_http_root(http_root)
 
 
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
         rospy.logdebug("Received goal:\n%s",self._goal)
         goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Engage!"
-        self.maryClient.send_goal(goal)
+        goal.text = "Hallo, Ich bin der Henry!"
+        self.lightsClient.send_goal(goal)
+        goal = ros_mary_tts.msg.maryttsGoal()
+        goal.text = "Möchtest du mehr über mich erfahren oder mit mir spielen?"
+        self.lightsClient.send_goal(goal)
         # Build page
-        name = 'Would you like to know more?'
-        buttons = [('Play a game', 'schedule_game'), ('Show more', 'show_info')]
+        name = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Was möchtest du tun?</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
+        buttons = [('Ein Spiel spielen', 'schedule_game'), ('Erzähl mir von dir', 'show_info')]
         service_prefix = self._action_name
         content = strands_webserver.page_utils.generate_alert_button_page(name, buttons, service_prefix)
         strands_webserver.client_utils.display_content(self.display_no, content)
 
     def preemptCallback(self):
-        self.maryClient.cancel_all_goals()
+        self.lightsClient.cancel_all_goals()
         self._as.set_preempted()
 
     def scheduleGame(self, req):
@@ -69,10 +80,19 @@ class EngagedServer(object):
         self._as.set_succeeded()
 
     def showInfo(self, req):
-        rospy.loginfo("SHOW INFORMATION ABOUT ROBOT")
-        self._as.set_succeeded()
-
-
+	page = 'strands-aaf-info1.html'
+        strands_webserver.client_utils.display_relative_page(self.display_no, page)
+        goal = ros_mary_tts.msg.maryttsGoal()
+        goal.text = "Ich bin Henry, der STRANDS Roboter"
+        self.lightsClient.send_goal_and_wait(goal)
+        goal = ros_mary_tts.msg.maryttsGoal()
+        goal.text = "Ich werde in einem EU-Forschungsprojekt entwickelt."
+        self.lightsClient.send_goal_and_wait(goal)
+        goal = ros_mary_tts.msg.maryttsGoal()
+        goal.text = "Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen."
+        self.lightsClient.send_goal_and_wait(goal)
+	
+	#self._as.set_succeeded()
 
 if __name__ == '__main__':
     rospy.init_node('engaged_server')

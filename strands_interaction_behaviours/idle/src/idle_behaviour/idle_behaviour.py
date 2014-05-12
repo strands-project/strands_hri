@@ -53,7 +53,10 @@ class IdleBehaviour(object):
         rospy.Service(name+'/engage', std_srvs.srv.Empty, self.engage)
 
     def exCallback(self, goal):
-        self.turnPTU(-180)
+        self.createPage()
+        rospy.loginfo("Created page")
+	self.turnPTU(-180)
+	rospy.loginfo("Turned PTU")
         idle_goal = strands_interaction_behaviours.msg.BehaviourSwitchGoal()
         idle_goal.runtime_seconds = self.runtime
         self.bsClient.send_goal(idle_goal)
@@ -64,6 +67,9 @@ class IdleBehaviour(object):
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
             self._as.set_aborted()
+        
+	#Setting http root
+	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
 
     def preemptCallback(self):
         self.bsClient.cancel_all_goals()
@@ -73,21 +79,16 @@ class IdleBehaviour(object):
         goal = flir_pantilt_d46.msg.PtuGotoGoal()
         goal.pan = pan
         goal.tilt = 0
-        goal.pan_vel = 35
+        goal.pan_vel = 60
         goal.tilt_vel = 0
         self.ptuClient.send_goal_and_wait(goal)
 
     def createPage(self):
-        strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
 
-        page = 'ui.html'
-        left_html = '<p><b>Hallo, ich bin der Henry!</b></p>'
+        left_html = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Hallo, ich bin der Henry!</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
         buttons = [('Drück mich!', 'engage')]
-        #right_html = '<button type="button">Sprich mit mir</button>'
-        #y1_interfaces.page_utils.generate_interface_page(page, left=left_html, right=right_html)
         service_prefix = '/idle_behaviour'
         content = strands_webserver.page_utils.generate_alert_button_page(left_html, buttons, service_prefix)
-        #strands_webserver.client_utils.display_relative_page(self.display_no, page)
         strands_webserver.client_utils.display_content(self.display_no, content)
 
     def engage(self,req):

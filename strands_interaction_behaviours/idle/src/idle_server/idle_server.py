@@ -9,6 +9,7 @@ import geometry_msgs.msg
 import ros_mary_tts.msg
 import strands_gazing.msg
 from ros_datacentre.message_store import MessageStoreProxy
+import strands_hri_utils.msg
 
 import thread
 from random import randint
@@ -33,10 +34,16 @@ class IdleServer(object):
         # Publishers and subscribers
         self.pose_pub = rospy.Publisher(self.head_topic,geometry_msgs.msg.PoseStamped)
 
-        # Mary client
-        rospy.loginfo("%s: Creating mary client", name)
-        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
-        self.maryClient.wait_for_server()
+	# Mary client
+        #rospy.loginfo("%s: Creating mary client", name)
+        #self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        #self.maryClient.wait_for_server()
+        #rospy.loginfo("%s: ...done", name)
+
+        # Lights client
+        rospy.loginfo("%s: Creating lights client", name)
+        self.lightsClient = actionlib.SimpleActionClient('visual_speech', strands_hri_utils.msg.VisualSpeechAction)
+        self.lightsClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
         # Gaze client
@@ -132,8 +139,8 @@ class IdleServer(object):
         mary_goal = ros_mary_tts.msg.maryttsGoal
         sentence = self.sentences[randint(0, len(self.sentences)-1)]
         mary_goal.text = sentence
-        self.maryClient.send_goal(mary_goal)
-        self.maryClient.wait_for_result()
+        self.lightsClient.send_goal(mary_goal)
+        self.lightsClient.wait_for_result()
 
 
     def idle_behaviour(self):
