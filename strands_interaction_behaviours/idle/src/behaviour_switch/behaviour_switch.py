@@ -102,7 +102,7 @@ class BehaviourSwitch(object):
             self.engaged = True
             rospy.logdebug("Engaged")
             goal = strands_interaction_behaviours.msg.InteractionEngagedGoal()
-            self.engageClient.send_goal_and_wait(goal, execute_timeout=rospy.Duration(self.eng_timeout))
+            self.engageClient.send_goal_and_wait(goal) #,execute_timeout=rospy.Duration(self.eng_timeout))
             if self.engageClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
                 rospy.logdebug("Engagement success")
                 self.killAll()
