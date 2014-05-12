@@ -9,7 +9,7 @@ import geometry_msgs.msg
 import ros_mary_tts.msg
 import strands_gazing.msg
 from ros_datacentre.message_store import MessageStoreProxy
-import strands_hri_utils.msg
+#import strands_hri_utils.msg
 
 import thread
 from random import randint
@@ -34,17 +34,17 @@ class IdleServer(object):
         # Publishers and subscribers
         self.pose_pub = rospy.Publisher(self.head_topic,geometry_msgs.msg.PoseStamped)
 
-	# Mary client
-        #rospy.loginfo("%s: Creating mary client", name)
-        #self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
-        #self.maryClient.wait_for_server()
-        #rospy.loginfo("%s: ...done", name)
+    	# Mary client
+        rospy.loginfo("%s: Creating mary client", name)
+        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        self.maryClient.wait_for_server()
+        rospy.loginfo("%s: ...done", name)
 
         # Lights client
-        rospy.loginfo("%s: Creating lights client", name)
-        self.lightsClient = actionlib.SimpleActionClient('visual_speech', strands_hri_utils.msg.VisualSpeechAction)
-        self.lightsClient.wait_for_server()
-        rospy.loginfo("%s: ...done", name)
+        #rospy.loginfo("%s: Creating lights client", name)
+        #self.lightsClient = actionlib.SimpleActionClient('visual_speech', strands_hri_utils.msg.VisualSpeechAction)
+        #self.lightsClient.wait_for_server()
+        #rospy.loginfo("%s: ...done", name)
 
         # Gaze client
         rospy.loginfo("%s: Creating gaze client", name)
@@ -85,7 +85,6 @@ class IdleServer(object):
 
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
-        self.loop = True
         current_time = rospy.get_time()
         self.end_time = current_time + self._goal.runtime_seconds if self._goal.runtime_seconds > 0 else -1.0
         gaze_goal = strands_gazing.msg.GazeAtPoseGoal
@@ -96,7 +95,6 @@ class IdleServer(object):
 
     def preemptCallback(self):
         rospy.logdebug("Cancelled execution of goal.")
-        self.loop = False
         self._as.set_preempted()
 
     def look(self):
@@ -139,12 +137,12 @@ class IdleServer(object):
         mary_goal = ros_mary_tts.msg.maryttsGoal
         sentence = self.sentences[randint(0, len(self.sentences)-1)]
         mary_goal.text = sentence
-        self.lightsClient.send_goal(mary_goal)
-        self.lightsClient.wait_for_result()
+        self.maryClient.send_goal(mary_goal)
+        self.maryClient.wait_for_result()
 
 
     def idle_behaviour(self):
-        while self.loop:
+        while self._as.is_active():
             self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else -1
             if self.look_trigger == 0:
                 thread.start_new_thread(self.look,())
