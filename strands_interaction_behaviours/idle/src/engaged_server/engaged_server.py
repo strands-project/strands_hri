@@ -4,6 +4,7 @@
 import rospy
 import roslib
 import actionlib
+import actionlib_msgs.msg
 import strands_interaction_behaviours.msg
 import ros_mary_tts.msg
 import std_srvs.srv
@@ -79,12 +80,16 @@ class EngagedServer(object):
 
     def preemptCallback(self):
         self.lightsClient.cancel_all_goals()
+        self.exeClient.cancel_all_goals()
         self._as.set_preempted()
 
     def scheduleGame(self, req):
         goal = memory_game_msgs.msg.PlayMemoryGameGoal()
         self.exeClient.send_goal_and_wait(goal)
-        self._as.set_succeeded()
+        if self.exeClient.get_result() == actionlib_msgs.msg.GoalStatus.SUCCEEDED and not self.exeClient.is_preempting():
+            self._as.set_succeeded()
+        else:
+            self._as.set_abborted()
 
     def showInfo(self, req):
 	page = 'strands-aaf-info1.html'
