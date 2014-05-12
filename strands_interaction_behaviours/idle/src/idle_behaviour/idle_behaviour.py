@@ -1,11 +1,17 @@
 #! /usr/bin/env python
+# -*- coding: utf-8 -*-
 
+import roslib
 import rospy
 import actionlib
 import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
 import flir_pantilt_d46.msg
-import ros_mary_tts.srv
+import std_srvs.srv
+import strands_webserver.client_utils
+import strands_webserver.page_utils
+#import y1_interfaces.page_utils
+import std_msgs.msg
 
 class IdleBehaviour(object):
 # create messages that are used to publish feedback/result
@@ -18,16 +24,17 @@ class IdleBehaviour(object):
 
         #Getting parameters
         self.runtime = rospy.get_param("~runtime", 0)
-        self.locale = rospy.get_param("~speak_locale", "de")
-        self.voice = rospy.get_param("~speak_voice", "dfki-pavoque-neutral-hsmm")
+        self.display_no = rospy.get_param("~display", 0)
+        engage_topic = rospy.get_param("~engage_topic", '/engagement_checker/engaged')
+
+        #Publishers
+        self.pub = rospy.Publisher(engage_topic,std_msgs.msg.Bool,queue_size=100)
 
         # BehaviourSwitch client
         rospy.loginfo("%s: Creating behaviour_switch client", name)
         self.bsClient = actionlib.SimpleActionClient('behaviour_switch', strands_interaction_behaviours.msg.BehaviourSwitchAction)
         self.bsClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
-        rospy.loginfo("%s: Setting voice.", name)
-        self.setVoice()
 
         # PTU client
         rospy.loginfo("%s: Creating PTU client", name)
@@ -42,40 +49,52 @@ class IdleBehaviour(object):
         self._as.start()
         rospy.loginfo("%s: ...done.", name)
 
-    def setVoice(self):
-        rospy.wait_for_service('ros_mary/set_locale')
-        rospy.wait_for_service('ros_mary/set_voice')
-        try:
-            set_locale = rospy.ServiceProxy('ros_mary/set_locale', ros_mary_tts.srv.SetLocale)
-            set_voice  = rospy.ServiceProxy('ros_mary/set_voice', ros_mary_tts.srv.SetVoice)
-            set_locale(self.locale)
-            set_voice(self.voice)
-            return
-        except rospy.ServiceException, e:
-            rospy.logerr("Service call failed: %s",e)
+        # Services for buttons
+        rospy.Service(name+'/engage', std_srvs.srv.Empty, self.engage)
 
     def exCallback(self, goal):
-        #self.turnPTU() #TODO: Need to figure out the problem with turning the PTU first
+        self.createPage()
+        rospy.loginfo("Created page")
+	self.turnPTU(-180)
+	rospy.loginfo("Turned PTU")
         idle_goal = strands_interaction_behaviours.msg.BehaviourSwitchGoal()
         idle_goal.runtime_seconds = self.runtime
         self.bsClient.send_goal(idle_goal)
         self.bsClient.wait_for_result()
+        self.turnPTU(0)
+        self.createPage()
         if self.bsClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
             self._as.set_aborted()
+        
+	#Setting http root
+	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
 
     def preemptCallback(self):
         self.bsClient.cancel_all_goals()
         self._as.set_preempted()
 
-    def turnPTU(self):
+    def turnPTU(self, pan):
         goal = flir_pantilt_d46.msg.PtuGotoGoal()
-        goal.pan = -180
+        goal.pan = pan
         goal.tilt = 0
-        goal.pan_vel = 10
+        goal.pan_vel = 60
         goal.tilt_vel = 0
         self.ptuClient.send_goal_and_wait(goal)
+
+    def createPage(self):
+
+        left_html = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Hallo, ich bin der Henry!</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
+        buttons = [('Drück mich!', 'engage')]
+        service_prefix = '/idle_behaviour'
+        content = strands_webserver.page_utils.generate_alert_button_page(left_html, buttons, service_prefix)
+        strands_webserver.client_utils.display_content(self.display_no, content)
+
+    def engage(self,req):
+        a = std_msgs.msg.Bool()
+        a.data = True
+        self.pub.publish(a)
 
 if __name__ == '__main__':
     rospy.init_node('idle_behaviour')
