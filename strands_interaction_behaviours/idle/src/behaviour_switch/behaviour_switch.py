@@ -77,13 +77,14 @@ class BehaviourSwitch(object):
             return
         self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else -1
         if len(pl.poses) == 0 and self.mode != 1:
-            goal = strands_interaction_behaviours.msg.InteractionIdleGoal
-            goal.runtime_seconds = 0
-            print 'goal:', goal
-            self.idleClient.send_goal(goal)
-            self._feedback.person_found = False
-            self.mode = 1
+            self.setGaze('idle')
         elif len(pl.poses) > 0 and self.mode != -1:
+            self.setGaze('person')
+        self._as.publish_feedback(self._feedback)
+        rospy.sleep(1)
+
+    def setGaze(self, target):
+        if target == 'person':
             self.idleClient.cancel_all_goals()
             goal = strands_gazing.msg.GazeAtPoseGoal
             goal.topic_name = self.people_closest_topic
@@ -92,22 +93,29 @@ class BehaviourSwitch(object):
             self.gazeClient.send_goal(goal)
             self._feedback.person_found = True
             self.mode = -1
-        self._as.publish_feedback(self._feedback)
-        rospy.sleep(1)
+        elif target == 'idle':
+            goal = strands_interaction_behaviours.msg.InteractionIdleGoal
+            goal.runtime_seconds = 0
+            print 'goal:', goal
+            self.idleClient.send_goal(goal)
+            self._feedback.person_found = False
+            self.mode = 1
 
     def engagementCallback(self, eng):
         if not self._as.is_active() or self.engaged:
             return
         if eng.data == True:
             self.engaged = True
-            rospy.logdebug("Engaged")
+            self.setGaze('person')
+            rospy.loginfo("Engaged")
             goal = strands_interaction_behaviours.msg.InteractionEngagedGoal()
-            self.engageClient.send_goal_and_wait(goal) #,execute_timeout=rospy.Duration(self.eng_timeout))
+            self.engageClient.send_goal_and_wait(goal,execute_timeout=rospy.Duration(self.eng_timeout))
             if self.engageClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
-                rospy.logdebug("Engagement success")
+                rospy.loginfo("Engagement success")
                 self.killAll()
                 self._as.set_succeeded()
             else:
+                rospy.loginfo("Engagement NOT success")
                 self.engaged = False
 
     def killAll(self):

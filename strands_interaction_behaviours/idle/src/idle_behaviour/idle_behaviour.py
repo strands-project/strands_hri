@@ -55,8 +55,8 @@ class IdleBehaviour(object):
     def exCallback(self, goal):
         self.createPage()
         rospy.loginfo("Created page")
-	self.turnPTU(-180)
-	rospy.loginfo("Turned PTU")
+    	self.turnPTU(-180)
+        rospy.loginfo("Turned PTU")
         idle_goal = strands_interaction_behaviours.msg.BehaviourSwitchGoal()
         idle_goal.runtime_seconds = self.runtime
         self.bsClient.send_goal(idle_goal)
@@ -67,7 +67,7 @@ class IdleBehaviour(object):
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
             self._as.set_aborted()
-        
+
 	#Setting http root
 	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
 
@@ -92,6 +92,7 @@ class IdleBehaviour(object):
         strands_webserver.client_utils.display_content(self.display_no, content)
 
     def engage(self,req):
+        rospy.loginfo("Engage button pressed")
         a = std_msgs.msg.Bool()
         a.data = True
         self.pub.publish(a)
