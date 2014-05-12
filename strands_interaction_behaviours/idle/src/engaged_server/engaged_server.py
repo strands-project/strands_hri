@@ -4,10 +4,11 @@
 import rospy
 import roslib
 import actionlib
+import actionlib_msgs.msg
 import strands_interaction_behaviours.msg
 import ros_mary_tts.msg
 import std_srvs.srv
-import os
+import memory_game_msgs.msg
 import strands_webserver.page_utils
 import strands_webserver.client_utils
 import strands_hri_utils.msg
@@ -37,6 +38,12 @@ class EngagedServer(object):
         self.lightsClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
+        # Executor client
+        rospy.loginfo("%s: Creating executor client", name)
+        self.exeClient = actionlib.SimpleActionClient('memory_game_executor',memory_game_msgs.msg.PlayMemoryGameAction)
+        self.exeClient.wait_for_server()
+        rospy.loginfo("%s: ...done", name)
+
         # Starting server
         rospy.loginfo("%s: Starting action server", name)
         self._as = actionlib.SimpleActionServer(self._action_name, strands_interaction_behaviours.msg.InteractionEngagedAction, execute_cb= None, auto_start = False)
@@ -51,7 +58,7 @@ class EngagedServer(object):
 
         # tell the webserver where it should look for web files to serve
         #http_root = os.path.join(roslib.packages.get_pkg_dir("strands_webserver"), "data")
-	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
+    	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
         #strands_webserver.client_utils.set_http_root(http_root)
 
 
@@ -73,11 +80,16 @@ class EngagedServer(object):
 
     def preemptCallback(self):
         self.lightsClient.cancel_all_goals()
+        self.exeClient.cancel_all_goals()
         self._as.set_preempted()
 
     def scheduleGame(self, req):
-        rospy.loginfo("STOP AND SCHEDULE TASK")
-        self._as.set_succeeded()
+        goal = memory_game_msgs.msg.PlayMemoryGameGoal()
+        self.exeClient.send_goal_and_wait(goal)
+        if self.exeClient.get_result() == actionlib_msgs.msg.GoalStatus.SUCCEEDED and not self.exeClient.is_preempting():
+            self._as.set_succeeded()
+        else:
+            self._as.set_abborted()
 
     def showInfo(self, req):
 	page = 'strands-aaf-info1.html'
@@ -91,7 +103,9 @@ class EngagedServer(object):
         goal = ros_mary_tts.msg.maryttsGoal()
         goal.text = "Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen."
         self.lightsClient.send_goal_and_wait(goal)
-	
+        rospy.sleep(rospy.Duration(240))
+        self._as.set_preempted()
+
 	#self._as.set_succeeded()
 
 if __name__ == '__main__':
