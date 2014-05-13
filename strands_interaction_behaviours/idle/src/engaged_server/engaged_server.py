@@ -69,7 +69,7 @@ class EngagedServer(object):
         goal.text = "Hallo, Ich bin der Henry!"
         self.maryClient.send_goal(goal)
         goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Möchtest du mehr über mich erfahren oder mit mir spielen?"
+        goal.text = "Möchtest du mehr über mich erfahren?" # oder mit mir spielen?"
         self.maryClient.send_goal(goal)
         # Build page
         name = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Was möchtest du tun?</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
@@ -96,7 +96,7 @@ class EngagedServer(object):
         page = 'strands-aaf-info1.html'
         strands_webserver.client_utils.display_relative_page(self.display_no, page)
         goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Ich bin Henry, der Strands Roboter"
+        goal.text = "Ich bin Henry, der Roboter"
         self.maryClient.send_goal_and_wait(goal)
         goal = ros_mary_tts.msg.maryttsGoal()
         goal.text = "Ich werde in einem EU-Forschungsprojekt entwickelt."
@@ -104,6 +104,9 @@ class EngagedServer(object):
         goal = ros_mary_tts.msg.maryttsGoal()
         goal.text = "Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen."
         self.maryClient.send_goal_and_wait(goal)
+	goal = ros_mary_tts.msg.maryttsGoal()
+	goal.text = "Dafür werde ich im Haus der Barmherzigkeit getestet."
+	self.maryClient.send_goal_and_wait(goal)
         #rospy.sleep(rospy.Duration(240))
         #self._as.set_preempted()
 
