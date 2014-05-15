@@ -1,17 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import roslib
 import rospy
 import actionlib
 import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
 import flir_pantilt_d46.msg
 import std_srvs.srv
-import strands_webserver.client_utils
-import strands_webserver.page_utils
 #import y1_interfaces.page_utils
 import std_msgs.msg
+import strands_webserver.client_utils
+
 
 class IdleBehaviour(object):
 # create messages that are used to publish feedback/result
@@ -53,7 +52,7 @@ class IdleBehaviour(object):
         rospy.Service(name+'/engage', std_srvs.srv.Empty, self.engage)
 
     def exCallback(self, goal):
-        self.createPage()
+        #self.createPage()
         rospy.loginfo("Created page")
     	self.turnPTU(-180)
         rospy.loginfo("Turned PTU")
@@ -62,17 +61,18 @@ class IdleBehaviour(object):
         self.bsClient.send_goal(idle_goal)
         self.bsClient.wait_for_result()
         self.turnPTU(0)
-        self.createPage()
+        #self.createPage()
         if self.bsClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
             self._as.set_aborted()
 
 	#Setting http root
-	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
+	#strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
 
     def preemptCallback(self):
         self.bsClient.cancel_all_goals()
+        strands_webserver.client_utils.display_relative_page(self.display_no, 'index.html')
         self._as.set_preempted()
 
     def turnPTU(self, pan):
@@ -82,14 +82,6 @@ class IdleBehaviour(object):
         goal.pan_vel = 60
         goal.tilt_vel = 0
         self.ptuClient.send_goal_and_wait(goal)
-
-    def createPage(self):
-
-        left_html = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Hallo, ich bin der Henry!</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
-        buttons = [('Drück mich!', 'engage')]
-        service_prefix = '/idle_behaviour'
-        content = strands_webserver.page_utils.generate_alert_button_page(left_html, buttons, service_prefix)
-        strands_webserver.client_utils.display_content(self.display_no, content)
 
     def engage(self,req):
         rospy.loginfo("Engage button pressed")

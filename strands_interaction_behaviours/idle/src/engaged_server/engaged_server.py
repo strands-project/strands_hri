@@ -58,7 +58,7 @@ class EngagedServer(object):
 
         # tell the webserver where it should look for web files to serve
         #http_root = os.path.join(roslib.packages.get_pkg_dir("strands_webserver"), "data")
-    	strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
+        #strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
         #strands_webserver.client_utils.set_http_root(http_root)
 
 
@@ -83,7 +83,6 @@ class EngagedServer(object):
         rospy.loginfo("Action is being preempted")
         self.maryClient.cancel_all_goals()
         #self.exeClient.cancel_all_goals()
-        strands_webserver.client_utils.display_relative_page(self.display_no, 'index.html')
         self._as.set_preempted()
 
     #def scheduleGame(self, req):
@@ -97,18 +96,16 @@ class EngagedServer(object):
     def showInfo(self, req):
         page = 'strands-aaf-info1.html'
         strands_webserver.client_utils.display_relative_page(self.display_no, page)
+        sentence = {"Ich bin Henry, der Roboter",
+                    "Ich werde in einem EU-Forschungsprojekt entwickelt.",
+                    "Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen.",
+                    "Dafür werde ich im Haus der Barmherzigkeit getestet."
+                    }
         goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Ich bin Henry, der Roboter"
-        self.maryClient.send_goal_and_wait(goal)
-        goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Ich werde in einem EU-Forschungsprojekt entwickelt."
-        self.maryClient.send_goal_and_wait(goal)
-        goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen."
-        self.maryClient.send_goal_and_wait(goal)
-	goal = ros_mary_tts.msg.maryttsGoal()
-	goal.text = "Dafür werde ich im Haus der Barmherzigkeit getestet."
-	self.maryClient.send_goal_and_wait(goal)
+        for x in sentence:
+            if self._as.is_active():
+                goal.text = x
+                self.maryClient.send_goal_and_wait(goal)
         #rospy.sleep(rospy.Duration(240))
         #self._as.set_preempted()
 
