@@ -71,7 +71,7 @@ class EngagedServer(object):
         goal = ros_mary_tts.msg.maryttsGoal()
         goal.text = "Möchtest du mehr über mich erfahren?" # oder mit mir spielen?"
         self.maryClient.send_goal(goal)
-        # Build page
+        # Build pagec
         name = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Was möchtest du tun?</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
         #buttons = [('Ein Spiel spielen', 'schedule_game'), ('Erzähl mir von dir', 'show_info')]
         buttons = [('Erzähl mir von dir', 'show_info')]
@@ -80,8 +80,10 @@ class EngagedServer(object):
         strands_webserver.client_utils.display_content(self.display_no, content)
 
     def preemptCallback(self):
+        rospy.loginfo("Action is being preempted")
         self.maryClient.cancel_all_goals()
         #self.exeClient.cancel_all_goals()
+        strands_webserver.client_utils.display_relative_page(self.display_no, 'index.html')
         self._as.set_preempted()
 
     #def scheduleGame(self, req):
