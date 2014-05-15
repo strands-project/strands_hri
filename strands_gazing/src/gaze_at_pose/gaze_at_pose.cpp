@@ -142,9 +142,9 @@ void GazeAtPose::transform() {
                 }
 
                 head_pose_pub.publish(state);
-                r.sleep();
             }
         }
+	r.sleep();
     }
 }
 
