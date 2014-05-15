@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#import roslib
 import rospy
 import actionlib
 import strands_interaction_behaviours.msg
@@ -8,6 +9,8 @@ import strands_gazing.msg
 import geometry_msgs.msg
 import std_msgs.msg
 import actionlib_msgs.msg
+import strands_webserver.client_utils
+import strands_webserver.page_utils
 
 import thread
 
@@ -25,6 +28,7 @@ class BehaviourSwitch(object):
         self.people_closest_topic = rospy.get_param("~people_closest_topic", '/upper_body_detector/closest_bounding_box_centre')
         engage_topic = rospy.get_param("~engage_topic", '/engagement_checker/engaged')
         self.eng_timeout = rospy.get_param("~engage_timeout", 120)
+        self.display_no = rospy.get_param("~display", 0)
 
         # Gaze client
         rospy.loginfo("%s: Creating gaze client", name)
@@ -56,15 +60,23 @@ class BehaviourSwitch(object):
         rospy.Subscriber(people_array_topic, geometry_msgs.msg.PoseArray, self.peopleCallback, None, 10)
         rospy.Subscriber(engage_topic, std_msgs.msg.Bool, self.engagementCallback, None, 10)
 
-
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
-        rospy.logdebug("Received goal:\n%s",self._goal)
+        rospy.loginfo("Received goal:\n%s",self._goal)
         current_time = rospy.get_time()
         self.end_time = current_time + self._goal.runtime_seconds if self._goal.runtime_seconds > 0 else -1.0
         self.engaged = False
         if self.end_time != -1.0:
             thread.start_new_thread(self.checkTime,())
+        self.createPage()
+
+    def createPage(self):
+        rospy.loginfo("Create page")
+        left_html = '<div id="logo-left" style="height:500px;width:300px;float:left;"><img src="strands-logo.png" width=300px"></div><center><p><b>Hallo, ich bin der Henry!</b></p></centre><div id="footer" style="text-align:center;font-size:75%;"><img src="aaf-logo.png" style="float:center"></div>'
+        buttons = [('Drück mich!', 'engage')]
+        service_prefix = '/idle_behaviour'
+        content = strands_webserver.page_utils.generate_alert_button_page(left_html, buttons, service_prefix)
+        strands_webserver.client_utils.display_content(self.display_no, content)
 
     def preemptCallback(self):
         rospy.logdebug("Preempting current goal:\n%s",self._goal)
@@ -117,6 +129,7 @@ class BehaviourSwitch(object):
             else:
                 rospy.loginfo("Engagement NOT success")
                 self.engaged = False
+                self.createPage()
 
     def killAll(self):
         self.idleClient.cancel_all_goals()
