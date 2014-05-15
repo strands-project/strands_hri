@@ -96,11 +96,11 @@ class EngagedServer(object):
     def showInfo(self, req):
         page = 'strands-aaf-info1.html'
         strands_webserver.client_utils.display_relative_page(self.display_no, page)
-        sentence = {"Ich bin Henry, der Roboter",
-                    "Ich werde in einem EU-Forschungsprojekt entwickelt.",
-                    "Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen.",
-                    "Dafür werde ich im Haus der Barmherzigkeit getestet."
-                    }
+        sentence = []
+        sentence.append("Ich bin Henry, der Roboter")
+        sentence.append("Ich werde in einem EU-Forschungsprojekt entwickelt.")
+        sentence.append("Ziel ist es, für Sicherheit und Unterstützung im Arbeitsalltag zu sorgen.")
+        sentence.append("Dafür werde ich im Haus der Barmherzigkeit getestet.")
         goal = ros_mary_tts.msg.maryttsGoal()
         for x in sentence:
             if self._as.is_active():
