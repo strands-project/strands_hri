@@ -1,0 +1,16 @@
+<!doctype html>
+<title>Hello from Flask</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#speak').click(function() {
+        data = $('input[name="text"]').val();
+        $.getJSON('speak',{data:data});
+    });
+});
+</script>
+<h1>Speak client</h1>
+<form action="/speak" method="post">
+ <input type="text" id="text" name="text"></input>
+ <input  type="button" id="speak" value="speak" />
+</form>
