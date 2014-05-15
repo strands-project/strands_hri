@@ -116,12 +116,14 @@ class BehaviourSwitch(object):
     def engagementCallback(self, eng):
         if not self._as.is_active() or self.engaged:
             return
-        if eng.data == True:
+        if eng.data:
             self.engaged = True
             self.setGaze('person')
             rospy.loginfo("Engaged")
             goal = strands_interaction_behaviours.msg.InteractionEngagedGoal()
             self.engageClient.send_goal_and_wait(goal,execute_timeout=rospy.Duration(self.eng_timeout))
+            if not self._as.is_active():
+                return
             if self.engageClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
                 rospy.loginfo("Engagement success")
                 self.killAll()
