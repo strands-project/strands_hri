@@ -4,6 +4,8 @@ light control from the strands_visualise_speech package (see package for detaile
 forwards the sent text to mary while also running the sound_to_light action server to visualise the speech output. 
 After the sent text has been uttered the lights are switched back to the spinning behaviour until a new text is received.
 
+
+
 ### Usage:
 * `roslaunch strands_hri_launch speech.launch`: this launches mary, the sound_to_light server and the visualise_speech 
 server.
@@ -13,3 +15,6 @@ server.
  * After the text has been uttered the lights will go back to the spinning behaviour.
 
 _Cannot be run remotely. Needs to access the robots hardware_
+
+### Speak Web Service
+Another tool is an AJAX webservice to amke the robot speak for demos. Just `rosrun strands_hri_utils webserver.py` and the `roslaunch strands_hri_launch speech.launch`, and then connect to port 8080 on the robot to have a simple to use interface.
