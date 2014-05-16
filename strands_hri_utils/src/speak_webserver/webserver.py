@@ -7,13 +7,15 @@ import roslib
 import rospy
 import actionlib
 import ros_mary_tts.msg
+import ros_datacentre.srv
 
 roslib.load_manifest('strands_hri_utils')
 
 app = Flask(__name__)
 
 
-param_prefix = '~speak_lines/'
+node_name = 'speak_webserver'
+param_prefix = '/' + node_name + '/speak_lines/'
 
 
 def get_param_key(n):
@@ -21,7 +23,7 @@ def get_param_key(n):
 
 
 def get_id_str(n):
-    return 'id'+str(n+1)
+    return 'id' + str(n + 1)
 
 
 def generate_lines(n):
@@ -33,7 +35,7 @@ def generate_lines(n):
         if rospy.has_param(idp):
             sl = rospy.get_param(idp)
         else:
-            sl = 'Test ' + str(i+1)
+            sl = 'Test ' + str(i + 1)
         lines.append({'id': idv, 'value': sl})
     return lines
 
@@ -41,6 +43,13 @@ def generate_lines(n):
 def save_line(id_value, text_value):
     rospy.loginfo('store ros param for ' + id_value + ' as ' + text_value)
     rospy.set_param(param_prefix + id_value, text_value)
+    try:
+        save_service = rospy.ServiceProxy(
+            '/config_manager/save_param', ros_datacentre.srv.SetParam)
+        if not save_service.call(param_prefix + id_value):
+            rospy.logwarn('couldn\'t store config in ros_datacentre')
+    except:
+        rospy.logwarn('couldn\'t access the ros_datacentre service')
 
 
 @app.route("/")
@@ -73,5 +82,5 @@ def speak():
 
 
 if __name__ == "__main__":
-    rospy.init_node('speak_webserver')
+    rospy.init_node(node_name)
     app.run(host='0.0.0.0', port=8080, use_reloader=False, debug=True)
