@@ -44,8 +44,8 @@ def save_line(id_value, text_value):
 
 
 @app.route("/")
-def hello():
-    l = generate_lines(5)
+def main_page():
+    l = generate_lines(15)
     return render_template('index.html', lines=l)
 
 

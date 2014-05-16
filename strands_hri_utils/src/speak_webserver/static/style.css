@@ -1,5 +1,5 @@
 body { background: #eee; }
-body, input, button, select, option, textarea { font-family: sans-serif; font-size: 120%;}
+body, input, button, select, option, textarea { font-family: sans-serif; font-size: 110%;}
 a, h1, h2       { color: #377BA8; }
 /*h1, h2          { font-family: 'Georgia', serif; margin: 0; }*/
 h1              { border-bottom: 2px solid #eee; }

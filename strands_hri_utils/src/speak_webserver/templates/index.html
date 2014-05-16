@@ -5,7 +5,6 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 </head>
-
 <body>
 <script type="text/javascript">
 $(document).ready(function() {
@@ -24,7 +23,9 @@ $(document).ready(function() {
 });
 </script>
 
-<h1>Speak client</h1>
+<h1>STRANDS Speak client</h1>
+<h3>Status:</h3> <div id="status">Status</div>
+<h3>Utterances</h3>
 <ul>
 {% for line in lines %}
   <li>
@@ -35,6 +36,5 @@ $(document).ready(function() {
   </li>
 {% endfor %}
 </ul>
-<h3>Status:</h3> <div id="status">Status</div>
 </body>
 </html>
