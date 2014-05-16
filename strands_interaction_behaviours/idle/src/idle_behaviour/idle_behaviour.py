@@ -7,7 +7,7 @@ import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
 import flir_pantilt_d46.msg
 import std_srvs.srv
-#import y1_interfaces.page_utils
+import ros_mary_tts.msg
 import std_msgs.msg
 import strands_webserver.client_utils
 
@@ -41,9 +41,15 @@ class IdleBehaviour(object):
         self.ptuClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
+        # Mary client
+        rospy.loginfo("%s: Creating mary client", name)
+        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        self.maryClient.wait_for_server()
+        rospy.loginfo("%s: ...done", name)
+
         # Starting server
         rospy.loginfo("%s: Starting action server", name)
-        self._as = actionlib.SimpleActionServer(self._action_name, strands_interaction_behaviours.msg.IdleBehaviourAction, execute_cb=self.exCallback, auto_start = False)
+        self._as = actionlib.SimpleActionServer(self._action_name, strands_interaction_behaviours.msg.IdleBehaviourAction, execute_cb=self.exCallback, auto_start=False)
         self._as.register_preempt_callback(self.preemptCallback)
         self._as.start()
         rospy.loginfo("%s: ...done.", name)
@@ -52,27 +58,25 @@ class IdleBehaviour(object):
         rospy.Service(name+'/engage', std_srvs.srv.Empty, self.engage)
 
     def exCallback(self, goal):
-        #self.createPage()
         rospy.loginfo("Created page")
-    	self.turnPTU(-180)
+        self.turnPTU(-180)
         rospy.loginfo("Turned PTU")
         idle_goal = strands_interaction_behaviours.msg.BehaviourSwitchGoal()
         idle_goal.runtime_seconds = self.runtime
         self.bsClient.send_goal(idle_goal)
         self.bsClient.wait_for_result()
         self.turnPTU(0)
-        #self.createPage()
+        strands_webserver.client_utils.display_relative_page(self.display_no, 'index.html')
+        goal = ros_mary_tts.msg.maryttsGoal()
+        goal.text = "Achtung! Ich mache mich wieder auf den Weg. Bis bald."
+        self.maryClient.send_goal_and_wait(goal)
         if self.bsClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
             self._as.set_aborted()
 
-	#Setting http root
-	#strands_webserver.client_utils.set_http_root(roslib.packages.get_pkg_dir('y1_interfaces') + '/www')
-
     def preemptCallback(self):
         self.bsClient.cancel_all_goals()
-        strands_webserver.client_utils.display_relative_page(self.display_no, 'index.html')
         self._as.set_preempted()
 
     def turnPTU(self, pan):
@@ -83,7 +87,7 @@ class IdleBehaviour(object):
         goal.tilt_vel = 0
         self.ptuClient.send_goal_and_wait(goal)
 
-    def engage(self,req):
+    def engage(self, req):
         rospy.loginfo("Engage button pressed")
         a = std_msgs.msg.Bool()
         a.data = True
@@ -93,4 +97,3 @@ if __name__ == '__main__':
     rospy.init_node('idle_behaviour')
     IdleBehaviour(rospy.get_name())
     rospy.spin()
-
