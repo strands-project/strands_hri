@@ -59,7 +59,7 @@ def speak():
     rospy.loginfo('trying to say "' + text_value + '"')
     rospy.loginfo('waiting for say server')
     client = actionlib.SimpleActionClient(
-        '/speak', ros_mary_tts.msg.maryttsAction)
+        '/visual_speech', ros_mary_tts.msg.maryttsAction)
 
     client.wait_for_server()
     g = ros_mary_tts.msg.maryttsGoal()
