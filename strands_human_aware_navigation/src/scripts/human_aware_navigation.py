@@ -110,8 +110,8 @@ class DynamicVelocityReconfigure():
             rot_speed = factor * self.fast_param['max_rot_vel']
             rot_speed = round(rot_speed, 2)
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
-            if not trans_speed == self.fast_param['max_vel_x'] and not rot_speed == self.fast_param['max_rot_vel']:
-                self.slow_param = {'max_vel_x' : trans_speed, 'max_trans_vel' : trans_speed, 'max_rot_vel' : rot_speed}
+            if not trans_speed == self.fast_param['max_vel_x']:  # and not rot_speed == self.fast_param['max_rot_vel']:
+                self.slow_param = {'max_vel_x': trans_speed, 'max_trans_vel': trans_speed}  #, 'max_rot_vel' : rot_speed}
                 try:
                     print 'making it slow'
                     self.client.update_configuration(self.slow_param)
