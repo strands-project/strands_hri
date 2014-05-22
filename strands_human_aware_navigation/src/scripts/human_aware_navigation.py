@@ -49,30 +49,27 @@ class DynamicVelocityReconfigure():
         rospy.loginfo(" ...done")
         sub_topic = rospy.get_param("~pedestrian_locations", '/pedestrian_localisation/localisations')
         rospy.Subscriber(sub_topic, PedestrianLocations, self.pedestrianCallback, None, 5)
-        
+
         self.last_cancel_time=rospy.Time(0)
         rospy.Subscriber("/human_aware_navigation/cancel" , actionlib_msgs.msg.GoalID, self.cancel_time_checker_cb)
-        
-        
-        
+
     def cancel_time_checker_cb(self,msg):
         self.last_cancel_time=rospy.get_rostime()
-        
 
     def getCurrentSettings(self):
-        max_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
-        max_trans_vel = round(rospy.get_param("/move_base/DWAPlannerROS/max_trans_vel"),2)
-        max_rot_vel = round(rospy.get_param("/move_base/DWAPlannerROS/max_rot_vel"), 2)
-        min_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/min_vel_x"), 2)
-        min_trans_vel = round(rospy.get_param("/move_base/DWAPlannerROS/min_trans_vel"),2)
-        min_rot_vel = round(rospy.get_param("/move_base/DWAPlannerROS/min_rot_vel"), 2)
+        max_vel_x = 0.55 #round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
+        max_trans_vel = 0.55 #round(rospy.get_param("/move_base/DWAPlannerROS/max_trans_vel"),2)
+        max_rot_vel = 1.0 #round(rospy.get_param("/move_base/DWAPlannerROS/max_rot_vel"), 2)
+        min_vel_x = 0.0 #round(rospy.get_param("/move_base/DWAPlannerROS/min_vel_x"), 2)
+        min_trans_vel = 0.1 #round(rospy.get_param("/move_base/DWAPlannerROS/min_trans_vel"),2)
+        min_rot_vel = 0.4 #round(rospy.get_param("/move_base/DWAPlannerROS/min_rot_vel"), 2)
         self.fast_param = {
-            'max_vel_x' : max_vel_x,
-            'max_trans_vel' : max_trans_vel,
-            'max_rot_vel' : max_rot_vel,
-            'min_vel_x' : min_vel_x,
-            'min_trans_vel' : min_trans_vel,
-            'min_rot_vel' : min_rot_vel
+            'max_vel_x': max_vel_x,
+            'max_trans_vel': max_trans_vel,
+            'max_rot_vel': max_rot_vel,
+            'min_vel_x': min_vel_x,
+            'min_trans_vel': min_trans_vel,
+            'min_rot_vel': min_rot_vel
         }
         #rospy.loginfo("Found following default values for move_base: %s", self.fast_param)
 
@@ -151,7 +148,7 @@ class DynamicVelocityReconfigure():
             self.gazeClient.cancel_all_goals()
             self.resetSpeed()
         self._as.set_preempted()
-        
+
 
     def moveBaseThread(self,goal):
         ret = self.moveBase(goal)
@@ -166,14 +163,14 @@ class DynamicVelocityReconfigure():
         rospy.logdebug('Moving robot to goal: %s', goal)
         self.baseClient.send_goal(goal, feedback_cb=self.moveBaseFeedbackCallback)
         status= self.baseClient.get_state()
-        while status==actionlib_msgs.msg.GoalStatus.PENDING or status==actionlib_msgs.msg.GoalStatus.ACTIVE:   
+        while status==actionlib_msgs.msg.GoalStatus.PENDING or status==actionlib_msgs.msg.GoalStatus.ACTIVE:
             status= self.baseClient.get_state()
             self.baseClient.wait_for_result(rospy.Duration(0.2))
             self.result = self.baseClient.get_result()
             if self._as.is_preempt_requested():
                 self.preemptCallback()
                 break
-                
+
         if self.baseClient.get_state() != actionlib_msgs.msg.GoalStatus.SUCCEEDED and self.baseClient.get_state() != actionlib_msgs.msg.GoalStatus.PREEMPTED:
             return False
 
