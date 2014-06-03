@@ -60,11 +60,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+#add_service_files(
+  #FILES
+  #NHMButtonService.srv
+#)
 
 add_action_files(
   DIRECTORY action
