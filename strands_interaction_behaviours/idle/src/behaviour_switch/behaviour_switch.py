@@ -68,7 +68,7 @@ class BehaviourSwitch(object):
         self.engaged = False
         if self.end_time != -1.0:
             thread.start_new_thread(self.checkTime,())
-        self.createPage()
+        #self.createPage()
 
     #def createPage(self):
         #rospy.loginfo("Create page")
