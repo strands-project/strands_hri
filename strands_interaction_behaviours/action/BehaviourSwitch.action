@@ -1,5 +1,7 @@
 #goal definition
 int32 runtime_seconds
+bool speak
+bool look
 ---
 #result definition
 ---

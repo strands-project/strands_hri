@@ -7,7 +7,7 @@ import actionlib
 import strands_interaction_behaviours.msg
 import strands_gazing.msg
 import geometry_msgs.msg
-import std_msgs.msg
+#import std_msgs.msg
 #import actionlib_msgs.msg
 #import strands_webserver.client_utils
 #import strands_webserver.page_utils
@@ -101,14 +101,16 @@ class BehaviourSwitch(object):
             goal = strands_gazing.msg.GazeAtPoseGoal
             goal.topic_name = self.people_closest_topic
             goal.runtime_sec = 0
-            print 'goal:', goal
+            #print 'goal:', goal
             self.gazeClient.send_goal(goal)
             self._feedback.person_found = True
             self.mode = -1
         elif target == 'idle':
             goal = strands_interaction_behaviours.msg.InteractionIdleGoal
             goal.runtime_seconds = 0
-            print 'goal:', goal
+            goal.look = self._goal.look
+            goal.speak = self._goal.speak
+            #print 'goal:', goal
             self.idleClient.send_goal(goal)
             self._feedback.person_found = False
             self.mode = 1

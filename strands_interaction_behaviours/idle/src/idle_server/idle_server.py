@@ -73,7 +73,7 @@ class IdleServer(object):
             rospy.logerr("Desired dialogue options'"+dialogue_name+"' not in datacentre")
             raise Exception("Can't find dialogue.")
 
-        else :
+        else:
             message_list = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
 
             sentences = []
@@ -140,20 +140,21 @@ class IdleServer(object):
         self.maryClient.send_goal(mary_goal)
         self.maryClient.wait_for_result()
 
-
     def idle_behaviour(self):
         while self._as.is_active():
             self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else -1
-            if self.look_trigger == 0:
-                thread.start_new_thread(self.look,())
-                self.look_trigger = randint(10,20)
-            self.look_trigger -= 1
-            self._feedback.next_look = self.look_trigger
-            if self.speak_trigger == 0:
-                thread.start_new_thread(self.speak,())
-                self.speak_trigger = randint(60,120)
-            self.speak_trigger -= 1
-            self._feedback.next_speak = self.speak_trigger
+            if self._goal.look:
+                if self.look_trigger == 0:
+                    thread.start_new_thread(self.look,())
+                    self.look_trigger = randint(10,20)
+                self.look_trigger -= 1
+                self._feedback.next_look = self.look_trigger
+            if self._goal.speak:
+                if self.speak_trigger == 0:
+                    thread.start_new_thread(self.speak,())
+                    self.speak_trigger = randint(60,120)
+                self.speak_trigger -= 1
+                self._feedback.next_speak = self.speak_trigger
             self._as.publish_feedback(self._feedback)
             rospy.sleep(1)
             if rospy.get_time() > self.end_time and self.end_time > 0:
