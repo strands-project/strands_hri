@@ -9,6 +9,7 @@ import thread
 import actionlib_msgs.msg
 import strands_gazing.msg
 
+
 class DynamicVelocityReconfigure():
     "A calss to reconfigure the velocity of the DWAPlannerROS."
 
@@ -111,6 +112,10 @@ class DynamicVelocityReconfigure():
             rot_speed = round(rot_speed, 2)
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
             if not trans_speed == self.fast_param['max_vel_x']:  # and not rot_speed == self.fast_param['max_rot_vel']:
+                gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
+                gaze_goal.runtime_sec = 0
+                gaze_goal.topic_name = "/upper_body_detector/closest_bounding_box_centre"
+                self.gazeClient.send_goal(gaze_goal)
                 self.slow_param = {'max_vel_x': trans_speed, 'max_trans_vel': trans_speed}  #, 'max_rot_vel' : rot_speed}
                 try:
                     print 'making it slow'
@@ -123,6 +128,10 @@ class DynamicVelocityReconfigure():
         elif rospy.get_time() > self.timeout:
             rospy.logdebug("Not found any pedestrians:")
             if not self.fast:
+                gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
+                gaze_goal.runtime_sec = 0
+                gaze_goal.topic_name = "/pose_extractor/pose"
+                self.gazeClient.send_goal(gaze_goal)
                 self.resetSpeed()
                 self.fast = True
             else:
@@ -134,10 +143,6 @@ class DynamicVelocityReconfigure():
         self.getCurrentSettings()
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
-        gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
-        gaze_goal.runtime_sec = 0
-        gaze_goal.topic_name = "/pose_extractor/pose"
-        self.gazeClient.send_goal(gaze_goal)
         #thread.start_new_thread(self.moveBaseThread,(self._goal,))
         self.moveBaseThread(self._goal)
 
