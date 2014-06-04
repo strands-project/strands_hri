@@ -63,6 +63,7 @@ class BehaviourSwitch(object):
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
         rospy.loginfo("Received goal:\n%s",self._goal)
+        self.mode = 0
         current_time = rospy.get_time()
         self.end_time = current_time + self._goal.runtime_seconds if self._goal.runtime_seconds > 0 else -1.0
         self.engaged = False

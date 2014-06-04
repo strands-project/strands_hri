@@ -140,6 +140,10 @@ class DynamicVelocityReconfigure():
     def goalCallback(self,goal):
         #self._goal = self._as.accept_new_goal()
         self._goal=goal
+        gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
+        gaze_goal.runtime_sec = 0
+        gaze_goal.topic_name = "/pose_extractor/pose"
+        self.gazeClient.send_goal(gaze_goal)
         self.getCurrentSettings()
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
@@ -153,7 +157,6 @@ class DynamicVelocityReconfigure():
             self.gazeClient.cancel_all_goals()
             self.resetSpeed()
         self._as.set_preempted()
-
 
     def moveBaseThread(self,goal):
         ret = self.moveBase(goal)
