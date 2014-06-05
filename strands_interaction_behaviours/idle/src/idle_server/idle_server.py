@@ -10,6 +10,7 @@ import ros_mary_tts.msg
 import strands_gazing.msg
 from ros_datacentre.message_store import MessageStoreProxy
 #import strands_hri_utils.msg
+import std_msgs.msg
 
 import thread
 from random import randint
@@ -33,6 +34,7 @@ class IdleServer(object):
 
         # Publishers and subscribers
         self.pose_pub = rospy.Publisher(self.head_topic,geometry_msgs.msg.PoseStamped)
+        self.speak_pub = rospy.Publisher("/nhm/speak", std_msgs.msg.String, latch=True)
 
     	# Mary client
         rospy.loginfo("%s: Creating mary client", name)
@@ -136,6 +138,7 @@ class IdleServer(object):
         rospy.logdebug("Speak")
         mary_goal = ros_mary_tts.msg.maryttsGoal
         sentence = self.sentences[randint(0, len(self.sentences)-1)]
+        self.speak_pub.publish(sentence)
         mary_goal.text = sentence
         self.maryClient.send_goal(mary_goal)
         self.maryClient.wait_for_result()
