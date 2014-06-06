@@ -109,7 +109,10 @@ class IdleServer(object):
         pose.pose.position.x = uniform(2.5,3.5)
         pose.pose.position.y = uniform(0.28,0.32)
         pose.pose.position.z = 5.0
-        pose.pose.orientation.w = 1
+        pose.pose.orientation.x = 0.542
+        pose.pose.orientation.y = 0.541
+        pose.pose.orientation.z = -0.455
+        pose.pose.orientation.w = 0.454
         if self._as.is_active():
             self.pose_pub.publish(pose)
         rospy.sleep(3)
@@ -119,7 +122,10 @@ class IdleServer(object):
         pose.pose.position.x = -uniform(2.5,3.5)
         pose.pose.position.y = uniform(0.28,0.32)
         pose.pose.position.z = 5.0
-        pose.pose.orientation.w = 1
+        pose.pose.orientation.x = 0.542
+        pose.pose.orientation.y = 0.541
+        pose.pose.orientation.z = -0.455
+        pose.pose.orientation.w = 0.454
         if self._as.is_active():
             self.pose_pub.publish(pose)
         rospy.sleep(3)
@@ -129,7 +135,10 @@ class IdleServer(object):
         pose.pose.position.x = 0.0
         pose.pose.position.y = 0.3
         pose.pose.position.z = 5.0
-        pose.pose.orientation.w = 1
+        pose.pose.orientation.x = 0.542
+        pose.pose.orientation.y = 0.541
+        pose.pose.orientation.z = -0.455
+        pose.pose.orientation.w = 0.454
         if self._as.is_active():
             self.pose_pub.publish(pose)
         rospy.sleep(3)
