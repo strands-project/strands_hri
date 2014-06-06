@@ -107,8 +107,8 @@ class IdleServer(object):
         pose.header.seq = self.seq
         self.seq += 1
         pose.pose.position.x = 10
-        pose.pose.position.y = uniform(5, 10)
-        pose.pose.position.z = 0
+        pose.pose.position.z = uniform(5, 10)
+        pose.pose.position.y = 0
         pose.pose.orientation.w = 1
         if self._as.is_active():
             self.pose_pub.publish(pose)
@@ -117,8 +117,8 @@ class IdleServer(object):
         pose.header.seq = self.seq
         self.seq += 1
         pose.pose.position.x = 10
-        pose.pose.position.y = -uniform(5, 10)
-        pose.pose.position.z = 0
+        pose.pose.position.z = -uniform(5, 10)
+        pose.pose.position.y = 0
         pose.pose.orientation.w = 1
         if self._as.is_active():
             self.pose_pub.publish(pose)
@@ -127,8 +127,8 @@ class IdleServer(object):
         pose.header.seq = self.seq
         self.seq += 1
         pose.pose.position.x = 10.0
-        pose.pose.position.y = 0.0
         pose.pose.position.z = 0.0
+        pose.pose.position.y = 0.0
         pose.pose.orientation.w = 1
         if self._as.is_active():
             self.pose_pub.publish(pose)
