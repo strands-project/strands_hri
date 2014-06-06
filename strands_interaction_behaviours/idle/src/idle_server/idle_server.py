@@ -102,7 +102,7 @@ class IdleServer(object):
     def look(self):
         rospy.logdebug("Execute: Look around")
         pose = geometry_msgs.msg.PoseStamped()
-        pose.header.frame_id = '/head_xtion_depth_optical_frame'
+        pose.header.frame_id = '/ptu_pan_motor'
         pose.header.stamp = rospy.Time.now()
         pose.header.seq = self.seq
         self.seq += 1
