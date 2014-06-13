@@ -10,6 +10,7 @@ import ros_mary_tts.msg
 import strands_gazing.msg
 from ros_datacentre.message_store import MessageStoreProxy
 #import strands_hri_utils.msg
+import std_msgs.msg
 
 import thread
 from random import randint
@@ -33,6 +34,7 @@ class IdleServer(object):
 
         # Publishers and subscribers
         self.pose_pub = rospy.Publisher(self.head_topic,geometry_msgs.msg.PoseStamped)
+        self.speak_pub = rospy.Publisher("/nhm/speak", std_msgs.msg.String, latch=True)
 
     	# Mary client
         rospy.loginfo("%s: Creating mary client", name)
@@ -73,7 +75,7 @@ class IdleServer(object):
             rospy.logerr("Desired dialogue options'"+dialogue_name+"' not in datacentre")
             raise Exception("Can't find dialogue.")
 
-        else :
+        else:
             message_list = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
 
             sentences = []
@@ -100,13 +102,13 @@ class IdleServer(object):
     def look(self):
         rospy.logdebug("Execute: Look around")
         pose = geometry_msgs.msg.PoseStamped()
-        pose.header.frame_id = '/head_xtion_depth_optical_frame'
+        pose.header.frame_id = '/ptu_tilt_motor'
         pose.header.stamp = rospy.Time.now()
         pose.header.seq = self.seq
         self.seq += 1
-        pose.pose.position.x = uniform(2.5,3.5)
-        pose.pose.position.y = uniform(0.28,0.32)
-        pose.pose.position.z = 5.0
+        pose.pose.position.x = 10
+        pose.pose.position.z = uniform(5, 10)
+        pose.pose.position.y = 0
         pose.pose.orientation.w = 1
         if self._as.is_active():
             self.pose_pub.publish(pose)
@@ -114,9 +116,9 @@ class IdleServer(object):
         pose.header.stamp = rospy.Time.now()
         pose.header.seq = self.seq
         self.seq += 1
-        pose.pose.position.x = -uniform(2.5,3.5)
-        pose.pose.position.y = uniform(0.28,0.32)
-        pose.pose.position.z = 5.0
+        pose.pose.position.x = 10
+        pose.pose.position.z = -uniform(5, 10)
+        pose.pose.position.y = 0
         pose.pose.orientation.w = 1
         if self._as.is_active():
             self.pose_pub.publish(pose)
@@ -124,9 +126,9 @@ class IdleServer(object):
         pose.header.stamp = rospy.Time.now()
         pose.header.seq = self.seq
         self.seq += 1
-        pose.pose.position.x = 0.0
-        pose.pose.position.y = 0.3
-        pose.pose.position.z = 5.0
+        pose.pose.position.x = 10.0
+        pose.pose.position.z = 0.0
+        pose.pose.position.y = 0.0
         pose.pose.orientation.w = 1
         if self._as.is_active():
             self.pose_pub.publish(pose)
@@ -136,24 +138,26 @@ class IdleServer(object):
         rospy.logdebug("Speak")
         mary_goal = ros_mary_tts.msg.maryttsGoal
         sentence = self.sentences[randint(0, len(self.sentences)-1)]
+        self.speak_pub.publish(sentence)
         mary_goal.text = sentence
         self.maryClient.send_goal(mary_goal)
         self.maryClient.wait_for_result()
 
-
     def idle_behaviour(self):
         while self._as.is_active():
             self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else -1
-            if self.look_trigger == 0:
-                thread.start_new_thread(self.look,())
-                self.look_trigger = randint(10,20)
-            self.look_trigger -= 1
-            self._feedback.next_look = self.look_trigger
-            if self.speak_trigger == 0:
-                thread.start_new_thread(self.speak,())
-                self.speak_trigger = randint(60,120)
-            self.speak_trigger -= 1
-            self._feedback.next_speak = self.speak_trigger
+            if self._goal.look:
+                if self.look_trigger == 0:
+                    thread.start_new_thread(self.look,())
+                    self.look_trigger = randint(10,20)
+                self.look_trigger -= 1
+                self._feedback.next_look = self.look_trigger
+            if self._goal.speak:
+                if self.speak_trigger == 0:
+                    thread.start_new_thread(self.speak,())
+                    self.speak_trigger = randint(60,120)
+                self.speak_trigger -= 1
+                self._feedback.next_speak = self.speak_trigger
             self._as.publish_feedback(self._feedback)
             rospy.sleep(1)
             if rospy.get_time() > self.end_time and self.end_time > 0:
