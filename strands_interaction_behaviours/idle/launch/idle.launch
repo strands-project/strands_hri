@@ -35,7 +35,7 @@
         <param name="text" value="$(arg text)" type="string"/>
     </node>
 	<node name="idle_behaviour" pkg="strands_interaction_behaviours" type="idle_behaviour.py" output="screen">
-        <param name="runtime" value="$(arg behaviour_runtime)" type="string"/>
+        <param name="runtime" value="$(arg behaviour_runtime)" type="int"/>
         <param name="engage_topic" value="$(arg engage_topic)" type="string"/>
         <param name="look" value="$(arg look)" type="bool"/>
         <param name="speak" value="$(arg speak)" type="bool"/>
