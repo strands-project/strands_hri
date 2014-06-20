@@ -22,6 +22,9 @@ class EngagedServer(object):
         #Getting parameters
         self.runtime = rospy.get_param("~runtime", 0)
         dialogue_option = rospy.get_param("~dialogue_option", "engaged")
+        speaktopic = rospy.get_param("~text", '/nhm/speak')
+
+        self.speak_pub = rospy.Publisher(speaktopic, std_msgs.msg.String, latch=True)
 
         # Mary client
         rospy.loginfo("%s: Creating mary client", name)

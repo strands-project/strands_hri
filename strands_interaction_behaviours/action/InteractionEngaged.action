@@ -1,4 +1,6 @@
 #goal definition
+bool speak
+bool look
 ---
 #result definition
 ---

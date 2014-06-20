@@ -24,7 +24,7 @@ class BehaviourSwitch(object):
         people_array_topic = rospy.get_param("~people_array_topic", '/upper_body_detector/bounding_box_centres')
         self.people_closest_topic = rospy.get_param("~people_closest_topic", '/upper_body_detector/closest_bounding_box_centre')
         engage_topic = rospy.get_param("~engage_topic", '/engagement_checker/engaged')
-        self.eng_timeout = rospy.get_param("~engage_timeout", 120)
+        self.eng_timeout = rospy.get_param("~engage_timeout", 20)
 
         # Gaze client
         rospy.loginfo("%s: Creating gaze client", name)
@@ -109,6 +109,8 @@ class BehaviourSwitch(object):
             self.setGaze('person')
             rospy.loginfo("Engaged")
             goal = strands_interaction_behaviours.msg.InteractionEngagedGoal()
+            goal.look = self._goal.look
+            goal.speak = self._goal.speak
             self.engageClient.send_goal_and_wait(goal,execute_timeout=rospy.Duration(self.eng_timeout))
             if not self._as.is_active():
                 return

@@ -52,7 +52,12 @@ class IdleServer(object):
 
         # Starting server
         rospy.loginfo("%s: Starting action server", name)
-        self._as = actionlib.SimpleActionServer(self._action_name, strands_interaction_behaviours.msg.InteractionIdleAction, execute_cb=None, auto_start = False)
+        self._as = actionlib.SimpleActionServer(
+            self._action_name,
+            strands_interaction_behaviours.msg.InteractionIdleAction,
+            execute_cb=None,
+            auto_start=False
+        )
         self._as.register_goal_callback(self.goalCallback)
         self._as.register_preempt_callback(self.preemptCallback)
         self._as.start()
