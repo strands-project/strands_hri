@@ -41,12 +41,6 @@ class IdleBehaviour(object):
         self.ptuClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
-        # Mary client
-        rospy.loginfo("%s: Creating mary client", name)
-        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
-        self.maryClient.wait_for_server()
-        rospy.loginfo("%s: ...done", name)
-
         # Starting server
         rospy.loginfo("%s: Starting action server", name)
         self._as = actionlib.SimpleActionServer(self._action_name, strands_interaction_behaviours.msg.IdleBehaviourAction, execute_cb=self.exCallback, auto_start=False)
@@ -66,10 +60,6 @@ class IdleBehaviour(object):
         self.bsClient.send_goal(idle_goal)
         self.bsClient.wait_for_result()
         self.turnPTU(0)
-        strands_webserver.client_utils.display_relative_page(self.display_no, 'index.html')
-        goal = ros_mary_tts.msg.maryttsGoal()
-        goal.text = "Achtung! Ich mache mich wieder auf den Weg. Bis bald."
-        self.maryClient.send_goal_and_wait(goal)
         if self.bsClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():

@@ -1,6 +1,5 @@
 <launch>
 	<node name="engagement_checker" pkg="strands_engagement_checker" type="engage_check.py" output="screen"/>
-	<node name="memory_game_executor" pkg="memory_game_executor" type="executor.py" output="screen"/>
 	<node name="idle_server" pkg="strands_interaction_behaviours" type="idle_server.py" output="screen"/>
 	<node name="behaviour_switch" pkg="strands_interaction_behaviours" type="behaviour_switch.py" output="screen"/>
 	<node name="engaged_server" pkg="strands_interaction_behaviours" type="engaged_server.py" output="screen"/>

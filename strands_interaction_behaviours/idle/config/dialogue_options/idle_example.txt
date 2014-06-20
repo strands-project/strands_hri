@@ -1,0 +1,4 @@
+This is some text I could say.
+And even more text.
+Each line should be a different stetment.
+A line is chosen randomly to utter while idling.
