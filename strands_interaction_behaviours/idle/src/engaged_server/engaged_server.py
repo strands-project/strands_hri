@@ -56,7 +56,7 @@ class EngagedServer(object):
         query_meta = {}
         query_meta["hri_dialogue"] = dialogue_name
         if len(msg_store.query(std_msgs.msg.String._type, {}, query_meta)) == 0:
-            rospy.logerr("Desired dialogue options'"+dialogue_name+"' not in datacentre")
+            rospy.logerr("Desired dialogue options '"+dialogue_name+"' not in datacentre")
             raise Exception("Can't find dialogue.")
         else:
             message_list = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
@@ -67,7 +67,7 @@ class EngagedServer(object):
 
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
-        rospy.logdebug("Received goal:\n%s",self._goal)
+        rospy.logdebug("Received goal:\n%s", self._goal)
         self.speak()
 
     def preemptCallback(self):
@@ -88,4 +88,3 @@ if __name__ == '__main__':
     rospy.init_node('engaged_server')
     EngagedServer(rospy.get_name())
     rospy.spin()
-

@@ -32,7 +32,6 @@ class IdleServer(object):
         self.head_topic = rospy.get_param("~head_pose", '/idle_server/head_pose')
         speaktopic = rospy.get_param("~text", '/nhm/speak')
         dialogue_option = rospy.get_param("~dialogue_option", "idle")
-        self.display_no = rospy.get_param("~display", 0)
 
         # Publishers and subscribers
         self.pose_pub = rospy.Publisher(self.head_topic, geometry_msgs.msg.PoseStamped)
@@ -40,13 +39,19 @@ class IdleServer(object):
 
         # Mary client
         rospy.loginfo("%s: Creating mary client", name)
-        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        self.maryClient = actionlib.SimpleActionClient(
+            'speak',
+            ros_mary_tts.msg.maryttsAction
+        )
         self.maryClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
         # Gaze client
         rospy.loginfo("%s: Creating gaze client", name)
-        self.gazeClient = actionlib.SimpleActionClient('gaze_at_pose', strands_gazing.msg.GazeAtPoseAction)
+        self.gazeClient = actionlib.SimpleActionClient(
+            'gaze_at_pose',
+            strands_gazing.msg.GazeAtPoseAction
+        )
         self.gazeClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
@@ -68,21 +73,16 @@ class IdleServer(object):
 
     def loadDialogue(self, dialogue_name):
         msg_store = MessageStoreProxy(collection="hri_behaviours")
-
         query_meta = {}
         query_meta["hri_dialogue"] = dialogue_name
         if len(msg_store.query(std_msgs.msg.String._type, {}, query_meta)) == 0:
-            rospy.logerr("Desired dialogue options'"+dialogue_name+"' not in datacentre")
+            rospy.logerr("Desired dialogue options '"+dialogue_name+"' not in datacentre")
             raise Exception("Can't find dialogue.")
-
         else:
             message_list = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
-
             sentences = []
             for message, meta in message_list:
                 sentences.append(str(message.data))
-                #rospy.loginfo(message.data)
-
             return sentences
 
     def goalCallback(self):

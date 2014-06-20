@@ -21,7 +21,6 @@ class IdleBehaviour(object):
 
         #Getting parameters
         self.runtime = rospy.get_param("~runtime", 0)
-        self.display_no = rospy.get_param("~display", 0)
         engage_topic = rospy.get_param("~engage_topic", '/engagement_checker/engaged')
         self.look = rospy.get_param("~look", True)
         self.speak = rospy.get_param("~speak", True)
