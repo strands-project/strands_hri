@@ -9,17 +9,18 @@ import geometry_msgs.msg
 import ros_mary_tts.msg
 import strands_gazing.msg
 from ros_datacentre.message_store import MessageStoreProxy
-#import strands_hri_utils.msg
 import std_msgs.msg
 
 import thread
 from random import randint
 from random import uniform
 
+
 class IdleServer(object):
     # create messages that are used to publish feedback/result
     _feedback = strands_interaction_behaviours.msg.InteractionIdleFeedback()
-    _result   = strands_interaction_behaviours.msg.InteractionIdleResult()
+    _result = strands_interaction_behaviours.msg.InteractionIdleResult()
+
     def __init__(self, name):
         # Variables
         self._action_name = name
@@ -29,34 +30,39 @@ class IdleServer(object):
 
         # Getting parameters
         self.head_topic = rospy.get_param("~head_pose", '/idle_server/head_pose')
-        dialogue_option = rospy.get_param("~dialogue_option","idle_gameplay")
-        self.display_no = rospy.get_param("~display", 0)
+        speaktopic = rospy.get_param("~text", '/nhm/speak')
+        dialogue_option = rospy.get_param("~dialogue_option", "idle")
 
         # Publishers and subscribers
-        self.pose_pub = rospy.Publisher(self.head_topic,geometry_msgs.msg.PoseStamped)
-        self.speak_pub = rospy.Publisher("/nhm/speak", std_msgs.msg.String, latch=True)
+        self.pose_pub = rospy.Publisher(self.head_topic, geometry_msgs.msg.PoseStamped)
+        self.speak_pub = rospy.Publisher(speaktopic, std_msgs.msg.String, latch=True)
 
-    	# Mary client
+        # Mary client
         rospy.loginfo("%s: Creating mary client", name)
-        self.maryClient = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        self.maryClient = actionlib.SimpleActionClient(
+            'speak',
+            ros_mary_tts.msg.maryttsAction
+        )
         self.maryClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
-        # Lights client
-        #rospy.loginfo("%s: Creating lights client", name)
-        #self.lightsClient = actionlib.SimpleActionClient('visual_speech', strands_hri_utils.msg.VisualSpeechAction)
-        #self.lightsClient.wait_for_server()
-        #rospy.loginfo("%s: ...done", name)
-
         # Gaze client
         rospy.loginfo("%s: Creating gaze client", name)
-        self.gazeClient = actionlib.SimpleActionClient('gaze_at_pose', strands_gazing.msg.GazeAtPoseAction)
+        self.gazeClient = actionlib.SimpleActionClient(
+            'gaze_at_pose',
+            strands_gazing.msg.GazeAtPoseAction
+        )
         self.gazeClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
 
         # Starting server
         rospy.loginfo("%s: Starting action server", name)
-        self._as = actionlib.SimpleActionServer(self._action_name, strands_interaction_behaviours.msg.InteractionIdleAction, execute_cb=None, auto_start = False)
+        self._as = actionlib.SimpleActionServer(
+            self._action_name,
+            strands_interaction_behaviours.msg.InteractionIdleAction,
+            execute_cb=None,
+            auto_start=False
+        )
         self._as.register_goal_callback(self.goalCallback)
         self._as.register_preempt_callback(self.preemptCallback)
         self._as.start()
@@ -64,25 +70,19 @@ class IdleServer(object):
 
         # Loading sentences
         self.sentences = self.loadDialogue(dialogue_option)
-        #print self.sentences
 
-    def loadDialogue(self, dialogue_name): #TODO: Use dynamic reconfigure?!
+    def loadDialogue(self, dialogue_name):
         msg_store = MessageStoreProxy(collection="hri_behaviours")
-
         query_meta = {}
         query_meta["hri_dialogue"] = dialogue_name
         if len(msg_store.query(std_msgs.msg.String._type, {}, query_meta)) == 0:
-            rospy.logerr("Desired dialogue options'"+dialogue_name+"' not in datacentre")
+            rospy.logerr("Desired dialogue options '"+dialogue_name+"' not in datacentre")
             raise Exception("Can't find dialogue.")
-
         else:
             message_list = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
-
             sentences = []
             for message, meta in message_list:
                 sentences.append(str(message.data))
-                #rospy.loginfo(message.data)
-
             return sentences
 
     def goalCallback(self):
@@ -148,14 +148,14 @@ class IdleServer(object):
             self._feedback.remaining_runtime = self.end_time - rospy.get_time() if self.end_time > 0 else -1
             if self._goal.look:
                 if self.look_trigger == 0:
-                    thread.start_new_thread(self.look,())
-                    self.look_trigger = randint(10,20)
+                    thread.start_new_thread(self.look, ())
+                    self.look_trigger = randint(10, 20)
                 self.look_trigger -= 1
                 self._feedback.next_look = self.look_trigger
             if self._goal.speak:
                 if self.speak_trigger == 0:
-                    thread.start_new_thread(self.speak,())
-                    self.speak_trigger = randint(60,120)
+                    thread.start_new_thread(self.speak, ())
+                    self.speak_trigger = randint(60, 120)
                 self.speak_trigger -= 1
                 self._feedback.next_speak = self.speak_trigger
             self._as.publish_feedback(self._feedback)

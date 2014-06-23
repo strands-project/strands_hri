@@ -1,8 +1,44 @@
 <launch>
-	<node name="engagement_checker" pkg="strands_engagement_checker" type="engage_check.py" output="screen"/>
-	<node name="memory_game_executor" pkg="memory_game_executor" type="executor.py" output="screen"/>
-	<node name="idle_server" pkg="strands_interaction_behaviours" type="idle_server.py" output="screen"/>
-	<node name="behaviour_switch" pkg="strands_interaction_behaviours" type="behaviour_switch.py" output="screen"/>
-	<node name="engaged_server" pkg="strands_interaction_behaviours" type="engaged_server.py" output="screen"/>
-	<node name="idle_behaviour" pkg="strands_interaction_behaviours" type="idle_behaviour.py" output="screen"/>
+    <arg name="behaviour_runtime" default="0" />
+    <arg name="engaged_runtime" default="0" />
+    <arg name="engage_threshold" default="20" />
+    <arg name="engage_timeout" default="20" />
+    <arg name="look" default="true" />
+    <arg name="speak" default="true" />
+    <arg name="ptu" default="true" />
+    <arg name="people_array_topic" default="/upper_body_detector/bounding_box_centres" />
+    <arg name="people_closest_topic" default="/upper_body_detector/closest_bounding_box_centre" />
+    <arg name="engage_topic" default="/engagement_checker/engaged" />
+    <arg name="text" default="/nhm/speak" />
+    <arg name="head_pose" default="/idle_server/head_pose" />
+    <arg name="engaged_dialogue_option" default="engaged" />
+    <arg name="idle_dialogue_option" default="idle" />
+
+	<node name="engagement_checker" pkg="strands_engagement_checker" type="engage_check.py" output="screen">
+        <param name="detections" value="$(arg engage_topic)" type="string"/>
+        <param name="threshold" value="$(arg engage_threshold)" type="int"/>
+    </node>
+	<node name="idle_server" pkg="strands_interaction_behaviours" type="idle_server.py" output="screen">
+        <param name="head_pose" value="$(arg head_pose)" type="string"/>
+        <param name="text" value="$(arg text)" type="string"/>
+        <param name="dialogue_option" value="$(arg idle_dialogue_option)" type="string"/>
+    </node>
+	<node name="behaviour_switch" pkg="strands_interaction_behaviours" type="behaviour_switch.py" output="screen">
+        <param name="people_array_topic" value="$(arg people_array_topic)" type="string"/>
+        <param name="people_closest_topic" value="$(arg people_closest_topic)" type="string"/>
+        <param name="engage_topic" value="$(arg engage_topic)" type="string"/>
+        <param name="engage_timeout" value="$(arg engage_timeout)" type="int"/>
+    </node>
+	<node name="engaged_server" pkg="strands_interaction_behaviours" type="engaged_server.py" output="screen">
+        <param name="runtime" value="$(arg engaged_runtime)" type="int"/>
+        <param name="dialogue_option" value="$(arg engaged_dialogue_option)" type="string"/>
+        <param name="text" value="$(arg text)" type="string"/>
+    </node>
+	<node name="idle_behaviour" pkg="strands_interaction_behaviours" type="idle_behaviour.py" output="screen">
+        <param name="runtime" value="$(arg behaviour_runtime)" type="int"/>
+        <param name="engage_topic" value="$(arg engage_topic)" type="string"/>
+        <param name="look" value="$(arg look)" type="bool"/>
+        <param name="speak" value="$(arg speak)" type="bool"/>
+        <param name="ptu" value="$(arg ptu)" type="bool"/>
+    </node>
 </launch>
