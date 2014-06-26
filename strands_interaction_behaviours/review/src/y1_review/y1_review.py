@@ -72,6 +72,14 @@ class YoneReview(object):
 
     def preemptCallback(self):
         self.ibClient.cancel_all_goals()
+        try:
+            s = rospy.ServiceProxy(
+                    '/stop_head_analysis',
+                    strands_perception_people_msgs.msg.StopHeadAnalysis
+                    )
+            s()
+        except rospy.ServiceException, e:
+            print "Service call failed: %s" % e
         self._as.set_preempted()
 
 
