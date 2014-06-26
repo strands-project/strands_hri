@@ -6,7 +6,7 @@ import actionlib
 import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
 import std_msgs.msg
-import strands_perception_people_msgs.msg
+import strands_perception_people_msgs.srv
 
 
 class YoneReview(object):
@@ -50,7 +50,7 @@ class YoneReview(object):
         try:
             s = rospy.ServiceProxy(
                     '/start_head_analysis',
-                    strands_perception_people_msgs.msg.StartHeadAnalysis
+                    strands_perception_people_msgs.srv.StartHeadAnalysis
                     )
             s()
         except rospy.ServiceException, e:
@@ -60,7 +60,7 @@ class YoneReview(object):
         try:
             s = rospy.ServiceProxy(
                     '/stop_head_analysis',
-                    strands_perception_people_msgs.msg.StopHeadAnalysis
+                    strands_perception_people_msgs.srv.StopHeadAnalysis
                     )
             s()
         except rospy.ServiceException, e:
@@ -75,7 +75,7 @@ class YoneReview(object):
         try:
             s = rospy.ServiceProxy(
                     '/stop_head_analysis',
-                    strands_perception_people_msgs.msg.StopHeadAnalysis
+                    strands_perception_people_msgs.srv.StopHeadAnalysis
                     )
             s()
         except rospy.ServiceException, e:
