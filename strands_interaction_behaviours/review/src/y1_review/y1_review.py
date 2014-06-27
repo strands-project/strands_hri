@@ -5,7 +5,6 @@ import rospy
 import actionlib
 import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
-import std_msgs.msg
 import strands_perception_people_msgs.srv
 
 
@@ -49,9 +48,9 @@ class YoneReview(object):
     def exCallback(self, goal):
         try:
             s = rospy.ServiceProxy(
-                    '/start_head_analysis',
-                    strands_perception_people_msgs.srv.StartHeadAnalysis
-                    )
+                '/start_head_analysis',
+                strands_perception_people_msgs.srv.StartHeadAnalysis
+                )
             s()
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
@@ -59,9 +58,9 @@ class YoneReview(object):
         ibClient.send_goal_and_wait(goal)
         try:
             s = rospy.ServiceProxy(
-                    '/stop_head_analysis',
-                    strands_perception_people_msgs.srv.StopHeadAnalysis
-                    )
+                '/stop_head_analysis',
+                strands_perception_people_msgs.srv.StopHeadAnalysis
+                )
             s()
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
@@ -74,9 +73,9 @@ class YoneReview(object):
         self.ibClient.cancel_all_goals()
         try:
             s = rospy.ServiceProxy(
-                    '/stop_head_analysis',
-                    strands_perception_people_msgs.srv.StopHeadAnalysis
-                    )
+                '/stop_head_analysis',
+                strands_perception_people_msgs.srv.StopHeadAnalysis
+                )
             s()
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
@@ -84,6 +83,6 @@ class YoneReview(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('y1_review')
+    rospy.init_node('y1_review_wp36')
     YoneReview(rospy.get_name())
     rospy.spin()
