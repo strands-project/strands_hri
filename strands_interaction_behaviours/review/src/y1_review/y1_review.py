@@ -56,7 +56,7 @@ class YoneReview(object):
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
         goal = strands_interaction_behaviours.msg.IdleBehaviourGoal()
-        ibClient.send_goal_and_wait(goal)
+        self.ibClient.send_goal_and_wait(goal)
         try:
             s = rospy.ServiceProxy(
                     '/stop_head_analysis',
