@@ -41,4 +41,6 @@
         <param name="speak" value="$(arg speak)" type="bool"/>
         <param name="ptu" value="$(arg ptu)" type="bool"/>
     </node>
+	<node name="y1_review_wp36" pkg="strands_interaction_behaviours" type="y1_review.py" output="screen">
+    </node>
 </launch>

@@ -54,7 +54,7 @@ class BehaviourSwitch(object):
 
         # Create Subscribers
         rospy.Subscriber(people_array_topic, geometry_msgs.msg.PoseArray, self.peopleCallback, None, 10)
-        rospy.Subscriber(engage_topic, std_msgs.msg.Bool, self.engagementCallback, None, 10)
+        rospy.Subscriber(engage_topic, std_msgs.msg.Bool, self.engagementCallback, None, 1)
 
     def goalCallback(self):
         self._goal = self._as.accept_new_goal()
