@@ -4,6 +4,7 @@ import rospy
 import actionlib
 import dynamic_reconfigure.client
 from strands_perception_people_msgs.msg import PedestrianLocations
+import strands_perception_people_msgs.srv
 import move_base_msgs.msg
 import thread
 import actionlib_msgs.msg
@@ -148,6 +149,12 @@ class DynamicVelocityReconfigure():
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
         #thread.start_new_thread(self.moveBaseThread,(self._goal,))
+        try:
+            s = rospy.ServiceProxy('/start_head_analysis', strands_perception_people_msgs.srv.StartHeadAnalysis)
+            s()
+        except rospy.ServiceException, e:
+            print "Service call failed: %s" % e
+
         self.moveBaseThread(self._goal)
 
     def preemptCallback(self):
@@ -162,6 +169,11 @@ class DynamicVelocityReconfigure():
         ret = self.moveBase(goal)
         self.resetSpeed()
         self.gazeClient.cancel_all_goals()
+        try:
+            s = rospy.ServiceProxy('/stop_head_analysis', strands_perception_people_msgs.srv.StartHeadAnalysis)
+            s()
+        except rospy.ServiceException, e:
+            print "Service call failed: %s" % e
         if not self._as.is_preempt_requested() and ret:
             self._as.set_succeeded(self.result)
         elif not self._as.is_preempt_requested() and not ret:
