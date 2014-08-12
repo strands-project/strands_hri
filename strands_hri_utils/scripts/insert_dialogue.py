@@ -2,7 +2,7 @@
 
 import sys
 import std_msgs.msg
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 
 def loadDialogue(inputfile, dataset_name) :
     print "openning %s" %inputfile

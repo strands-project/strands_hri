@@ -5,7 +5,7 @@ import rospy
 import actionlib
 import strands_interaction_behaviours.msg
 import ros_mary_tts.msg
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 import std_msgs.msg
 from random import randint
 
