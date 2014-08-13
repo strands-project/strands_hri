@@ -8,7 +8,7 @@ import std_msgs
 import geometry_msgs.msg
 import ros_mary_tts.msg
 import strands_gazing.msg
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 import std_msgs.msg
 
 import thread

@@ -7,7 +7,7 @@ import roslib
 import rospy
 import actionlib
 import ros_mary_tts.msg
-import ros_datacentre.srv
+import mongodb_store.srv
 
 roslib.load_manifest('strands_hri_utils')
 
@@ -45,11 +45,11 @@ def save_line(id_value, text_value):
     rospy.set_param(param_prefix + id_value, text_value)
     try:
         save_service = rospy.ServiceProxy(
-            '/config_manager/save_param', ros_datacentre.srv.SetParam)
+            '/config_manager/save_param', mongodb_store.srv.SetParam)
         if not save_service.call(param_prefix + id_value):
-            rospy.logwarn('couldn\'t store config in ros_datacentre')
+            rospy.logwarn('couldn\'t store config in mongodb_store')
     except:
-        rospy.logwarn('couldn\'t access the ros_datacentre service')
+        rospy.logwarn('couldn\'t access the mongodb_store service')
 
 
 @app.route("/")
