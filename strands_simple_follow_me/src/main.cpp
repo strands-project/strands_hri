@@ -8,7 +8,7 @@
 
 #include <math.h>
 
-#include "strands_perception_people_msgs/PedestrianLocations.h"
+#include "strands_perception_people_msgs/PeopleTracker.h"
 
 using namespace std;
 using namespace strands_perception_people_msgs;
@@ -21,7 +21,7 @@ geometry_msgs::Point polarToCartesian(float dist, float angle) {
     return output;
 }
 
-void locationCallback(const PedestrianLocations::ConstPtr &pl)
+void locationCallback(const PeopleTracker::ConstPtr &pl)
 {
     //tell the action client that we want to spin a thread by default
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base", true);
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     // Use a private node handle so that multiple instances of the node can be run simultaneously
     // while using different parameters.
     ros::NodeHandle private_node_handle_("~");
-    private_node_handle_.param("pedestrian_location", pl_topic, string("/pedestrian_localisation/localisations"));
+    private_node_handle_.param("people_tracker", pl_topic, string("/people_tracker/positions"));
 
     // Create a subscriber.
     ros::Subscriber pl_sub = n.subscribe(pl_topic.c_str(), 10, &locationCallback);
