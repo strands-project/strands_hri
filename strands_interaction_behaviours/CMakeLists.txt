@@ -72,6 +72,7 @@ add_action_files(
   BehaviourSwitch.action
   IdleBehaviour.action
   InteractionEngaged.action
+  Review.action
 )
 
 generate_messages(
