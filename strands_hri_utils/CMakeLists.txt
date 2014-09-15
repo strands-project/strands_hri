@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   ros_mary_tts
   rospy
   strands_visualise_speech
+  scitos_teleop
 )
 
 ## System dependencies are found with CMake's conventions

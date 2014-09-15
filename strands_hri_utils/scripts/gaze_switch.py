@@ -4,7 +4,7 @@ import rospy
 import actionlib
 #import actionlib_msgs.msg
 import strands_gazing.msg
-from scitos_apps_msgs.msg import action_buttons
+from scitos_teleop.msg import action_buttons
 
 
 class GazeSwitch(object):
