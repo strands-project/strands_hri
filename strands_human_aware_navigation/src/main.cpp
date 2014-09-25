@@ -4,10 +4,10 @@
 #include <message_filters/cache.h>
 #include <message_filters/subscriber.h>
 
-#include "strands_perception_people_msgs/PeopleTracker.h"
+#include "strands_people_tracker/PeopleTracker.h"
 
 using namespace std;
-using namespace strands_perception_people_msgs;
+using namespace strands_people_tracker;
 
 int threshold;
 double scale;

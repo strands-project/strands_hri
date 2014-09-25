@@ -3,8 +3,8 @@
 import rospy
 import actionlib
 import dynamic_reconfigure.client
-from strands_perception_people_msgs.msg import PeopleTracker
-import strands_perception_people_msgs.srv
+from strands_people_tracker.msg import PeopleTracker
+from strands_head_orientation.srv import StartHeadAnalysis, StopHeadAnalysis
 import move_base_msgs.msg
 import thread
 import actionlib_msgs.msg
@@ -170,7 +170,7 @@ class DynamicVelocityReconfigure():
         self.resetSpeed()
         #thread.start_new_thread(self.moveBaseThread,(self._goal,))
         try:
-            s = rospy.ServiceProxy('/start_head_analysis', strands_perception_people_msgs.srv.StartHeadAnalysis)
+            s = rospy.ServiceProxy('/start_head_analysis', StartHeadAnalysis)
             s()
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
@@ -190,7 +190,7 @@ class DynamicVelocityReconfigure():
         self.resetSpeed()
         self.gazeClient.cancel_all_goals()
         try:
-            s = rospy.ServiceProxy('/stop_head_analysis', strands_perception_people_msgs.srv.StartHeadAnalysis)
+            s = rospy.ServiceProxy('/stop_head_analysis', StopHeadAnalysis)
             s()
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
