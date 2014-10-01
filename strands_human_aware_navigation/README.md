@@ -13,7 +13,7 @@ This is implemented as an action server.
 
 ### Parameters
 * `pedestrian_locations` _Default: /pedestrian_localisation/localisations_: The topic on which the actual pedestrian 
-locations are published by the pedestrian localisation package (strands_people_tracker/PeopleTracker).
+locations are published by the pedestrian localisation package (bayes_people_tracker/PeopleTracker).
 * `/human_aware_navigation/max_dist` _Default: 5.0_: maximum distance in metres to a human before altering the speed.
 * `/human_aware_navigation/min_dist` _Default: 1.2_: minimum distance in metres to a human. Robot stops at that distance.
 * `/human_aware_navigation/timeout` _Default: 5.0_: time in seconds after which speed is reseted if no human is detected any more.
@@ -34,7 +34,7 @@ the robot.
 
 ### Parameters
 * `pedestrian_location` _Default: /pedestrian_localisation/localisations_: The topic on which the actual pedestrian 
-locations are published by the pedestrian localisation package (strands_people_tracker/PeopleTracker).
+locations are published by the pedestrian localisation package (bayes_people_tracker/PeopleTracker).
 * `cmd_vel_in` _Default: /human_aware_cmd_vel/input/cmd_vel_: The topic to which the original /cmd_vel should be 
 published.
 * `cmd_vel_out` _Default: /cmd_vel_: The modified /cmd_vel.

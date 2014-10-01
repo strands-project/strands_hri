@@ -18,7 +18,7 @@
   <build_depend>message_filters</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>strands_head_orientation</build_depend>
-  <build_depend>strands_people_tracker</build_depend>
+  <build_depend>bayes_people_tracker</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>actionlib_msgs</build_depend>
@@ -28,7 +28,7 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>message_filters</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>strands_people_tracker</run_depend>
+  <run_depend>bayes_people_tracker</run_depend>
   <run_depend>strands_head_orientation</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>actionlib</run_depend>

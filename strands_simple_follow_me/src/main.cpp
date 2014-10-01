@@ -8,10 +8,10 @@
 
 #include <math.h>
 
-#include "strands_people_tracker/PeopleTracker.h"
+#include "bayes_people_tracker/PeopleTracker.h"
 
 using namespace std;
-using namespace strands_people_tracker;
+using namespace bayes_people_tracker;
 
 geometry_msgs::Point polarToCartesian(float dist, float angle) {
     geometry_msgs::Point output;

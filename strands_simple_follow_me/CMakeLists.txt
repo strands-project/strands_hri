@@ -4,7 +4,7 @@ project(strands_simple_follow_me)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp strands_people_tracker actionlib tf move_base_msgs)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp bayes_people_tracker actionlib tf move_base_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -36,7 +36,7 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp strands_people_trac
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   strands_people_tracker
+#   geometry_msgs#   bayes_people_tracker
 # )
 
 ###################################
@@ -50,7 +50,7 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp strands_people_trac
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES strands_simple_follow_me
-#  CATKIN_DEPENDS geometry_msgs roscpp strands_people_tracker
+#  CATKIN_DEPENDS geometry_msgs roscpp bayes_people_tracker
 #  DEPENDS system_lib
 )
 

@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     message_filters 
     roscpp
     rospy 
-    strands_people_tracker
+    bayes_people_tracker
     strands_head_orientation 
     dynamic_reconfigure 
     actionlib
