@@ -4,9 +4,19 @@ project(strands_human_aware_navigation)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
-    rospy strands_perception_people_msgs dynamic_reconfigure actionlib
-    actionlib_msgs message_generation move_base_msgs)
+find_package(catkin REQUIRED COMPONENTS 
+    geometry_msgs 
+    message_filters 
+    roscpp
+    rospy 
+    strands_people_tracker
+    strands_head_orientation 
+    dynamic_reconfigure 
+    actionlib
+    actionlib_msgs 
+    message_generation 
+    move_base_msgs
+    )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -58,7 +68,7 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs message_filters roscpp
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES strands_human_aware_cmd_vel
-#  CATKIN_DEPENDS geometry_msgs message_filters roscpp strands_perception_people_msgs
+#  CATKIN_DEPENDS geometry_msgs message_filters roscpp 
   #DEPENDS actionlib_msgs
 )
 

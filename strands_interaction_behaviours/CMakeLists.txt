@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   strands_gazing
-  strands_perception_people_msgs
+  strands_head_orientation
   strands_webserver
 )
 
@@ -94,7 +94,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES memory_interaction_server
-#  CATKIN_DEPENDS actionlib actionlib_msgs genmsg geometry_msgs memory_game_msgs message_generation roscpp rospy std_msgs strands_gazing strands_perception_people_msgs
+#  CATKIN_DEPENDS actionlib actionlib_msgs genmsg geometry_msgs memory_game_msgs message_generation roscpp rospy std_msgs strands_gazing strands_head_orientation
 #  DEPENDS system_lib
 )
 
