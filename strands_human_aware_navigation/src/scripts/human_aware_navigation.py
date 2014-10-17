@@ -3,7 +3,7 @@
 import rospy
 import actionlib
 import dynamic_reconfigure.client
-from strands_people_tracker.msg import PeopleTracker
+from bayes_people_tracker.msg import PeopleTracker
 from strands_head_orientation.srv import StartHeadAnalysis, StopHeadAnalysis
 import move_base_msgs.msg
 import thread
