@@ -8,6 +8,8 @@
 
   <license>MIT</license>
 
+  <url type="website">https://github.com/strands-project/strands_hri</url> 
+  
   <author email="cdondrup@lincoln.ac.uk">Christian Dondrup</author>
 
   <buildtool_depend>catkin</buildtool_depend>
