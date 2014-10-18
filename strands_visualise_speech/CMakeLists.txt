@@ -18,7 +18,9 @@ catkin_python_setup()
 
 add_action_files(
     DIRECTORY action
-    FILES SoundLights.action
+    FILES 
+    SoundLights.action
+    VisualSpeech.action
 )
 
 
