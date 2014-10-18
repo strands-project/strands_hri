@@ -49,10 +49,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate actions in the 'action' folder
-add_action_files(
-    DIRECTORY action
-    FILES VisualSpeech.action
-)
+#add_action_files(
+    #DIRECTORY action
+    #FILES VisualSpeech.action
+#)
 
 ## Generate messages in the 'msg' folder
 # add_message_files(
@@ -76,10 +76,10 @@ add_action_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-    DEPENDENCIES
-    actionlib_msgs std_msgs
-)
+#generate_messages(
+    #DEPENDENCIES
+    #actionlib_msgs std_msgs
+#)
 
 ###################################
 ## catkin specific configuration ##
