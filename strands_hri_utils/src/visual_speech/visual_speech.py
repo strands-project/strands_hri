@@ -4,7 +4,7 @@ import rospy
 import actionlib
 
 import strands_hri_utils.msg
-import ros_mary_tts.msg
+import mary_tts.msg
 import strands_visualise_speech.msg
 
 class VisualSpeechServer(  ):
@@ -18,7 +18,7 @@ class VisualSpeechServer(  ):
         self._as.start()
         rospy.loginfo(" ...done")
         rospy.loginfo("Connecting to mary server")
-        self.mary_client = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        self.mary_client = actionlib.SimpleActionClient('speak', mary_tts.msg.maryttsAction)
         self.mary_client.wait_for_server()
         rospy.loginfo(" ...done")
         rospy.loginfo("Connecting to head light server")
@@ -33,7 +33,7 @@ class VisualSpeechServer(  ):
         lights = strands_visualise_speech.msg.SoundLightsGoal()
         lights.seconds = 0
         self.light_client.send_goal(lights)
-        text = ros_mary_tts.msg.maryttsGoal()
+        text = mary_tts.msg.maryttsGoal()
         text.text = goal.text
         rospy.sleep(1.0)
         self.mary_client.send_goal(text)

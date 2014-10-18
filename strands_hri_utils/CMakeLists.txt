@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   message_generation
   message_runtime
-  ros_mary_tts
+  mary_tts
   rospy
   strands_visualise_speech
   scitos_teleop
@@ -93,7 +93,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES strands_hri_utils
-#  CATKIN_DEPENDS actionlib actionlib_msgs message_generation message_runtime ros_mary_tts rospy strands_visualise_speech
+#  CATKIN_DEPENDS actionlib actionlib_msgs message_generation message_runtime mary_tts rospy strands_visualise_speech
     DEPENDS actionlib_msgs
 )
 

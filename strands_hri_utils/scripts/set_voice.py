@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import rospy
-import ros_mary_tts.srv
+import mary_tts.srv
 
 class IdleBehaviour(object):
 # create messages that are used to publish feedback/result
@@ -20,8 +20,8 @@ class IdleBehaviour(object):
         rospy.wait_for_service('ros_mary/set_locale')
         rospy.wait_for_service('ros_mary/set_voice')
         try:
-            set_locale = rospy.ServiceProxy('ros_mary/set_locale', ros_mary_tts.srv.SetLocale)
-            set_voice  = rospy.ServiceProxy('ros_mary/set_voice', ros_mary_tts.srv.SetVoice)
+            set_locale = rospy.ServiceProxy('ros_mary/set_locale', mary_tts.srv.SetLocale)
+            set_voice  = rospy.ServiceProxy('ros_mary/set_voice', mary_tts.srv.SetVoice)
             set_locale(self.locale)
             set_voice(self.voice)
             return
