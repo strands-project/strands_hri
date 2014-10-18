@@ -46,5 +46,10 @@ catkin_package(
 
 install(PROGRAMS
   scripts/sound_to_light.py
+  scripts/visual_speech.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
