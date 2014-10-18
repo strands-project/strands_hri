@@ -42,6 +42,7 @@ catkin_package(
 #############
 
 install(PROGRAMS
+  scripts/insert_dialogue.py
   idle/scripts/behaviour_switch/behaviour_switch.py
   idle/scripts/engaged_server/engaged_server.py
   idle/scripts/idle_behaviour/idle_behaviour.py

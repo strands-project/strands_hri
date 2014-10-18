@@ -68,6 +68,11 @@ target_link_libraries(gaze_at_pose
 ## Install ##
 #############
 
+install(PROGRAMS
+  scripts/gaze_switch.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(TARGETS gaze_at_pose
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
