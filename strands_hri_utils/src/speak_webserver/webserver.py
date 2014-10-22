@@ -6,7 +6,7 @@ from flask import request, redirect, jsonify
 import roslib
 import rospy
 import actionlib
-import ros_mary_tts.msg
+import mary_tts.msg
 import mongodb_store.srv
 
 roslib.load_manifest('strands_hri_utils')
@@ -68,10 +68,10 @@ def speak():
     rospy.loginfo('trying to say "' + text_value + '"')
     rospy.loginfo('waiting for say server')
     client = actionlib.SimpleActionClient(
-        '/visual_speech', ros_mary_tts.msg.maryttsAction)
+        '/visual_speech', mary_tts.msg.maryttsAction)
 
     client.wait_for_server()
-    g = ros_mary_tts.msg.maryttsGoal()
+    g = mary_tts.msg.maryttsGoal()
     g.text = text_value
     rospy.loginfo('start speaking')
     client.send_goal(g)
