@@ -5,7 +5,7 @@ import rospy
 import actionlib
 import strands_interaction_behaviours.msg
 import actionlib_msgs.msg
-import strands_head_orientation.srv
+#import strands_head_orientation.srv
 
 
 class YoneReview(object):
@@ -46,24 +46,24 @@ class YoneReview(object):
         rospy.loginfo("...done.")
 
     def exCallback(self, goal):
-        try:
-            s = rospy.ServiceProxy(
-                '/start_head_analysis',
-                strands_head_orientation.srv.StartHeadAnalysis
-                )
-            s()
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+        #try:
+            #s = rospy.ServiceProxy(
+                #'/start_head_analysis',
+                #strands_head_orientation.srv.StartHeadAnalysis
+                #)
+            #s()
+        #except rospy.ServiceException, e:
+            #print "Service call failed: %s" % e
         goal = strands_interaction_behaviours.msg.IdleBehaviourGoal()
         self.ibClient.send_goal_and_wait(goal)
-        try:
-            s = rospy.ServiceProxy(
-                '/stop_head_analysis',
-                strands_head_orientation.srv.StopHeadAnalysis
-                )
-            s()
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+        #try:
+            #s = rospy.ServiceProxy(
+                #'/stop_head_analysis',
+                #strands_head_orientation.srv.StopHeadAnalysis
+                #)
+            #s()
+        #except rospy.ServiceException, e:
+            #print "Service call failed: %s" % e
         if self.ibClient.get_state() == actionlib_msgs.msg.GoalStatus.SUCCEEDED:
             self._as.set_succeeded()
         elif not self._as.is_preempt_requested():
@@ -71,14 +71,14 @@ class YoneReview(object):
 
     def preemptCallback(self):
         self.ibClient.cancel_all_goals()
-        try:
-            s = rospy.ServiceProxy(
-                '/stop_head_analysis',
-                strands_head_orientation.srv.StopHeadAnalysis
-                )
-            s()
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+        #try:
+            #s = rospy.ServiceProxy(
+                #'/stop_head_analysis',
+                #strands_head_orientation.srv.StopHeadAnalysis
+                #)
+            #s()
+        #except rospy.ServiceException, e:
+            #print "Service call failed: %s" % e
         self._as.set_preempted()
 
 
