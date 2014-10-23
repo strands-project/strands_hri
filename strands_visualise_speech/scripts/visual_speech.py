@@ -17,7 +17,7 @@ class VisualSpeechServer(  ):
         self._as.start()
         rospy.loginfo(" ...done")
         rospy.loginfo("Connecting to mary server")
-        self.mary_client = actionlib.SimpleActionClient('speak', ros_mary_tts.msg.maryttsAction)
+        self.mary_client = actionlib.SimpleActionClient('speak', mary_tts.msg.maryttsAction)
         self.mary_client.wait_for_server()
         rospy.loginfo(" ...done")
         rospy.loginfo("Connecting to head light server")
