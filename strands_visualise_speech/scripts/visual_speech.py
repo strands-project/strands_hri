@@ -3,7 +3,7 @@
 import rospy
 import actionlib
 
-import ros_mary_tts.msg
+import mary_tts.msg
 from strands_visualise_speech.msg import VisualSpeechAction, SoundLightsAction, SoundLightsGoal
 
 class VisualSpeechServer(  ):
@@ -12,7 +12,7 @@ class VisualSpeechServer(  ):
         rospy.loginfo("Starting %s", name)
         self._action_name = name
         rospy.loginfo("Creating action server.")
-        self._as = actionlib.SimpleActionServer(self._action_name, VisualSpeechAction, execute_cb = self.exCb, auto_start = False)
+        self._as = actionlib.SimpleActionServer(self._action_name, strands_hri_utils.msg.VisualSpeechAction, execute_cb = self.exCb, auto_start = False)
         rospy.loginfo(" ...starting")
         self._as.start()
         rospy.loginfo(" ...done")
@@ -21,7 +21,7 @@ class VisualSpeechServer(  ):
         self.mary_client.wait_for_server()
         rospy.loginfo(" ...done")
         rospy.loginfo("Connecting to head light server")
-        self.light_client = actionlib.SimpleActionClient('sound_to_light', SoundLightsAction)
+        self.light_client = actionlib.SimpleActionClient('sound_to_light', strands_visualise_speech.msg.SoundLightsAction)
         self.light_client.wait_for_server()
         rospy.loginfo(" ...done")
 
@@ -32,7 +32,7 @@ class VisualSpeechServer(  ):
         lights = SoundLightsGoal()
         lights.seconds = 0
         self.light_client.send_goal(lights)
-        text = ros_mary_tts.msg.maryttsGoal()
+        text = mary_tts.msg.maryttsGoal()
         text.text = goal.text
         rospy.sleep(1.0)
         self.mary_client.send_goal(text)

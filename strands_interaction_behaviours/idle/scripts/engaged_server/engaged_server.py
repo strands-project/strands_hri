@@ -4,7 +4,7 @@
 import rospy
 import actionlib
 import strands_interaction_behaviours.msg
-import ros_mary_tts.msg
+import mary_tts.msg
 from mongodb_store.message_store import MessageStoreProxy
 import std_msgs.msg
 from random import randint
@@ -30,7 +30,7 @@ class EngagedServer(object):
         rospy.loginfo("%s: Creating mary client", name)
         self.maryClient = actionlib.SimpleActionClient(
             'speak',
-            ros_mary_tts.msg.maryttsAction
+            mary_tts.msg.maryttsAction
         )
         self.maryClient.wait_for_server()
         rospy.loginfo("%s: ...done", name)
@@ -77,7 +77,7 @@ class EngagedServer(object):
 
     def speak(self):
         rospy.logdebug("Speak")
-        mary_goal = ros_mary_tts.msg.maryttsGoal
+        mary_goal = mary_tts.msg.maryttsGoal
         sentence = self.sentences[randint(0, len(self.sentences)-1)]
         self.speak_pub.publish(sentence)
         mary_goal.text = sentence
