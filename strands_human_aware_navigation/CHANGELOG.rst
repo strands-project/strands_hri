@@ -2,6 +2,9 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.1 (2014-10-31)
 ------------------
 * Removed calls to strands_head_orientation as those won't work in a release version.
