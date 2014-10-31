@@ -2,8 +2,8 @@
 Changelog for package strands_hri_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-10-31)
+------------------
 * Fixing install process and launch file
   Preparing for release once strands_ui is released.
 * Prepared strands_hri_launch package for release.

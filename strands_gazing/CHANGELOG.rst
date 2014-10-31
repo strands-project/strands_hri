@@ -2,8 +2,8 @@
 Changelog for package strands_gazing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-10-31)
+------------------
 * Moved utility scripts out of utils into corresponding packages.
 * Added missing webpage
 * Prepared strands_gazing for release

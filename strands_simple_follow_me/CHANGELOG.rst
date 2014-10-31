@@ -2,8 +2,8 @@
 Changelog for package strands_simple_follow_me
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-10-31)
+------------------
 * Prepared strands_simple_follow_me for release.
 * Renamed pedestrian_tracker launch files
 * strands_perception_people_launch is now called perception_people_launch

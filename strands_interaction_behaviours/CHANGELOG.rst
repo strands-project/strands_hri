@@ -2,8 +2,8 @@
 Changelog for package strands_interaction_behaviours
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2014-10-31)
+------------------
 * Removed calls to strands_head_orientation as those won't work in a release version.
 * Merge branch 'hydro-devel' into release
   Conflicts:
