@@ -1,0 +1,11 @@
+<launch>
+    <!--[normal,wait]-->
+    <arg name="wandering_mode" default="wait"/> 
+    <arg name="config_file" default="$(find strands_human_following)/conf/default.yaml"/> 
+
+    <include file="$(find nav_goals_generator)/launch/nav_goals_generator.launch"/>
+    <node name="strands_human_following" pkg="strands_human_following" type="simple_follow_server.py" output="screen">
+        <param name="wandering_mode" type="string" value="$(arg wandering_mode)" /> 
+        <param name="config_file" type="string" value="$(arg config_file)" /> 
+    </node>
+</launch>
