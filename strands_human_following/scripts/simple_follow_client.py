@@ -2,7 +2,7 @@
 
 import rospy
 import actionlib
-from strands_human_follow.msg import SimpleFollowAction, SimpleFollowGoal
+from strands_human_following.msg import SimpleFollowAction, SimpleFollowGoal
 
 
 class SimpleFollowClient(object):
