@@ -6,7 +6,7 @@ import smach
 import actionlib
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Polygon, Pose, Point32
-from nav_goals_msgs.srv import NavGoals
+from nav_goals_generator.srv import NavGoals
 from strands_navigation_msgs.msg import MonitoredNavigationAction
 from strands_navigation_msgs.msg import MonitoredNavigationGoal
 from bayes_people_tracker.msg import PeopleTracker
