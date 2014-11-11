@@ -19,6 +19,7 @@
   <run_depend>strands_interaction_behaviours</run_depend>
   <run_depend>strands_simple_follow_me</run_depend>
   <run_depend>strands_visualise_speech</run_depend>
+  <run_depend>strands_human_following</run_depend>
 
   <export>
     <metapackage/> 
