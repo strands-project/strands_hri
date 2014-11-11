@@ -2,8 +2,8 @@
 Changelog for package strands_human_following
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2014-11-11)
+------------------
 * Adjusting version number
 * fix dependencies with nav_goals_generator and nav_goals_msgs
 * try to delete simple_follow directory
