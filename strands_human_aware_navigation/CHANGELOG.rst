@@ -2,6 +2,9 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2014-11-06)
 ------------------
 
