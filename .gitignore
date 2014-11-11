@@ -19,3 +19,6 @@ server.log
 *.swo
 
 *.pyc
+
+# Folder
+.ropeproject/
