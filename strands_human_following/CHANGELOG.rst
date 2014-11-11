@@ -2,8 +2,8 @@
 Changelog for package strands_human_following
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2014-11-11)
+------------------
 * Fixing install for conf dir
   Fixing `#80 <https://github.com/strands-project/strands_hri/issues/80>`_
 * Contributors: Christian Dondrup
