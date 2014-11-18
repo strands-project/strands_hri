@@ -51,12 +51,12 @@ class FollowingRoutine(RobotRoutine):
         # the daily instantiation of actual tasks
         self.start_routine()
 
-    def on_idle(self):
-        # Called when routine is idle.
-        rospy.loginfo("Idle for too long, send the robot to " + self.waypoint)
-        # add task to the routine to send the robot to the waypoint
-        self.add_tasks(Task(start_node_id=self.waypoint,
-                            max_duration=rospy.Duration(30)))
+    # def on_idle(self):
+    #    # Called when routine is idle.
+    #    rospy.loginfo("Idle for too long, send the robot to " + self.waypoint)
+    #    # add task to the routine to send the robot to the waypoint
+    #    self.add_tasks([Task(start_node_id=self.waypoint,
+    #                         max_duration=rospy.Duration(30))])
 
 
 if __name__ == '__main__':
