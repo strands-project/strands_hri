@@ -52,7 +52,9 @@ class Follow(smach.State):
             self.points.append(Point32(float(point[0]), float(point[1]), 0))
 
     def execute(self, userdata):
-        rospy.sleep(rospy.Duration(0.5))
+        while not hasattr(userdata, 'id_now'):
+            rospy.sleep(rospy.Duration(0.1))
+
         if userdata.id_now == -1:
             self.old_angle = 0
             rospy.sleep(rospy.Duration(0.3))

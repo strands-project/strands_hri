@@ -16,7 +16,7 @@ class SimpleFollowClient(object):
         self.client.wait_for_server()
 
         rospy.loginfo("Sending a goal...")
-        self.client.send_goal(SimpleFollowGoal(time=3000, distance=2))
+        self.client.send_goal(SimpleFollowGoal(time=3000))
 
     def shutdown(self):
         self.client.cancel_all_goals()
