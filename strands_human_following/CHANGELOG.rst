@@ -2,8 +2,8 @@
 Changelog for package strands_human_following
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.6 (2014-11-21)
+------------------
 * make routine, client and server executable
 * merge wander and search class into one class
 * comment def on_idle in routine_example.py
