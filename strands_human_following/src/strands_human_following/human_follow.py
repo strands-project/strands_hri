@@ -4,7 +4,7 @@ import rospy
 import smach
 from smach_ros import SimpleActionState
 from scitos_ptu.msg import PtuGotoGoal, PtuGotoAction
-from strands_human_following.wander_search import Wander, Search
+from strands_human_following.wander_search import Wander
 from strands_human_following.follow_and_move import Follow, MoveSearch
 from strands_human_following.local_search import LocalSearch
 
@@ -17,7 +17,6 @@ class SimpleFollow(object):
                                                'aborted',
                                                'preempted'])
 
-    def build_sm(self):
         with self.sm:
             ptu_goal = PtuGotoGoal()
             ptu_goal.pan = 0
@@ -27,64 +26,72 @@ class SimpleFollow(object):
 
             smach.StateMachine.add('start', SimpleActionState(
                 'SetPTUState', PtuGotoAction, goal=ptu_goal),
-                transitions={'succeeded': 'wander_search'})
+                transitions={'succeeded': 'wander_search',
+                             'preempted': 'preempted'})
 
-            wander_search = smach.Concurrence(
-                outcomes=['succeeded', 'aborted', 'preempted'],
-                default_outcome='succeeded',
-                child_termination_cb=self.child_termination_cb,
-                outcome_cb=self.outcome_cb)
+            smach.StateMachine.add(
+                'wander_search', Wander(),
+                transitions={'succeeded': 'follow',
+                             'preempted': 'preempted',
+                             'aborted': 'wander_search'})
 
-            with wander_search:
-                smach.Concurrence.add('Wandering', Wander())
-                smach.Concurrence.add('Searching', Search())
-            smach.StateMachine.add('wander_search', wander_search,
-                                   transitions={
-                                       'succeeded': 'wander_search',
-                                       'aborted': 'follow'})
-
-            follow = smach.Concurrence(
+            self.follow = smach.Concurrence(
                 outcomes=['succeeded', 'aborted', 'preempted'],
                 default_outcome='aborted',
                 output_keys=['degree_to_go'],
-                outcome_map={'succeeded': {'MoveSearch': 'succeeded'}})
+                # input_keys=['current_uuid', 'current_robot',
+                #     'current_pose_tf'],
+                outcome_cb=self.outcome_follow)
 
-            with follow:
+            with self.follow:
                 smach.Concurrence.add('Follow', Follow())
                 smach.Concurrence.add('MoveSearch', MoveSearch())
-            smach.StateMachine.add('follow', follow,
+            smach.StateMachine.add('follow', self.follow,
                                    transitions={'succeeded': 'follow',
+                                                'preempted': 'preempted',
                                                 'aborted': 'local_search'})
 
-            local_search = smach.Concurrence(
+            self.local_search = smach.Concurrence(
                 outcomes=['succeeded', 'aborted', 'preempted'],
                 default_outcome='aborted',
+                # input_keys=['degree_to_go', 'current_uuid',
+                #             'current_robot', 'current_pose_tf'],
                 input_keys=['degree_to_go'],
-                outcome_map={'succeeded': {'MoveSearch': 'succeeded'}})
+                outcome_cb=self.outcome_local)
 
-            with local_search:
+            with self.local_search:
                 smach.Concurrence.add('LocalSearch', LocalSearch())
                 smach.Concurrence.add('MoveSearch', MoveSearch())
-            smach.StateMachine.add('local_search', local_search,
+            smach.StateMachine.add('local_search', self.local_search,
                                    transitions={'succeeded': 'follow',
+                                                'preempted': 'preempted',
                                                 'aborted': 'start'})
 
-    def child_termination_cb(self, msg):
-        if msg['Searching'] == 'succeeded':
-            return True
-        else:
-            rospy.loginfo("Child termination failed!")
-            return False
-
-    def outcome_cb(self, msg):
-        if msg['Searching'] == 'succeeded':
-            return 'aborted'
-        else:
+    def outcome_follow(self, msg):
+        if msg['Follow'] == 'preempted' or msg['MoveSearch'] == 'preempted':
+            return 'preempted'
+        elif msg['MoveSearch'] == 'succeeded':
             return 'succeeded'
+        else:
+            return 'aborted'
+
+    def outcome_local(self, msg):
+        if msg['LocalSearch'] == 'preempted' or msg['MoveSearch'] == 'preempted':
+            return 'preempted'
+        elif msg['MoveSearch'] == 'succeeded':
+            return 'succeeded'
+        else:
+            return 'aborted'
 
     def execute_sm(self):
-        self.build_sm()
         self.sm.execute()
+
+    def request_preempt(self):
+        rospy.loginfo("Stopping all processes...")
+        self.sm.request_preempt()
+
+    def recall_preempt(self):
+        self.sm.recall_preempt()
 
 
 if __name__ == '__main__':

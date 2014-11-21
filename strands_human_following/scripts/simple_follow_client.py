@@ -16,7 +16,8 @@ class SimpleFollowClient(object):
         self.client.wait_for_server()
 
         rospy.loginfo("Sending a goal...")
-        self.client.send_goal(SimpleFollowGoal(time=3000))
+        self.client.send_goal(SimpleFollowGoal(time=300))
+        self.client.wait_for_result()
 
     def shutdown(self):
         self.client.cancel_all_goals()
@@ -26,6 +27,5 @@ if __name__ == '__main__':
     rospy.init_node('strands_human_following_client', anonymous=False)
     try:
         client = SimpleFollowClient()
-        rospy.spin()
     except rospy.ROSInterruptException:
         rospy.logerr("Program was interrupted before completion!")
