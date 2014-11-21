@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>strands_hri</name>
-  <version>0.0.3</version>
+  <version>0.0.5</version>
   <description>The strands_hri metapackage</description>
 
   <maintainer email="cdondrup@lincoln.ac.uk">Christian Dondrup</maintainer>
@@ -19,6 +19,7 @@
   <run_depend>strands_interaction_behaviours</run_depend>
   <run_depend>strands_simple_follow_me</run_depend>
   <run_depend>strands_visualise_speech</run_depend>
+  <run_depend>strands_human_following</run_depend>
 
   <export>
     <metapackage/> 
