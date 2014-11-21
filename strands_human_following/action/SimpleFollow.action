@@ -1,6 +1,5 @@
 #goal definition
 int32 time
-int32 distance
 ---
 #result definition
 int32 tracknum

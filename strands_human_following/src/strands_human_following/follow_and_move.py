@@ -22,7 +22,7 @@ class Follow(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded', 'aborted', 'preempted'],
-            input_keys=['current_robot', 'current_pose_tf', 'id_now'],
+            input_keys=['current_robot', 'current_pose_tf', 'current_uuid'],
             output_keys=['degree_to_go'])
 
         self.old_angle = 0
@@ -52,8 +52,11 @@ class Follow(smach.State):
             self.points.append(Point32(float(point[0]), float(point[1]), 0))
 
     def execute(self, userdata):
-        rospy.sleep(rospy.Duration(0.5))
-        if userdata.id_now == -1:
+        rospy.loginfo("Entering Follow mode...")
+        while not hasattr(userdata, 'current_uuid'):
+            rospy.sleep(rospy.Duration(0.1))
+
+        if userdata.current_uuid == -1:
             self.old_angle = 0
             rospy.sleep(rospy.Duration(0.3))
 
@@ -116,7 +119,16 @@ class Follow(smach.State):
 
         userdata.degree_to_go = delta_angle_degree
         rospy.loginfo("Robot is in new position...")
+
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+
         return 'succeeded'
+
+    def request_preempt(self):
+        smach.State.request_preempt(self)
+        rospy.logwarn("Following is preempted!")
 
 
 class MoveSearch(smach.State):
@@ -127,7 +139,8 @@ class MoveSearch(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded', 'aborted', 'preempted'],
-            output_keys=['current_robot', 'current_pose_tf', 'id_now'])
+            # input_keys=['current_robot', 'current_pose_tf', 'current_uuid'],
+            output_keys=['current_robot', 'current_pose_tf', 'current_uuid'])
 
         rospy.Subscriber('/robot_pose', Pose, self.robot_pose_cb)
         rospy.Subscriber('/people_tracker/positions', PeopleTracker,
@@ -141,28 +154,30 @@ class MoveSearch(smach.State):
         self.last_move_time = rospy.get_time()
         self.is_received = bool()
         self.suspend = 0
-        self.id_now = -1
+        self.current_uuid = -1
 
     def _load_params(self):
         config = yaml.load(open(rospy.get_param("~config_file")))
         self.max_t_frames = config['max_t_frames']
 
     def execute(self, userdata):
+        rospy.loginfo("Entering Move Search mode...")
         status = 'aborted'
         count = 0
-        while True:
+        while not self.preempt_requested() and count < 10000:
             count = count + 1
             if self.is_received:
                 userdata.current_robot = self.current_robot
                 userdata.current_pose_tf = self.current_pose_tf
-                userdata.id_now = self.id_now
-                time = rospy.get_time() - self.last_move_time
-                if time > 20:
-                    break
+                userdata.current_uuid = self.current_uuid
                 status = 'succeeded'
+                time = rospy.get_time() - self.last_move_time
+                if time > 60:
+                    break
 
-            if count >= 10000:
-                break
+        if self.preempt_requested():
+            self.service_preempt()
+            status = 'preempted'
 
         return status
 
@@ -170,16 +185,16 @@ class MoveSearch(smach.State):
         self.current_robot = data
 
     def people_pose_cb(self, data):
-        if self.id_now == -1:
+        if self.current_uuid == -1:
             if len(data.uuids) == 0:
                 self.is_received = False
             else:
-                self.id_now = data.uuids[
+                self.current_uuid = data.uuids[
                     data.distances.index(min(data.distances))]
-        elif self.id_now in data.uuids:
+        elif self.current_uuid in data.uuids:
             self.suspend = 0
             self.last_post = self.current_pose_tf
-            self.current_pose_tf = data.poses[data.uuids.index(self.id_now)]
+            self.current_pose_tf = data.poses[data.uuids.index(self.current_uuid)]
 
             if hypot(self.last_move_pose.position.x -
                      self.current_pose_tf.position.x,
@@ -194,7 +209,11 @@ class MoveSearch(smach.State):
 
             if self.suspend >= self.max_t_frames:
                 self.is_received = False
-                self.id_now = -1
+                self.current_uuid = -1
                 self.suspend = 0
             else:
                 self.is_received = True
+
+    def request_preempt(self):
+        smach.State.request_preempt(self)
+        rospy.logwarn("Move Searching is preempted!")

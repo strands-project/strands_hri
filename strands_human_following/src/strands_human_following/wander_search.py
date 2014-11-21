@@ -36,9 +36,19 @@ class Wander(smach.State):
     def __init__(self):
         rospy.loginfo('Entering wander state...')
         self._load_params()
+        self.is_received = bool()
+        self.current_uuid = -1
+        self.current_robot = Pose()
+        self.current_pose_tf = Pose()
+        self.mode = rospy.get_param('~wandering_mode', 'wait')
+
         smach.State.__init__(
             self,
             outcomes=['succeeded', 'aborted', 'preempted'])
+
+        rospy.Subscriber('/people_tracker/positions',
+                         PeopleTracker, self.people_pose_cb)
+        rospy.Subscriber('/robot_pose', Pose, self.robot_pose_cb)
         rospy.loginfo('Waiting for navigation service...')
         rospy.wait_for_service('nav_goals')
 
@@ -47,8 +57,10 @@ class Wander(smach.State):
         except rospy.ServiceException as e:
             rospy.logerr("Service call failed: %s" % e)
 
+        self.client = actionlib.SimpleActionClient(
+            'monitored_navigation', MonitoredNavigationAction)
+        self.client.wait_for_server(rospy.Duration(60))
         rospy.loginfo('Receiving navigation goals...')
-        self.mode = rospy.get_param('~wandering_mode', 'wait')
 
     def _load_params(self):
         config = yaml.load(open(rospy.get_param("~config_file")))
@@ -74,65 +86,75 @@ class Wander(smach.State):
         self.wait_point.orientation.w = wp_array[6]
 
     def execute(self, userdata):
+        status = 'aborted'
+        rospy.loginfo('Enter wandering mode... ')
+
+        monav_goal = MonitoredNavigationGoal()
+        monav_goal.target_pose.header.frame_id = 'map'
+        monav_goal.target_pose.header.stamp = rospy.Time.now()
+        monav_goal.action_server = 'move_base'
+
+        if self.mode == 'normal':
+            status, userdata = self.wander_mode(monav_goal, userdata)
+        elif point_inside_poly(self.wait_point.position, self.points):
+            status, userdata = self.wait_mode(monav_goal, userdata)
+
         if self.preempt_requested():
             self.service_preempt()
-            rospy.loginfo('Reseting preempt...')
+            status = 'preempted'
 
-        rospy.loginfo('Enter wandering mode... ' +
-                      str(self.preempt_requested()))
-
-        while not self.preempt_requested():
-            nav_goals = self.nav_goals(1, 0.7, self.polygon)
-            client = actionlib.SimpleActionClient(
-                'monitored_navigation', MonitoredNavigationAction)
-            client.wait_for_server(rospy.Duration(60))
-
-            monav_goal = MonitoredNavigationGoal()
-            monav_goal.target_pose.header.frame_id = 'map'
-            monav_goal.target_pose.header.stamp = rospy.Time.now()
-            monav_goal.action_server = 'move_base'
-
-            if self.mode == 'normal':
-                monav_goal.target_pose.pose = nav_goals.goals.poses[0]
-                client.send_goal(monav_goal)
-            elif point_inside_poly(self.wait_point.position, self.points):
-                monav_goal.target_pose.pose = self.wait_point
-                client.send_goal(monav_goal)
-
-            client.wait_for_result(rospy.Duration(10))
-            while not self.preempt_requested() and \
-                    client.get_state() == GoalStatus.ACTIVE:
-                rospy.sleep(rospy.Duration(0.5))
-            client.cancel_goal()
-
-            rospy.loginfo('Waiting for move base...')
-
-        return 'succeeded'
-
-
-class Search(smach.State):
-
-    def __init__(self):
-        rospy.loginfo('Entering search state...')
-        smach.State.__init__(
-            self, outcomes=['succeeded', 'aborted', 'preempted'])
-
-        rospy.Subscriber('/people_tracker/positions',
-                         PeopleTracker, self.people_pose_cb)
-
-        self.is_received = bool()
-
-    def execute(self, userdata):
-        status = 'aborted'
-        while(True):
-            if self.is_received:
-                status = 'succeeded'
-                break
-            rospy.sleep(rospy.Duration(0.5))
+        self.current_uuid = -1
         return status
+
+    def request_preempt(self):
+        smach.State.request_preempt(self)
+        rospy.logwarn("Wandering mode is preempted!")
+
+    def wander_mode(self, monav_goal, userdata):
+        status = 'aborted'
+        while not self.preempt_requested() and status != 'succeeded':
+            nav_goals = self.nav_goals(1, 0.7, self.polygon)
+            monav_goal.target_pose.pose = nav_goals.goals.poses[0]
+            self.client.send_goal(monav_goal)
+            self.client.wait_for_result(rospy.Duration(1))
+            while not self.preempt_requested() and \
+                    self.client.get_state() == GoalStatus.ACTIVE:
+                if self.is_received:
+                    self.client.cancel_goal()
+                    status = 'succeeded'
+                    # userdata.current_uuid = self.current_uuid
+                    # userdata.current_robot = self.current_robot
+                    # userdata.current_pose_tf = self.current_pose_tf
+                    break
+
+        return status, userdata
+
+    def wait_mode(self, monav_goal, userdata):
+        status = 'aborted'
+        monav_goal.target_pose.pose = self.wait_point
+        self.client.send_goal(monav_goal)
+        self.client.wait_for_result(rospy.Duration(1))
+        while not self.preempt_requested():
+            if self.is_received:
+                if self.client.get_state() == GoalStatus.ACTIVE:
+                    self.client.cancel_goal()
+                status = 'succeeded'
+                # userdata.current_uuid = self.current_uuid
+                # userdata.current_robot = self.current_robot
+                # userdata.current_pose_tf = self.current_pose_tf
+                break
+
+        return status, userdata
 
     def people_pose_cb(self, data):
         if len(data.uuids) == 0:
             self.is_received = False
         else:
+            self.current_uuid = \
+                data.uuids[data.distances.index(min(data.distances))]
+            self.current_pose_tf = \
+                data.poses[data.uuids.index(self.current_uuid)]
             self.is_received = True
+
+    def robot_pose_cb(self, data):
+        self.current_robot = data

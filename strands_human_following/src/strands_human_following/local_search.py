@@ -19,35 +19,38 @@ class LocalSearch(smach.State):
         rospy.Subscriber('/ptu/states', JointState, self.ptu_cb)
         self.pan_status = 0.0
 
+        self.client = actionlib.SimpleActionClient(
+            'SetPTUState', PtuGotoAction)
+        rospy.loginfo('Waiting for Pantilt action server...')
+        self.client.wait_for_server(rospy.Duration(60))
+        rospy.loginfo('Connected to pan tilt server...')
+
     def ptu_cb(self, data):
         self.pan_status = data.position[0] * 360 / 6.28
 
     def execute(self, userdata):
-        rospy.sleep(rospy.Duration(0.5))
+        rospy.loginfo("Entering Local Search mode...")
+
         if userdata.degree_to_go > 0:
             angles = [0, 30, -30, 0]
         else:
             angles = [0, -30, 30, 0]
 
-        client = actionlib.SimpleActionClient(
-            'SetPTUState', PtuGotoAction)
-        rospy.loginfo('Waiting for Pantilt action server...')
-        client.wait_for_server(rospy.Duration(60))
-        rospy.loginfo('Connected to pan tilt server...')
-
         goal = PtuGotoGoal()
-
         for angle in angles:
             goal.pan = angle + self.pan_status
             goal.tilt = 0
-            goal.pan_vel = 100
+            goal.pan_vel = 50
             goal.tilt_vel = 50
+            self.client.send_goal(goal)
+            self.client.wait_for_result()
 
-            if self.preempt_requested():
-                return 'succeeded'
-
-            client.send_goal(goal)
-            client.wait_for_result(rospy.Duration(1))
-            rospy.sleep(rospy.Duration(0.5))
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
 
         return 'succeeded'
+
+    def request_preempt(self):
+        smach.State.request_preempt(self)
+        rospy.logwarn("Local Searching is preempted!")
