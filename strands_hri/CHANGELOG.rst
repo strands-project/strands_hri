@@ -2,6 +2,9 @@
 Changelog for package strands_hri
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.5 (2014-11-11)
 ------------------
 * Adding human_following to meta package

@@ -2,6 +2,9 @@
 Changelog for package strands_visualise_speech
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.5 (2014-11-11)
 ------------------
 

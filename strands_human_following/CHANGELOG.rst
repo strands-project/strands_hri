@@ -2,6 +2,14 @@
 Changelog for package strands_human_following
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* make routine, client and server executable
+* merge wander and search class into one class
+* comment def on_idle in routine_example.py
+* Remake README.md, remove duration from SimpleFollow.action
+* Contributors: Ferdian Jovan
+
 0.0.5 (2014-11-11)
 ------------------
 * Fixing install for conf dir
