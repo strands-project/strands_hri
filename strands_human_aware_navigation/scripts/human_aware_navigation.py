@@ -79,21 +79,21 @@ class DynamicVelocityReconfigure():
         self.last_cancel_time = rospy.get_rostime()
 
     def getCurrentSettings(self):
-        max_vel_x = 0.55  # round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
-        max_trans_vel = 0.55  # round(rospy.get_param("/move_base/DWAPlannerROS/max_trans_vel"),2)
-        max_rot_vel = 1.0  # round(rospy.get_param("/move_base/DWAPlannerROS/max_rot_vel"), 2)
-        min_vel_x = 0.0  # round(rospy.get_param("/move_base/DWAPlannerROS/min_vel_x"), 2)
-        min_trans_vel = 0.1  # round(rospy.get_param("/move_base/DWAPlannerROS/min_trans_vel"),2)
-        min_rot_vel = 0.4  # round(rospy.get_param("/move_base/DWAPlannerROS/min_rot_vel"), 2)
+        max_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
+        max_trans_vel = round(rospy.get_param("/move_base/DWAPlannerROS/max_trans_vel"),2)
+        max_rot_vel = round(rospy.get_param("/move_base/DWAPlannerROS/max_rot_vel"), 2)
+        #min_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/min_vel_x"), 2)
+        #min_trans_vel = round(rospy.get_param("/move_base/DWAPlannerROS/min_trans_vel"),2)
+        #min_rot_vel = round(rospy.get_param("/move_base/DWAPlannerROS/min_rot_vel"), 2)
         self.fast_param = {
             'max_vel_x': max_vel_x,
             'max_trans_vel': max_trans_vel,
             'max_rot_vel': max_rot_vel,
-            'min_vel_x': min_vel_x,
-            'min_trans_vel': min_trans_vel,
-            'min_rot_vel': min_rot_vel
+            #'min_vel_x': min_vel_x,
+            #'min_trans_vel': min_trans_vel,
+            #'min_rot_vel': min_rot_vel
         }
-        #rospy.loginfo("Found following default values for move_base: %s", self.fast_param)
+        rospy.loginfo("Found following default values for move_base: %s", self.fast_param)
 
     def resetSpeed(self):
         rospy.logdebug("Resetting speeds to max:")
@@ -165,7 +165,7 @@ class DynamicVelocityReconfigure():
         gaze_goal.runtime_sec = 0
         gaze_goal.topic_name = "/pose_extractor/pose"
         self.gazeClient.send_goal(gaze_goal)
-        self.getCurrentSettings()
+        #self.getCurrentSettings()
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
         #thread.start_new_thread(self.moveBaseThread,(self._goal,))
