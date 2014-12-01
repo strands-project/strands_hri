@@ -2,6 +2,9 @@
 Changelog for package strands_simple_follow_me
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.6 (2014-11-21)
 ------------------
 

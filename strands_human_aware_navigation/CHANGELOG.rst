@@ -2,6 +2,12 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [human_aware_navigation] Reading default velocities from move_base params on start
+  Also not reconfiguring the min values any more. Those are never used but overwrite the set parameters.
+* Contributors: Christian Dondrup
+
 0.0.6 (2014-11-21)
 ------------------
 
