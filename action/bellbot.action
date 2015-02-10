@@ -1,0 +1,9 @@
+# Define the goal
+string starting_waypoint_name # Waypoint the bellbot gui will be started at.  
+uint32 max_time # maximum search time (in seconds)
+---
+# Define the result
+# empty for now as there is no direct result of the bellbot.
+---
+# Define a feedback message
+# empty for now as well. 
