@@ -42,7 +42,7 @@ class BellbotStateMachine(Agent):
                                                  'preempted': 'preempted' 
                                                })
             smach.StateMachine.add('Guiding', Guiding(), 
-                                   transitions={ 'succeeded': 'WaitingForGoal', 
+                                   transitions={ 'succeeded': 'WaitingForFeedback', 
                                                  'aborted': 'aborted',
                                                  'preempted': 'preempted' 
                                                })
@@ -73,7 +73,7 @@ class Setup(smach.State):
     """
 
     def __init__(self):
-        smach.State.__init(self,
+        smach.State.__init__(self,
                            outcomes=['succeeded', 'aborted', 'preempted'],
                            input_keys=['goal'],
                            output_keys=[])
@@ -94,7 +94,7 @@ class Setup(smach.State):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
         navgoal = topological_navigation.msg.GotoNodeGoal()
         
-        rospy.logging("Requesting Navigation to %s", userdata.goal.starting_waypoint_name)
+        rospy.loginfo("Requesting Navigation to %s", userdata.goal.starting_waypoint_name)
         navgoal.target = userdata.goal.starting_waypoint_name
         
         # Sends the goal to the action server.
@@ -110,11 +110,10 @@ class Setup(smach.State):
             else:
                 status=self.client.get_state()
                 rospy.sleep(rospy.Duration.from_sec(0.01))
-                res=self.client.get_result()
         
         # Check if the naviation was successful 
-        navigation_success  = self.client.get_result()
-        if navigation_success:
+        status = self.client.get_state()
+        if status == GoalStatus.SUCCEEDED:
             return 'succeeded' 
         else:
             return 'aborted'
@@ -126,13 +125,16 @@ class WaitingForGoal(smach.State):
     """
 
     def __init__(self):
-        smach.State.__init(self,
+        smach.State.__init__(self,
                            outcomes=['succeeded', 'aborted', 'preempted'],
                            input_keys=[],
-                           output_keys=[])
+                           output_keys=['target'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
+
+        userdata.target = 'WayPoint3'
+
         return 'succeeded' 
 
 class Guiding(smach.State):
@@ -142,14 +144,49 @@ class Guiding(smach.State):
     """
 
     def __init__(self):
-        smach.State.__init(self,
+        smach.State.__init__(self,
                            outcomes=['succeeded', 'aborted', 'preempted'],
-                           input_keys=[],
+                           input_keys=['target'],
                            output_keys=[])
+
+        rospy.on_shutdown(self._on_node_shutdown)
+        
+        self.client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)
+        
+        self.client.wait_for_server()
+        
+        rospy.loginfo('Guiding ... Init done')
+        
+    def _on_node_shutdown(self):
+        self.client.cancel_all_goals()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        return 'succeeded' 
+        navgoal = topological_navigation.msg.GotoNodeGoal()
+        
+        rospy.loginfo("Requesting Navigation to %s", userdata.target)
+        navgoal.target = userdata.target
+        
+        # Sends the goal to the action server.
+        self.client.send_goal(navgoal)
+
+        # Waits for the server to finish performing the action.
+        status=self.client.get_state()
+        while (status == GoalStatus.ACTIVE or status == GoalStatus.PENDING):
+            if self.preempt_requested(): 
+                self.service_preempt()
+                self.client.cancel_all_goals()
+                return 'preempted'
+            else:
+                status=self.client.get_state()
+                rospy.sleep(rospy.Duration.from_sec(0.01))
+        
+        # Check if the naviation was successful 
+        status  = self.client.get_state()
+        if status == GoalStatus.SUCCEEDED:
+            return 'succeeded' 
+        else:
+            return 'aborted'
 
 class WaitingForFeedback(smach.State):
 
@@ -158,7 +195,7 @@ class WaitingForFeedback(smach.State):
     """
 
     def __init__(self):
-        smach.State.__init(self,
+        smach.State.__init__(self,
                            outcomes=['succeeded', 'aborted', 'preempted'],
                            input_keys=[],
                            output_keys=[])

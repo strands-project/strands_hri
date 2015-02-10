@@ -19,7 +19,7 @@ class BellbotServer(object):
     
     def __init__(self, name):
         self._action_name = name
-        self._as = actionlib.SimpleActionServer(self._action_name, object_search_action.msg.SearchAction, execute_cb=self.execute_cb, auto_start = False)
+        self._as = actionlib.SimpleActionServer(self._action_name, bellbot_action_server.msg.bellbotAction, execute_cb=self.execute_cb, auto_start = False)
 
         self._as.start()
         rospy.loginfo('Started action server for the bellbot')
@@ -63,6 +63,6 @@ class BellbotServer(object):
 
 
 if __name__ == '__main__':
-  rospy.init_node('bellbot_action')
+  rospy.init_node('bellbot_action_server')
   BellbotServer(rospy.get_name())
   rospy.spin()
