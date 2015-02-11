@@ -243,9 +243,31 @@ class WaitingForFeedback(smach.State, StatePublisher):
 
         StatePublisher.__init__(self)
 
+        self._feedback_max_time = rospy.get_param('feedback_max_time','30')
+        rospy.loginfo('max_time found: %s', self._feedback_max_time)
+
+        #Create a service in order to wait for feedback
+        self.service = rospy.Service('/bellbot_feedback', Feedback, self.service_cb)
+        self._got_feedback = False
+    
+    def service_cb(self, request):
+        self._got_feedback = True
+
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
         self.publish(self.__class__.__name__)
+        
+        self._endtime = rospy.get_time() + self._feedback_max_time
+        rospy.logfatal('start time: %s', rospy.get_time())
+        rospy.logfatal('end time: %s', self._endtime)
+        #Here we wait until feedback arrived. 
+        while not self._got_feedback and rospy.get_time() < self._endtime:
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            else:
+                rospy.sleep(rospy.Duration.from_sec(0.01))
+
+        self._got_feedback = False
+
         return 'succeeded' 
-
-
