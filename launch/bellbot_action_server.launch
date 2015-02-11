@@ -1,0 +1,9 @@
+<launch>
+  <!-- declare args to be passed in -->
+  <arg name="feedback_max_time" default="20"/> 
+
+  <param name="feedback_max_time" type="int" value="$(arg feedback_max_time)" />
+  
+  <node name="bellbot_action_server" pkg="bellbot_action_server" type="bellbot_server.py" output="screen"/>
+</launch>
+
