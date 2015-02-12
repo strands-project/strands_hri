@@ -63,7 +63,8 @@ class BellbotStateMachine(Agent):
                                                  'preempted': 'preempted' 
                                                })
             smach.StateMachine.add('WaitingForFeedback', WaitingForFeedback(), 
-                                   transitions={ 'succeeded': 'Setup', 
+                                   transitions={ 'succeeded': 'Setup',
+                                                 'succeeded_mode3': 'succeeded',
                                                  'aborted': 'aborted',
                                                  'preempted': 'preempted' 
                                                })
@@ -85,7 +86,7 @@ class StatePublisher(object):
 
     def __init__(self):
         rospy.loginfo("Running the init!")
-        self.state_publisher = rospy.Publisher('/bellbot_state', BellbotState, latch=True)
+        self.state_publisher = rospy.Publisher('/bellbot_state', BellbotState, latch=True, queue_size=1)
         
     def publish(self, state):
         self.state_publisher.publish(state)
@@ -358,8 +359,8 @@ class WaitingForFeedback(smach.State, StatePublisher):
 
     def __init__(self):
         smach.State.__init__(self,
-                           outcomes=['succeeded', 'aborted', 'preempted'],
-                           input_keys=[],
+                           outcomes=['succeeded', 'succeeded_mode3', 'aborted', 'preempted'],
+                           input_keys=['goal'],
                            output_keys=[])
 
         StatePublisher.__init__(self)
@@ -368,7 +369,13 @@ class WaitingForFeedback(smach.State, StatePublisher):
         rospy.loginfo('max_time found: %s', self._feedback_max_time)
 
         #Create a service in order to wait for feedback
-        self.service = rospy.Service('/bellbot_feedback', Feedback, self.service_cb)
+        service_name = '/bellbot_feedback'
+        try:
+            rospy.wait_for_service(service_name, timeout=1)
+        except:
+            rospy.loginfo('Setting up service: %s', service_name )
+            self.service = rospy.Service(service_name, Feedback, self.service_cb)
+            rospy.loginfo('Service running: %s', service_name )
         self._got_feedback = False
     
     def service_cb(self, request):
@@ -397,4 +404,7 @@ class WaitingForFeedback(smach.State, StatePublisher):
                 
         self._got_feedback = False
 
+        mode = userdata.goal.mode
+        if mode == 3:
+            return 'succeeded_mode3'
         return 'succeeded' 

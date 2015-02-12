@@ -82,6 +82,8 @@ class BellbotServer(object):
         
         smach_thread.join()
 
+        self._as.set_succeeded(self._result)
+
         
 
 if __name__ == '__main__':

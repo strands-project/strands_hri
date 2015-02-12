@@ -22,7 +22,10 @@ def bellbot_test_client(target):
 
 
     # Creates a goal to send to the action server.
-    goal = bellbot_action_server.msg.bellbotGoal(mode=2, starting_waypoint_name = target, preselected_goal="WayPoint2",text="STRANDS Winter School")
+
+    goal = bellbot_action_server.msg.bellbotGoal(mode=1, starting_waypoint_name = target, preselected_goal="WayPoint2",text="STRANDS Winter School")
+    #goal = bellbot_action_server.msg.bellbotGoal(mode=2, starting_waypoint_name = target, preselected_goal="WayPoint2",text="Welcome to the STRANDS Winter School. Are you ready to code?")
+    #goal = bellbot_action_server.msg.bellbotGoal(mode=3, starting_waypoint_name = target, preselected_goal="WayPoint2",text="Welcome Mr. X.'")
 
     # Sends the goal to the action server.
     rospy.loginfo('Sending goal')

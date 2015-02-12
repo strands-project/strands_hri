@@ -1,6 +1,6 @@
 <launch>
   <!-- declare args to be passed in -->
-  <arg name="feedback_max_time" default="60"/> 
+  <arg name="feedback_max_time" default="10"/> 
 
   <param name="feedback_max_time" type="int" value="$(arg feedback_max_time)" />
   
