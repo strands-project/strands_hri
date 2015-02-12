@@ -23,8 +23,16 @@ class BellbotServer(object):
 
         self._as.start()
         rospy.loginfo('Started action server for the bellbot')
+
+        self._stop = False
+        rospy.on_shutdown(self.shutdown_hook)
         
-        
+    def is_preempt_requested(self):
+        return self._as.is_preempt_requested()
+
+    def shutdown_hook(self):
+        self._stop = True
+
     def execute_cb(self, goal):
 
         rospy.loginfo('Received goal request: %s', goal)
@@ -49,7 +57,7 @@ class BellbotServer(object):
         
         while self.bellbot_sm.get_sm().is_running() and not self.bellbot_sm.get_sm().preempt_requested():
             # check that preempt has not been requested by the client
-            if self._as.is_preempt_requested():
+            if self._as.is_preempt_requested() or self._stop:
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self._as.set_preempted()
                 self.bellbot_sm.get_sm().request_preempt()
@@ -60,9 +68,14 @@ class BellbotServer(object):
 
         if self.success:
             rospy.loginfo('%s: Succeeded' % self._action_name)
-
+        
+        smach_thread.join()
 
 if __name__ == '__main__':
-  rospy.init_node('bellbot_action_server')
-  BellbotServer(rospy.get_name())
-  rospy.spin()
+    rospy.init_node('bellbot_action_server')
+    bellbot = BellbotServer(rospy.get_name())
+    rospy.spin()
+    
+    #r = rospy.Rate(1)
+    #while not bellbot.is_preempt_requested():
+    #    r.sleep()

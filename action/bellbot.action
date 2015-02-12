@@ -1,6 +1,8 @@
 # Define the goal
+int32  mode # 1=multi-runs-multi-goals, 2=multi-runs-single-goal, 3=single-run-single-goal
 string starting_waypoint_name # Waypoint the bellbot gui will be started at.  
-uint32 max_time # maximum search time (in seconds)
+string preselected_goal
+string text
 ---
 # Define the result
 # empty for now as there is no direct result of the bellbot.

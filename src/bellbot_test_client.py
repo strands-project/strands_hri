@@ -16,18 +16,22 @@ def bellbot_test_client(target):
 
     # Waits until the action server has started up and started
     # listening for goals.
+    rospy.loginfo('Waiting for server')
     client.wait_for_server()
+    rospy.loginfo('Connected to server')
 
-    print('Found server')
 
     # Creates a goal to send to the action server.
-    goal = bellbot_action_server.msg.bellbotGoal(starting_waypoint_name = target, max_time = 123)
+    goal = bellbot_action_server.msg.bellbotGoal(mode=1, starting_waypoint_name = target, max_time = 123)
 
     # Sends the goal to the action server.
+    rospy.loginfo('Sending goal')
     client.send_goal(goal)
 
     # Waits for the server to finish performing the action.
+    rospy.loginfo('Waiting for result')
     client.wait_for_result()
+    rospy.loginfo('Received result')
 
     # Prints out the result of executing the action
     return client.get_result()  
