@@ -22,7 +22,7 @@ def bellbot_test_client(target):
 
 
     # Creates a goal to send to the action server.
-    goal = bellbot_action_server.msg.bellbotGoal(mode=1, starting_waypoint_name = target, max_time = 123)
+    goal = bellbot_action_server.msg.bellbotGoal(mode=2, starting_waypoint_name = target, preselected_goal="WayPoint2",text="")
 
     # Sends the goal to the action server.
     rospy.loginfo('Sending goal')

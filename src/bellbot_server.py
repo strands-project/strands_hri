@@ -8,6 +8,7 @@ import threading
 import actionlib
 
 from bellbot_action_server.msg import *
+from strands_executive_msgs.srv import IsTaskInterruptible
 
 from bellbot_state_machine import BellbotStateMachine
 
@@ -26,6 +27,14 @@ class BellbotServer(object):
 
         self._stop = False
         rospy.on_shutdown(self.shutdown_hook)
+
+        rospy.Service(self._action_name + '_is_interruptible', IsTaskInterruptible, self.is_interruptible)
+
+    def is_interruptible(self, req):
+        # rospy.loginfo('Yes, interrupt me, go ahead')
+        # return True
+        rospy.loginfo('No, I will never stop')
+        return False
         
     def is_preempt_requested(self):
         return self._as.is_preempt_requested()
@@ -66,10 +75,14 @@ class BellbotServer(object):
 
             r.sleep()
 
+        sm = self.bellbot_sm.get_sm()
+        
         if self.success:
             rospy.loginfo('%s: Succeeded' % self._action_name)
         
         smach_thread.join()
+
+        
 
 if __name__ == '__main__':
     rospy.init_node('bellbot_action_server')
