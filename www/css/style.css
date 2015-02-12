@@ -9,7 +9,7 @@ p {
 }
 
 .main-element {
-  
+
 }
 .feedback-button-speed{
   width:324px;
@@ -129,4 +129,50 @@ p {
 
 #button-cont .button {
   width: 50px;
+}
+
+.livescreen .line {
+  height: 2px;
+  background-color: grey;
+}
+
+.livescreen .heading, .livescreen .status {
+  display: inline-block;
+}
+
+.livescreen #status-head {
+  text-align: center;
+}
+
+.livescreen .status {
+  font-size: 35px;
+  /* margin-top: -26px; */
+  margin-left: 24px;
+  color: green;
+}
+
+.livescreen .right, .livescreen .left {
+  display: inline-block;
+}
+
+.livescreen .feedback-button {
+  width: 515px;
+  height: 410px;
+  border-color: black;
+}
+
+#statustext {
+
+  height: 38px;
+
+  border: none;
+
+  resize: none;
+
+  position: relative;
+
+  top: 8px;
+
+  overflow: hidden;
+
 }

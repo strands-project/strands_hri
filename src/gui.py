@@ -13,10 +13,11 @@ from std_msgs.msg import String
 import random
 from destination_data import Destination_Data
 from bellbot_action_server.srv import *
+from topological_utils.srv import NodeMetadata, NodeMetadataRequest, NodeMetadataResponse
 
 def dummy_data():
     dests = {}
-    for i in range(10):
+    for i in range(1, 10):
         name = "WayPoint" + str(i)
         dests[name] = Destination_Data(name=name, description=name, kind="office", goto=name, available=True)
 #    for i in range(4):
@@ -69,7 +70,8 @@ class GUI_Operation_Feedback(object):
         pass
 
     def display(self):
-        strands_webserver.client_utils.display_relative_page(display_no, 'cake.html')
+        #strands_webserver.client_utils.display_relative_page(display_no, 'cake.html')
+	strands_webserver.client_utils.display_relative_page(display_no, 'livescreen.html')
 
 class GUI_User_Evaluation(object):
     def __init__(self):
@@ -98,15 +100,25 @@ class GUI_Destination_Selection(object):
 
     def get_metadata(self):
         dests = {}
-        # rospy.wait_for_service('/xxx')
-        # try:
-        #     proxy = rospy.ServiceProxy('/xxx', ServiceName)
-        #     res = proxy(ServiceNameRequest())
-        #     some_processing
-        #     return dests
-        # except rospy.ServiceException, e:
-        #     print "Service call failed: %s"%e
-        return dummy_data()
+        rospy.wait_for_service('/query_node_metadata')
+        try:
+          print "Getting offices"
+          proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
+          res = proxy(NodeMetadataRequest("tu_wien", "tu_wien_bellbot", 'office')) # 'office' | 'Meeting Rooms'
+#          print res
+          for i in range(0, len(res.name)):
+            dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+
+          print "Getting meeting rooms"
+          res = proxy(NodeMetadataRequest("tu_wien", "tu_wien_bellbot", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
+#          print res
+          for i in range(0, len(res.name)):
+            dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+          return dests
+
+        except rospy.ServiceException, e:
+          print "Service call failed: %s"%e
+        #return dummy_data()
 
     def display(self):
         strands_webserver.client_utils.display_content(display_no, self.www_content)
@@ -125,10 +137,10 @@ class Callback_Trigger_Select_Destination(object):
         rospy.Service(self.service_prefix+'/trigger_back_'+self.dest.id, std_srvs.srv.Empty, self.trigger_back)
 
     def extra_content(self):
-        if self.dest.goto == self.dest.name:
-            new = '<div><h3 color="red">' + 'I am about to guide you to ' + self.dest.name + '. Click to go now or return to main menu.' + '</h3></div>'
+        if self.dest.at_node:
+          new = '<div><h3 color="red">' + 'I am about to guide you to ' + self.dest.name + '. Click to go now or return to main menu.' + '</h3></div>'
         else:
-            new = '<div><h3><font color="red">Warning: </font>' + 'I am afraid I can only guide you the nearest lift that leads to ' + self.dest.name + '. This would be ' + self.dest.goto + '. Click to go now or return to main menu.'  + '</h3></div>'
+          new = '<div><h3><font color="red">Warning: </font>' + 'I am afraid I can only guide you upto a point. See below for further directions. Click to go now or return to main menu.'  + '</h3></div>'
         old = '<div class="notice">__REPLACE_ME__</div>'
         self.www_content = self.www_content.replace(old, new)
 
