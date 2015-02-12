@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-PACKAGE='bellbot_scheduler'
-import roslib
-roslib.load_manifest(PACKAGE)
 
 import rospy
 import sys
