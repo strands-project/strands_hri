@@ -47,10 +47,12 @@ class Bellbot_GUI(object):
         self.gui_operation_feedback = GUI_Operation_Feedback()
         self.gui_evaluation = GUI_User_Evaluation()
         self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
+        self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
         self.states_cbs = {'Setup': self.gui_setup.display,
                            'WaitingForGoal': self.gui_dest_selection.display,
                            'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
+                           'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
                            'Guiding': self.gui_operation_feedback.display,
                            'WaitingForFeedback': self.gui_evaluation.display}
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
@@ -87,6 +89,27 @@ class GUI_Wait_For_Single_Guest(object):
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
+
+class GUI_Wait_For_Multi_Guests(object):
+    def __init__(self):
+        self.service_prefix = '/bellbot_gui_services'
+        self.buttons = [('Go', 'trigger_confirm_multi_guests')]
+        rospy.Service(self.service_prefix+'/trigger_confirm_multi_guests', std_srvs.srv.Empty, self.trigger_go)
+
+    def display(self, state=None):
+        buttons_content = strands_webserver.page_utils.generate_alert_button_page("", self.buttons, self.service_prefix)
+        message = "<div>Click to confirm that you would like to go to " + state.goal + "</div>" + "<div>" + state.text + "</div>"
+        www_content = message + buttons_content
+        strands_webserver.client_utils.display_content(display_no, www_content)
+
+    def trigger_go(self, req):
+        rospy.wait_for_service('/bellbot_accept_target_mult')
+        try:
+            proxy = rospy.ServiceProxy('/bellbot_accept_target_mult', NewTarget)
+            res = proxy(NewTargetRequest(""))
+            return res
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
 
 
 class GUI_Setup(object):
