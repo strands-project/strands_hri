@@ -14,21 +14,8 @@ from actionlib_msgs.msg import *
 from std_msgs.msg import String
 import topological_navigation.msg
 
-from bellbot_action_server.srv import * 
-
-# class ServiceHandler(object):
-#     """
-#     Class to handle service requests
-#     """
-#     def __init__(self):
-#         rospy.loginfo("Init ServiceHandler")
-#         self.service = rospy.Service('/bellbot_new_target', NewTarget, self.service_cb)
-#         self._got_request = False
-#         self._target = None
-        
-#     def service_cb(self, request):
-#         self._got_request = True
-#         self._target = request.target
+from bellbot_action_server.srv import *
+from bellbot_action_server.msg import * 
 
 class BellbotStateMachine(Agent):
 
@@ -87,13 +74,9 @@ class BellbotStateMachine(Agent):
         rospy.loginfo('Getting parameters from server')
 
         self.sm.userdata.goal  = goal 
-
         
     def get_sm_userdata(self):
         return self.sm.userdata
-
-
-
 
 class StatePublisher(object):
     """
@@ -102,7 +85,7 @@ class StatePublisher(object):
 
     def __init__(self):
         rospy.loginfo("Running the init!")
-        self.state_publisher = rospy.Publisher('/bellbot_state', String, latch=True)
+        self.state_publisher = rospy.Publisher('/bellbot_state', BellbotState, latch=True)
         
     def publish(self, state):
         self.state_publisher.publish(state)
@@ -128,9 +111,7 @@ class Setup(smach.State, StatePublisher):
         self.client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)
         
         self.client.wait_for_server()
-        
         StatePublisher.__init__(self)
-
         rospy.loginfo(" Setup ... Init done")
         
     def _on_node_shutdown(self):
@@ -138,7 +119,7 @@ class Setup(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        self.publish(self.__class__.__name__)
+        self.publish(BellbotState(name=self.__class__.__name__))
         navgoal = topological_navigation.msg.GotoNodeGoal()
         
         rospy.loginfo("Requesting Navigation to %s", userdata.goal.starting_waypoint_name)
@@ -203,7 +184,9 @@ class WaitingForGoal(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        self.publish(self.__class__.__name__)
+        state = BellbotState()
+        state.name = self.__class__.__name__
+        self.publish(state)
         
         #Here we wait until a target arived. 
         while self._target == None:
@@ -247,7 +230,11 @@ class WaitingForMultipleGuests(smach.State, StatePublisher):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        self.publish(self.__class__.__name__)
+        state = BellbotState()
+        state.name = self.__class__.__name__
+        state.goal = userdata.goal.preselected_goal
+        state.text = userdata.goal.text
+        self.publish(state)
         
         #Here we wait until a target arived. 
         while self._got_request == False:
@@ -290,7 +277,11 @@ class WaitingForSingleGuest(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        self.publish(self.__class__.__name__)
+        state = BellbotState()
+        state.name = self.__class__.__name__
+        state.goal = userdata.goal.preselected_goal
+        state.text = userdata.goal.text
+        self.publish(state)
         
         #Here we wait until a target arived. 
         while self._got_request == False:
@@ -332,7 +323,7 @@ class Guiding(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        self.publish(self.__class__.__name__)
+        self.publish(BellbotState(name=self.__class__.__name__))
         navgoal = topological_navigation.msg.GotoNodeGoal()
         
         rospy.loginfo("Requesting Navigation to %s", userdata.target)
@@ -385,7 +376,7 @@ class WaitingForFeedback(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-        self.publish(self.__class__.__name__)
+        self.publish(BellbotState(name=self.__class__.__name__))
         
         self._endtime = rospy.get_time() + self._feedback_max_time
         #rospy.loginfo('start time: %s', rospy.get_time())
