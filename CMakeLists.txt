@@ -5,12 +5,15 @@ project(bellbot_gui)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  rospy
+  roscpp
   actionlib
   actionlib_msgs
   twitter_bootstrap
   strands_webtools
   dynamic_reconfigure
-  std_msgs message_generation
+  std_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -55,6 +58,7 @@ catkin_python_setup()
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
+   FeedbackDone.srv
 #   MapButtonService.srv
 #   ShowPageService.srv
 #   CreatePageService.srv
@@ -173,3 +177,7 @@ install(DIRECTORY scripts/
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(bellbot_feedback_recorder src/record_feedback.cpp)
+target_link_libraries(bellbot_feedback_recorder ${catkin_LIBRARIES})
+add_dependencies(bellbot_feedback_recorder bellbot_feedback_recorder_generate_messages_cpp)

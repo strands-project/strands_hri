@@ -13,7 +13,10 @@ from std_msgs.msg import String
 import random
 from destination_data import Destination_Data
 from bellbot_action_server.srv import *
+from bellbot_action_server.msg import *
 from topological_utils.srv import NodeMetadata, NodeMetadataRequest, NodeMetadataResponse
+from bellbot_gui.srv import *
+
 
 def dummy_data():
     dests = {}
@@ -31,7 +34,7 @@ def random_page(choices=('http://strands-project.eu',
     return random.choice(choices)
 
 class Bellbot_GUI(object):
-    def __init__(self, bellbot_state_topic_name="/bellbot_state"):
+    def __init__(self):
         # display a start-up page
         strands_webserver.client_utils.display_url(display_no, random_page())
 
@@ -43,25 +46,54 @@ class Bellbot_GUI(object):
         self.gui_dest_selection = GUI_Destination_Selection()
         self.gui_operation_feedback = GUI_Operation_Feedback()
         self.gui_evaluation = GUI_User_Evaluation()
+        self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
 
         self.states_cbs = {'Setup': self.gui_setup.display,
                            'WaitingForGoal': self.gui_dest_selection.display,
+                           'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
                            'Guiding': self.gui_operation_feedback.display,
                            'WaitingForFeedback': self.gui_evaluation.display}
-        self.sub = rospy.Subscriber(bellbot_state_topic_name, String, self.manage)
+        rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
 
     def manage(self, state):
+        print state
         try:
-            self.states_cbs[state.data]()
+            self.states_cbs[state.name](state)
         except KeyError:
             rospy.logerr("Bellbot_GUI/manager: sad panda")
             strands_webserver.client_utils.display_url(display_no, random_page())
+
+    def cb_feedback_finished(self, req):
+        print req
+
+class GUI_Wait_For_Single_Guest(object):
+    def __init__(self):
+        self.service_prefix = '/bellbot_gui_services'
+        self.buttons = [('Go', 'trigger_confirm_single_guest')]
+        rospy.Service(self.service_prefix+'/trigger_confirm_single_guest', std_srvs.srv.Empty, self.trigger_go)
+
+    def display(self, state=None):
+        buttons_content = strands_webserver.page_utils.generate_alert_button_page("", self.buttons, self.service_prefix)
+        message = "<div>Click to confirm that you would like to go to " + state.goal + "</div>" + "<div>" + state.text + "</div>"
+        www_content = message + buttons_content
+        strands_webserver.client_utils.display_content(display_no, www_content)
+
+    def trigger_go(self, req):
+        rospy.wait_for_service('/bellbot_accept_target_single')
+        try:
+            proxy = rospy.ServiceProxy('/bellbot_accept_target_single', NewTarget)
+            res = proxy(NewTargetRequest(""))
+            return res
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
+
 
 class GUI_Setup(object):
     def __init__(self):
         pass
 
-    def display(self):
+    def display(self, state=None):
         strands_webserver.client_utils.display_url(display_no, random_page())
 
 
@@ -69,15 +101,25 @@ class GUI_Operation_Feedback(object):
     def __init__(self):
         pass
 
-    def display(self):
+    def display(self, state):
         #strands_webserver.client_utils.display_relative_page(display_no, 'cake.html')
-	strands_webserver.client_utils.display_relative_page(display_no, 'livescreen.html')
+	    strands_webserver.client_utils.display_relative_page(display_no, 'livescreen.html')
 
 class GUI_User_Evaluation(object):
     def __init__(self):
-        pass
+        rospy.Service('/bellbot/gui/feedback_done', FeedbackDone, self.handle_feedback_done)
 
-    def display(self):
+    def handle_feedback_done(self, req):
+        print "feedback done"
+        rospy.wait_for_service('/bellbot_feedback')
+        try:
+            proxy = rospy.ServiceProxy('/bellbot_feedback', Feedback)
+            proxy(FeedbackRequest())
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+        return
+
+    def display(self, state=None):
         strands_webserver.client_utils.display_relative_page(display_no, 'feedback.html')
 
 
@@ -102,25 +144,24 @@ class GUI_Destination_Selection(object):
         dests = {}
         rospy.wait_for_service('/query_node_metadata')
         try:
-          print "Getting offices"
-          proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
-          res = proxy(NodeMetadataRequest("tu_wien", "tu_wien_bellbot", 'office')) # 'office' | 'Meeting Rooms'
-#          print res
-          for i in range(0, len(res.name)):
-            dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+            print "Getting offices"
+            proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
+            res = proxy(NodeMetadataRequest("lg_20140618", "lg_20140618", 'office')) # 'office' | 'Meeting Rooms'
+            for i in range(0, len(res.name)):
+                dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
 
-          print "Getting meeting rooms"
-          res = proxy(NodeMetadataRequest("tu_wien", "tu_wien_bellbot", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
-#          print res
-          for i in range(0, len(res.name)):
-            dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
-          return dests
+            print "Getting meeting rooms"
+            res = proxy(NodeMetadataRequest("lg_20140618", "lg_20140618", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
+
+            for i in range(0, len(res.name)):
+                dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+            return dests
 
         except rospy.ServiceException, e:
-          print "Service call failed: %s"%e
+            print "Service call failed: %s"%e
         #return dummy_data()
 
-    def display(self):
+    def display(self, state=None):
         strands_webserver.client_utils.display_content(display_no, self.www_content)
 
 class Callback_Trigger_Select_Destination(object):
@@ -159,7 +200,7 @@ class Callback_Trigger_Select_Destination(object):
         rospy.wait_for_service('/bellbot_new_target')
         try:
           proxy = rospy.ServiceProxy('/bellbot_new_target', NewTarget)
-          res = proxy(NewTargetRequest(self.dest.name))
+          res = proxy(NewTargetRequest(self.dest.goto))
           return res
           #return NewTargetResponse()
         except rospy.ServiceException, e:
@@ -178,5 +219,4 @@ if __name__ == '__main__':
     display_no = rospy.get_param("~display", 0)
 
     gui = Bellbot_GUI()
-    # gui.gui_dest_selection.draw_gui_select_destinations()
     rospy.spin()

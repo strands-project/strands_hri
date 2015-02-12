@@ -44,7 +44,8 @@
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>bellbot_action_server</build_depend>
   <build_depend>topological_utils</build_depend>
-
+  <build_depend>roscpp</build_depend>
+  
   <run_depend>twitter_bootstrap</run_depend>
   <run_depend>strands_webtools</run_depend>
   <run_depend>strands_webserver</run_depend>
@@ -52,6 +53,7 @@
   <run_depend>robblog</run_depend>  
   <run_depend>bellbot_action_server</run_depend>
   <run_depend>topological_utils</run_depend>
-
+  <run_depend>roscpp</run_depend>
+  
 </package>
 
