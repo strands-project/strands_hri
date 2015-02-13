@@ -44,8 +44,10 @@ class BellbotScheduler() :
         date_now = dt.datetime.now()
         new_date = date_now.replace(hour = int(time_list[0]), minute = int(time_list[1]))
 	print 'Schedule date ',new_date
+	on_demand = False
         if (new_date < date_now) :
             delta = 600 # minimum number of seconds for the scheduler to schedule
+	    on_demand = True
         else:
             tdelta = new_date - date_now
             delta = tdelta.seconds
@@ -64,14 +66,16 @@ class BellbotScheduler() :
 	print 'end time ', end_time
 
 	print "Scheduling a new bellbot task from ",request.start_waypoint, " to ", request.end_waypoint, " start time: ",new_date, "for a duration of ", self.task_duration
-        self.schedule_bellbot_task(request.mode, request.start_waypoint, request.end_waypoint, request.description, start_time, end_time, False)
+        self.schedule_bellbot_task(request.mode, request.start_waypoint, request.end_waypoint, request.description, start_time, end_time, on_demand)
 
 
     def schedule_bellbot_task(self, mode, start_wp, end_wp, description, start_time, end_time, on_demand=False):
         try:
 
-
-            task = Task(start_node_id="WayPoint4", action=self.bellbot_as_name, max_duration=self.task_duration , start_after=start_time, end_before=end_time)
+	    if on_demand :
+            	task = Task(start_node_id="WayPoint4", action=self.bellbot_as_name, max_duration=self.task_duration)
+	    else :
+            	task = Task(start_node_id="WayPoint4", action=self.bellbot_as_name, max_duration=self.task_duration , start_after=start_time, end_before=end_time)
             task_utils.add_int_argument(task, mode)
             task_utils.add_string_argument(task, start_wp)
             task_utils.add_string_argument(task, end_wp)
@@ -86,15 +90,9 @@ class BellbotScheduler() :
                 add_task_srv_name = '/task_executor/add_task'
                 set_exe_stat_srv_name = '/task_executor/set_execution_status'
 
-                rospy.loginfo("Waiting for task_executor service...")
-                rospy.wait_for_service(add_task_srv_name)
-                rospy.wait_for_service(set_exe_stat_srv_name)
-                rospy.loginfo("Done")
-
-                print self.add_task_srv(task)
-
-                #Make sure the task executor is running
-                self.set_execution_status(True)
+            print self.add_task_srv(task)
+            #Make sure the task executor is running
+            self.set_execution_status(True)
 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
