@@ -26,7 +26,7 @@
 <div id= 'body' class='livescreen'>
 
   <div id = 'status-head'>
-    <p class ='heading'>ROBOT LIVE STATUS</p><textarea id = 'statustext' class ='status'>IDLE</textarea>
+    <p class ='heading'>ROBOT LIVE STATUS</p><textarea id = 'statustext' class ='status'>Guiding</textarea>
   </div>
 
   <div class='line'></div>
@@ -53,7 +53,7 @@
 $( document ).ready(function() {
 
 	var ros = new ROSLIB.Ros({
-		url : 'ws://128.131.212.143:9090'
+		url : 'ws://localhost:9090'
 	});
 
 	ros.on('connection', function() {
@@ -183,7 +183,7 @@ $( document ).ready(function() {
 
 				var viewer2 = new MJPEGCANVAS.Viewer({
 					divID : 'mjpeg',
-					host : '128.131.212.143',
+					host : 'localhost',
 					width : 515,
 					height : 410,
 					topic : '/head_xtion/rgb/image_color'

@@ -151,17 +151,46 @@ class GUI_Destination_Selection(object):
         self.dests = self.get_metadata()
         self.dests_ab_sorted = sorted(self.dests.keys())
         self.service_prefix = '/bellbot_gui_services'
-        self.buttons = []
+        self.all_buttons = []
         self.callbacks = {}
+        self.cat_select_callbacks = {}
+        self.dests_types = {'office': 'Offices', 'Meeting Rooms': 'Meeting Rooms'}
+
+        name = "Click to select destination type:"
+        cat_select_buttons = [('Offices', "select_offices"), ("Meeting Rooms", "select_meeting_rooms")]
+        self.cat_select_content = strands_webserver.page_utils.generate_alert_button_page(name, cat_select_buttons, self.service_prefix)
+        rospy.Service(self.service_prefix + "/select_offices", std_srvs.srv.Empty, self.cb_offices)
+        rospy.Service(self.service_prefix + "/select_meeting_rooms", std_srvs.srv.Empty, self.cb_meeting_rooms)
 
         for k in self.dests_ab_sorted:
             srv_name = self.service_prefix + "/select_" + self.dests[k].id
             self.callbacks[k] = Callback_Trigger_Select_Destination(self.dests[k], self)
             rospy.Service(srv_name, std_srvs.srv.Empty, self.callbacks[k].trigger)
-            self.buttons.append((self.dests[k].name, "select_" + self.dests[k].id))
+            self.all_buttons.append((self.dests[k].name, "select_" + self.dests[k].id))
         name = 'Click to select your destination:'
-        self.www_content = strands_webserver.page_utils.generate_alert_button_page(name, self.buttons, self.service_prefix)
+        self.www_content = strands_webserver.page_utils.generate_alert_button_page(name, self.all_buttons, self.service_prefix)
 
+    def display(self, state=None):
+        # strands_webserver.client_utils.display_content(display_no, self.www_content)
+        strands_webserver.client_utils.display_content(display_no, self.cat_select_content)
+
+    def cb_offices(self, req):
+        buttons = []
+        for k in self.dests_ab_sorted:
+            if self.dests[k].kind == 'office':
+                buttons.append((self.dests[k].name, "select_" + self.dests[k].id))
+        name = 'Click to select your destination:'
+        content = strands_webserver.page_utils.generate_alert_button_page(name, buttons, self.service_prefix)
+        strands_webserver.client_utils.display_content(display_no, content)
+
+    def cb_meeting_rooms(self, req):
+        buttons = []
+        for k in self.dests_ab_sorted:
+            if self.dests[k].kind == 'Meeting Rooms':
+                buttons.append((self.dests[k].name, "select_" + self.dests[k].id))
+        name = 'Click to select your destination:'
+        content = strands_webserver.page_utils.generate_alert_button_page(name, buttons, self.service_prefix)
+        strands_webserver.client_utils.display_content(display_no, content)
 
     def get_metadata(self):
         dests = {}
@@ -184,8 +213,6 @@ class GUI_Destination_Selection(object):
             print "Service call failed: %s"%e
         #return dummy_data()
 
-    def display(self, state=None):
-        strands_webserver.client_utils.display_content(display_no, self.www_content)
 
 class Callback_Trigger_Select_Destination(object):
     def __init__(self, dest, mama):
