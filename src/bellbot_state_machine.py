@@ -64,7 +64,12 @@ class BellbotStateMachine(Agent):
                                                })
             smach.StateMachine.add('WaitingForFeedback', WaitingForFeedback(), 
                                    transitions={ 'succeeded': 'Setup',
-                                                 'succeeded_mode3': 'succeeded',
+                                                 'succeeded_mode3': 'Shutdown',
+                                                 'aborted': 'aborted',
+                                                 'preempted': 'preempted' 
+                                               })
+            smach.StateMachine.add('Shutdown', Shutdown(), 
+                                   transitions={ 'succeeded': 'succeeded',
                                                  'aborted': 'aborted',
                                                  'preempted': 'preempted' 
                                                })
@@ -408,3 +413,25 @@ class WaitingForFeedback(smach.State, StatePublisher):
         if mode == 3:
             return 'succeeded_mode3'
         return 'succeeded' 
+
+class Shutdown(smach.State, StatePublisher):
+
+    """
+    Shutdown state after serving a single guest (mode 3 only)
+    """
+
+    def __init__(self):
+        smach.State.__init__(self,
+                           outcomes=['succeeded','aborted', 'preempted'],
+                           input_keys=[],
+                           output_keys=[])
+
+
+        StatePublisher.__init__(self)
+        rospy.loginfo("Shutdown ... Init done")
+        
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state %s', self.__class__.__name__)
+        self.publish(BellbotState(name=self.__class__.__name__))
+        return 'succeeded'
