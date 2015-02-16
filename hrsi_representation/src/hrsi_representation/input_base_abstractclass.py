@@ -65,7 +65,11 @@ class InputBaseAbstractclass(object):
             foo = str(t) + ": "
             for k, v in zip(out.qsrs.trace[t].qsrs.keys(), out.qsrs.trace[t].qsrs.values()):
                 foo += str(k) + ":" + str(v.qsr) + "; "
-                ret = np.array([v.qsr]) if not ret.size else np.append(ret, [v.qsr], axis=0)
+                if qsr == self.qtc_types["qtcbc"]:
+                    q = v.qsr if len(v.qsr) == 4 else np.append(v.qsr, [np.nan, np.nan])
+                    ret = np.array([q]) if not ret.size else np.append(ret, [q], axis=0)
+                else:
+                    ret = np.array([v.qsr]) if not ret.size else np.append(ret, [v.qsr], axis=0)
             print(foo)
             
         return ret
