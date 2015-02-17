@@ -50,7 +50,6 @@
   <run_depend>strands_webtools</run_depend>
   <run_depend>strands_webserver</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>robblog</run_depend>  
   <run_depend>bellbot_action_server</run_depend>
   <run_depend>topological_utils</run_depend>
   <run_depend>roscpp</run_depend>
