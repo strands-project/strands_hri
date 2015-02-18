@@ -15,7 +15,7 @@ from destination_data import Destination_Data
 from bellbot_action_server.srv import *
 from bellbot_action_server.msg import *
 from topological_utils.srv import NodeMetadata, NodeMetadataRequest, NodeMetadataResponse
-from bellbot_gui.srv import *
+#from bellbot_gui.srv import *
 
 
 def dummy_data():
@@ -130,7 +130,7 @@ class GUI_Operation_Feedback(object):
 
 class GUI_User_Evaluation(object):
     def __init__(self):
-        rospy.Service('/bellbot/gui/feedback_done', FeedbackDone, self.handle_feedback_done)
+        rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
 
     def handle_feedback_done(self, req):
         print "feedback done"

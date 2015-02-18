@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include "bellbot_gui/FeedbackDone.h"
+#include "std_srvs/Empty.h"
 #include <fstream>
 
 ros::ServiceClient client;
@@ -14,7 +14,8 @@ void recordCallBack(const std_msgs::String::ConstPtr& msg)
   out << msg->data.c_str() << "\n";
   out.close();
   ROS_INFO("Wrote feedback to file");
-  bellbot_gui::FeedbackDone srv;
+  //bellbot_gui::FeedbackDone srv;
+  std_srvs::Empty srv;
   if (client.call(srv))
   {
     ROS_INFO("success");
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "bellbot_gui_feedback_RECORDER");
   ros::NodeHandle n;
 
-  client = n.serviceClient<bellbot_gui::FeedbackDone>("/bellbot/gui/feedback_done");
+  client = n.serviceClient<std_srvs::Empty>("/bellbot/gui/feedback_done");
   ros::Subscriber sub = n.subscribe("/bellbot_gui_feedback", 1000, recordCallBack);
 
   ros::spin();

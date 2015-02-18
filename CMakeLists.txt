@@ -13,7 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   strands_webtools
   dynamic_reconfigure
   std_msgs
-  message_generation
+  std_srvs
+#  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -56,15 +57,15 @@ catkin_python_setup()
 #)
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   FeedbackDone.srv
+# add_service_files(
+#   FILES
+#   FeedbackDone.srv
 #   MapButtonService.srv
 #   ShowPageService.srv
 #   CreatePageService.srv
 #   GetPageService.srv
 #   IsDefaultService.srv
- )
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
