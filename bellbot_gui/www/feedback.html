@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<script src="js/jquery-1.11.2.min.js"></script>
+
+<script src="roslibjs/include/EventEmitter2/eventemitter2.js"></script>
+<script src="roslibjs/build/roslib.js"></script>
+<script src="ros2djs/include/EaselJS/easeljs.js"></script>
+<script src="ros2djs/build/ros2d.js"></script>
+
+
+
+</head>
+
+<body onload="main()">
+
+<div id= "header" class = "main-element">
+
+</div>
+
+<div id= "body">
+<p class ="heading">How satisfied were you?</p>
+  <div class = "feed-back-cont">
+    <div class="good enabled feedback-button"><img class="imgs" src="images/happy.png" height="100%" width="100%"></div>
+    <div class="average enabled feedback-button"><img class="imgs" src="images/neutral.png" height="100%" width="100%"></div>
+    <div class="bad enabled feedback-button"><img class="imgs" src="images/sad.png" height="100%" width="100%"></div>
+  </div>
+<p class ="heading">How did you feel with the speed of robot?</p>
+  <div class = "feed-back-cont">
+    <div class="fast enabled feedback-button feedback-button-speed"><p>FAST</p></div>
+    <div class="medium enabled feedback-button feedback-button-speed"><p>MEDIUM</p></div>
+    <div class="slow enabled feedback-button feedback-button-speed"><p>SLOW</p></div>
+  </div>
+
+</div>
+
+<div id= "footer" class = "main-element"></div>
+
+<script>
+function main() {
+
+
+	//
+	// Below deals with the button actions.
+	// The system publishes to the ROS topic: bellbot_gui_feedback
+	// the value of the feedback buttons that are clicked.
+	// It only does this once both feedback buttons have been
+	// selected.
+	// @author jxy
+	var c = 0;
+	var first = "";
+	var second = "";
+
+	$(".enabled").click(function(){
+			c = c + 1;
+
+
+			var clickBtnValue = $(this).attr("class").split(" ")[0];
+
+					// This deals with making the buttons look nice
+					$("." + clickBtnValue).siblings().removeClass("enabled");
+					$("." + clickBtnValue).siblings().addClass("disabled");
+					$("." + clickBtnValue).siblings().css("background","grey");
+					$("." + clickBtnValue).addClass("disabled")
+					$("." + clickBtnValue).css("border-color","black");
+
+					// this makes sure the topic is only published to
+					// after the second button has been pressed.
+					if(c == 2) {
+						console.log('Publishing feedback to ROS.');
+							second = $(this).attr("class").split(" ")[0];
+
+							// concat the current timestamp, first button val
+							// and second button val.
+							var output = Date.now() + "," + first + "," + second;
+							console.log(output);
+
+							// connect to ROS
+								var ros = new ROSLIB.Ros({
+									url : 'ws://localhost:9090'
+								});
+
+								ros.on('connection', function() {
+									console.log('Connected to websocket server.');
+								});
+
+								ros.on('error', function(error) {
+									console.log('Error connecting to websocket server: ', error);
+								});
+
+								ros.on('close', function() {
+									console.log('Connection to websocket server closed.');
+								});
+
+
+							// publish the response to the bellbot_gui_feedback topic
+							// the topic is monitored by the bellbot_feedback_recorder
+							// node.
+							var cmdVel = new ROSLIB.Topic({
+								ros : ros,
+								name : '/bellbot_gui_feedback',
+								messageType : 'std_msgs/String'
+							});
+
+							var message = {"data":output};
+
+							cmdVel.publish(message);
+
+					} else {
+						  first = $(this).attr("class").split(" ")[0];
+					}
+
+	});
+}
+
+
+</script
+
+</body>
+</html>

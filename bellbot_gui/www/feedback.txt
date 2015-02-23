@@ -1,0 +1,1 @@
+average,fast,average,slow,average,slow,good,medium,medium,average,average,medium,slow,good,bad,medium,average,fast,medium,good,bad,average,average,fast,average,medium,average,fast,average,medium,bad,fast,

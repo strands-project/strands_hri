@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<script src="js/jquery-1.11.2.min.js"></script>
+<script src="js/script.js"></script>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+</head>
+	
+<body onload="main()" >
+
+
+<div id="header" class = 'main-element'>
+
+</div>
+
+<div id= 'body' class='livescreen'>
+  
+  <div id= "status-head">
+    <p class ="heading">ROBOT SCHEDULAR</p>      
+  </div>
+  
+  <div id="line" class='line'></div>
+  
+
+  <form id = 'form'>
+    Waypoint Start:
+    <select id="waypoint1" name="waypoint-start">
+    
+    </select>    
+    <br>
+
+    Waypoint End:
+    <select id="waypoint2" name="waypoint-end">
+    
+    </select>    
+    <br>
+
+    Mode:
+    <select id="mode" name="mode">
+    <option>Mode 1</option>
+    <option>Mode 2</option>
+    <option>Mode 3</option>
+    </select>    
+
+    <br>
+    Time:
+<select id="time-hour" name="time-hour">
+<option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+<option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option></select>:
+
+<select id="time-minute" name="time-minute">
+<option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="34">34</option><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option><option value="48">48</option><option value="49">49</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="53">53</option><option value="54">54</option><option value="55">55</option><option value="56">56</ option><option value="57">57</option><option value="58">58</option><option value="59">59</option>
+</select>
+<br>
+    Name:
+    <input type="text" name="Name" >
+    <br><br>
+    <input id="submit-but" type="submit" value="Submit" onclick="return messageSend();">
+  </form>
+
+
+
+
+
+
+</div>
+
+<div id= 'footer' class = 'main-element'></div>
+
+<script>
+function main() {
+ // Connecting to ROS
+ // -----------------
+
+  var ros = new ROSLIB.Ros({
+    url : 'ws://localhost:9090'
+  });
+    
+  ros.on('connection', function() {
+    console.log('Connected to websocket serverrr.');
+  });
+   
+  ros.on('error', function(error) {
+    console.log('Error connecting to websocket server: ', error);
+  });
+     
+  ros.on('close', function() {
+    console.log('Connection to websocket server closed.');
+  });
+
+  var waypointNames = new ROSLIB.Service({
+    ros : ros,
+    name : '/query_node_metadata',
+    serviceType : 'topological_utils/NodeMetadata'
+  });
+
+  var request = new ROSLIB.ServiceRequest({
+    map_name : 'lg_20140618',
+    pointset : 'lg_20140618',
+    meta_category: 'Meeting Rooms'
+  });
+
+
+  waypointNames.callService(request, function(result) {
+    console.log(result.name);
+    var waypts = result.name;
+    var actwaypts = result.goto_node;
+    for (var i = 0; i < arrayLength; i++) {
+        //add in the list
+      var x = document.getElementById("waypoint1");
+      var option = document.createElement(result.name[i]);
+      option.text = result.name[i];
+      x.add(option);
+      y.add(option);
+    }
+  });
+
+  function messageSend() {
+    var cmdVel = new ROSLIB.Topic({
+      ros : ros,
+      name : '/cmd_vel',
+      messageType : 'geometry_msgs/Twist'
+    });
+    
+    var wptStIDX = document.getElementById("waypoint1").selectedIndex;
+    var wptEdIDX = document.getElementById("waypoint2").selectedIndex;
+    var e = document.getElementById("mode");
+    var strUser = e.options[e.selectedIndex].text;
+  
+    var th = document.getElementById("time-hour");
+    var thr = th.options[th.selectedIndex].text;
+
+    var tm = document.getElementById("time-minute");
+    var tmin = tm.options[tm.selectedIndex].text;
+
+
+    var msg = new ROSLIB.Message({
+      start_waypoint : actwaypts[wptStIDX],
+      end_waypoint : actwaypts[wptEdIDX],
+      mode : strUser,
+      time : {thr + '_' + tmin}
+    });
+    cmdVel.publish(msg);
+  
+  }
+  
+  
+            
+}
+//$('#status-head').hide();
+//$('#line').hide();
+</script>
+
+</body>
+</html>
+

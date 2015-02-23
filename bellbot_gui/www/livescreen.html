@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<script src="js/jquery-1.11.2.min.js"></script>
+
+<script type="text/javascript" src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+
+<script type="text/javascript" src="http://cdn.robotwebtools.org/mjpegcanvasjs/current/mjpegcanvas.min.js"></script>
+
+<script src="ros2djs/include/EaselJS/easeljs.js"></script>
+<script src="ros2djs/build/ros2d.js"></script>
+<script src="js/display.js"></script>
+
+
+
+</head>
+
+<body>
+
+<div id= 'header' class = 'main-element'>
+
+</div>
+
+<div id= 'body' class='livescreen'>
+
+  <div id = 'status-head'>
+    <p class ='heading'>ROBOT LIVE STATUS</p><textarea id = 'statustext' class ='status'>Guiding</textarea>
+  </div>
+
+  <div class='line'></div>
+
+  <div class = 'feed-back-cont'>
+    <div class = 'left'>
+    <p>Robot Position</p>
+    <div id = 'nav' class='feedback-button'></div>
+    </div>
+
+    <div class = 'right'>
+    <p>Robot Viewpoint</p>
+    <div id = 'mjpeg' class='feedback-button'></div>
+    </div>
+
+  </div>
+
+
+</div>
+
+<div id= 'footer' class = 'main-element'></div>
+
+<script>
+$( document ).ready(function() {
+
+	var ros = new ROSLIB.Ros({
+		url : 'ws://localhost:9090'
+	});
+
+	ros.on('connection', function() {
+		console.log('Connected to websocket server.');
+	});
+
+	ros.on('error', function(error) {
+		console.log('Error connecting to websocket server: ', error);
+	});
+
+	ros.on('close', function() {
+		console.log('Connection to websocket server closed.');
+	});
+
+	var listener = new ROSLIB.Topic({
+			ros : ros,
+			name : '/bellbot_state',
+			messageType : 'std_msgs/String'
+		});
+
+		listener.subscribe(function(message) {
+			console.log('Received message on ' + listener.name + ': ' + message.data);
+
+			document.getElementById('statustext').value=message.data;
+
+
+			//listener.unsubscribe();
+		});
+
+
+		$('.enabled').click(function(){
+				var clickBtnValue = $(this).attr('class').split(' ')[0];
+				var ajaxurl = 'filesave.php',
+				data =  {'action': clickBtnValue};
+				$.post(ajaxurl, data, function (response) {
+						// Response div goes here.
+						$('.' + clickBtnValue).siblings().removeClass('enabled');
+						$('.' + clickBtnValue).siblings().addClass('disabled');
+						$('.' + clickBtnValue).siblings().css('background','grey');
+						$('.' + clickBtnValue).addClass('disabled')
+						$('.' + clickBtnValue).css('border-color','black');
+				});
+		});
+
+
+		$('.call-rob').click(function(){
+				$('#wrapper').show();
+		});
+
+		$('.no').click(function(){
+				$('#wrapper').hide();
+		});
+
+		$('.yes').click(function(){
+				$('#wrapper').hide();
+		});
+
+		// MAP DISPLAY CODE
+
+
+				// Create the main viewer.
+				var viewer = new ROS2D.Viewer({
+					divID : 'nav',
+					width : 515,
+					height : 410
+				});
+
+				// Setup the map client.
+				var gridClient = new ROS2D.OccupancyGridClient({
+					ros : ros,
+					rootObject : viewer.scene
+				});
+				// Scale the canvas to fit to the map
+				gridClient.on('change', function(){
+					viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height);
+
+			//viewer.scaleToDimensions(515, 410);
+					viewer.shift(gridClient.currentGrid.x, gridClient.currentGrid.y-53);
+
+							var stage;
+					if (viewer.scene instanceof createjs.Stage) {
+						stage = viewer.scene;
+					} else {
+						stage = viewer.scene.getStage();
+					}
+
+
+						var robotMarker = new ROS2D.NavigationArrow({
+							size : 16,
+							strokeSize : 3,
+							fillColor : createjs.Graphics.getRGB(255, 128, 0, 0.66),
+							pulse : false
+						});
+
+						robotMarker.visible = false;
+						viewer.scene.addChild(robotMarker);
+
+						var initScaleSet = false;
+						// setup a listener for the robot pose
+						var poseListener = new ROSLIB.Topic({
+							ros : ros,
+							name : '/robot_pose',
+							messageType : 'geometry_msgs/Pose',
+							throttle_rate : 10
+						});
+
+
+										poseListener.subscribe(function(pose) {
+							// update the robots position on the map
+							robotMarker.x = pose.position.x;
+							robotMarker.y = -pose.position.y;
+
+							if (!initScaleSet) {
+								robotMarker.scaleX = 1.0 / stage.scaleX;
+								robotMarker.scaleY = 1.0 / stage.scaleY;
+								initScaleSet = true;
+							}
+							// change the angle
+							robotMarker.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
+							robotMarker.visible = true;
+						});
+
+
+				});
+
+				// CAMERA DISPLAY CODE
+
+				var viewer2 = new MJPEGCANVAS.Viewer({
+					divID : 'mjpeg',
+					host : 'localhost',
+					width : 515,
+					height : 410,
+					topic : '/head_xtion/rgb/image_color'
+				});
+
+
+				// DRAWING WAYPOINTS TO THE MAP
+
+				var waypointOne = new ROS2D.NavigationArrow({
+					size : 32,
+					strokeSize : 1,
+					fillColor : createjs.Graphics.getRGB(82, 202, 223, 0.66),
+					pulse : false
+				});
+
+				waypointOne.visible = false;
+				viewer.scene.addChild(waypointOne);
+				waypointOne.x = 0;
+				waypointOne.y = 0;
+				waypointOne.scaleX = 1.0 / stage.scaleX;
+				waypointOne.scaleY = 1.0 / stage.scaleY;
+
+				waypointOne.visible = true;
+				viewer.scene.addChild(waypointOne);
+
+
+
+
+
+});
+
+
+
+</script>
+
+</body>
+
+</html>
