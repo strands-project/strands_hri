@@ -1,0 +1,10 @@
+#goal definition
+int32 runtime_seconds
+bool speak
+bool look
+---
+#result definition
+---
+#feedback
+int32 remaining_runtime
+bool person_found

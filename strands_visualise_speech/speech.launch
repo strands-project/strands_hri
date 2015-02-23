@@ -1,0 +1,5 @@
+<launch>
+	<include file="$(find mary_tts)/launch/ros_mary.launch"/>
+	<node name="sound_to_light" pkg="strands_visualise_speech" type="sound_to_light.py" output="screen"/>
+	<node name="visual_speech" pkg="strands_hri_utils" type="visual_speech.py" output="screen"/>
+</launch>
