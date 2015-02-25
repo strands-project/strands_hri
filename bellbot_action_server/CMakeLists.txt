@@ -57,7 +57,7 @@ add_message_files(
 add_service_files(
   FILES
   NewTarget.srv
-  Feedback.srv
+#  Feedback.srv
 )
 
 ## Generate actions in the 'action' folder
