@@ -5,7 +5,6 @@ Created on Thu Jan 29 11:07:40 2015
 
 @author: cdondrup
 """
-import rospy
 import os
 import csv
 import copy

@@ -6,7 +6,9 @@ project(hrsi_representation)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   bayes_people_tracker
+  dynamic_reconfigure
   geometry_msgs
+  message_generation
   nav_msgs
   qsr_lib
   rospy
@@ -48,11 +50,11 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  QTC.msg
+  QTCArray.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -68,11 +70,15 @@ catkin_python_setup()
 #   Action2.action
 # )
 
+generate_dynamic_reconfigure_options(
+  cfg/OnlineQTCCreator.cfg
+)
+
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##

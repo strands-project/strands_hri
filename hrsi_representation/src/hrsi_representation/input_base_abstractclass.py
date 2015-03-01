@@ -25,7 +25,7 @@ class InputBaseAbstractclass(object):
 
     Will be used as a base class for the training and online data input classes
     """
-    
+
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -37,13 +37,13 @@ class InputBaseAbstractclass(object):
         }
         self.template = {
             "agent1": {
-                "name": "", 
-                "x": np.array([]), 
+                "name": "",
+                "x": np.array([]),
                 "y": np.array([])
-            }, 
+            },
             "agent2": {
-                "name": "", 
-                "x": np.array([]), 
+                "name": "",
+                "x": np.array([]),
                 "y": np.array([])
             }
         }
@@ -57,10 +57,8 @@ class InputBaseAbstractclass(object):
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
         out = pickle.loads(res.data)
-        print("--------------")
-        print("Response is:")
-        print("Request was made at ", str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
-        ret = np.array([]) 
+        rospy.logdebug("Request was made at " + str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
+        ret = np.array([])
         for t in out.qsrs.get_sorted_timestamps():
             foo = str(t) + ": "
             for k, v in zip(out.qsrs.trace[t].qsrs.keys(), out.qsrs.trace[t].qsrs.values()):
@@ -70,8 +68,8 @@ class InputBaseAbstractclass(object):
                     ret = np.array([q]) if not ret.size else np.append(ret, [q], axis=0)
                 else:
                     ret = np.array([v.qsr]) if not ret.size else np.append(ret, [v.qsr], axis=0)
-            print(foo)
-            
+            rospy.logdebug(foo)
+
         return ret
 
     def _convert_to_world(self, data_dict, quantisation_factor=0, validate=True, no_collapse=False, distance_threshold=np.Inf):
@@ -119,21 +117,23 @@ class InputBaseAbstractclass(object):
     def generate_data_from_input(self, *args, **kwargs):
         """Input data into the conversion process"""
         pass
-    
+
     def convert(self, data, qtc_type, quantisation_factor=0, validate=True, no_collapse=False, distance_threshold=np.Inf):
         """Convert data inserted via put() into QTC
-        
+
         :param qtc_type: qtcb|qtcc|qtcbc
         """
+        data = [data] if not isinstance(data, list) else data
         ret = []
-        for elem in data:
+        for elem in np.array(data):
             world = self._convert_to_world(
-                data_dict=elem, 
-                quantisation_factor=quantisation_factor, 
-                validate=validate, 
-                no_collapse=no_collapse, 
+                data_dict=elem,
+                quantisation_factor=quantisation_factor,
+                validate=validate,
+                no_collapse=no_collapse,
                 distance_threshold=distance_threshold
             )
+
             try:
                 qsr = self.qtc_types[qtc_type]
             except KeyError:
@@ -141,4 +141,3 @@ class InputBaseAbstractclass(object):
                 return
             ret.append(self._request_qtc(qsr=qsr, world=world))
         return ret
-        
