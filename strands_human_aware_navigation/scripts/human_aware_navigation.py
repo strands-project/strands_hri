@@ -56,17 +56,11 @@ class DynamicVelocityReconfigure():
         rospy.loginfo(" ...starting")
         self._as.start()
         rospy.loginfo(" ...done")
-        sub_topic = rospy.get_param(
+        self.sub_topic = rospy.get_param(
             "~people_positions",
             '/people_tracker/positions'
         )
-        rospy.Subscriber(
-            sub_topic,
-            PeopleTracker,
-            self.pedestrianCallback,
-            None,
-            5
-        )
+        self.ppl_sub = None
 
         self.last_cancel_time = rospy.Time(0)
         rospy.Subscriber(
@@ -116,7 +110,8 @@ class DynamicVelocityReconfigure():
 
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
-            rospy.logdebug("No active goal")
+            rospy.logdebug("No active goal. Unsubscribing.")
+            self.ppl_sub = None
             return
 
         if len(pl.poses) > 0:
@@ -160,6 +155,13 @@ class DynamicVelocityReconfigure():
 
     def goalCallback(self, goal):
         #self._goal = self._as.accept_new_goal()
+        self.ppl_sub = rospy.Subscriber(
+            self.sub_topic,
+            PeopleTracker,
+            self.pedestrianCallback,
+            None,
+            5
+        )
         self._goal = goal
         gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
         gaze_goal.runtime_sec = 0
