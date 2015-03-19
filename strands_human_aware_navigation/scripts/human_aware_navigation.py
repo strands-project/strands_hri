@@ -111,6 +111,7 @@ class DynamicVelocityReconfigure():
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
             rospy.logdebug("No active goal. Unsubscribing.")
+            self.ppl_sub.unregister()
             self.ppl_sub = None
             return
 
