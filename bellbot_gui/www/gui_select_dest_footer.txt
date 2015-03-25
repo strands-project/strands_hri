@@ -1,0 +1,85 @@
+          </select>
+        </div>
+	<div>
+	<!-- <button id="button1">Click to go to selected destination</button> -->
+	<div id="button1" align="center" style="border: 1px solid; border-color: #a8a6a3; border-radius: 5px; cursor:pointer;">Click to go to selected destination</div>
+	</div>
+      </div>
+
+<h2>Information</h2>
+ <!--<input type="text" id="info" style="width: 600px; height: 300px;" readonly>-->
+<p id=info></p>
+
+    </div>
+  </div>
+
+
+<!--<p id="demo"></p>-->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
+  <script src="chosen.jquery.js" type="text/javascript"></script>
+  <script src="docsupport/prism.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript">
+    var config = {
+      '.chosen-select'           : {},
+      '.chosen-select-deselect'  : {allow_single_deselect:true},
+      '.chosen-select-no-single' : {disable_search_threshold:10},
+      '.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
+      '.chosen-select-width'     : {width:"95%"}
+    }
+    for (var selector in config) {
+      $(selector).chosen(config[selector]);
+    }
+  </script>
+
+<script type="text/javascript">
+    function getval(sel) {
+//	var textbox = document.getElementById('info');
+//	textbox.value = "Some useful info about " + sel.value
+//	msg = $("#destinations_info option[value=sel.value]").text()
+//	document.getElementById("info").innerHTML = "Some useful info about " + sel.value
+	document.getElementById("info").innerHTML = $('option:selected', sel).attr('desc');
+    }
+</script>
+
+<script type="text/javascript">// <![CDATA[
+(function($){
+$(document).ready(function(){
+  $('#button1').click(function(){
+    dest = $('#destinations :selected').text()
+    destv = $('#destinations :selected').val()
+    if (dest == "") {
+    	alert( 'Please select a destination from the list' );
+    } else {
+	foo(dest, destv)
+    }
+  });
+});
+})(jQuery);
+// ]]&gt;</script>
+
+
+<script type="text/javascript">
+function foo(dest, destv) {
+//alert('Destination is: ' + dest + " - " + destv)
+//alert('Destination is: ' + dest)
+  // Publishing a Topic
+  // ------------------
+
+  var goto_dest_topic = new ROSLIB.Topic({
+    ros : ros,
+    name : '/bellbot_gui/sel_dest',
+    messageType : 'std_msgs/String'
+  });
+
+  var dest_msg = new ROSLIB.Message({
+    data : destv
+  });
+  goto_dest_topic.publish(dest_msg);
+}
+</script>
+
+
+</form>
+</body>
+</html>
