@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS mongodb_store roscpp rospy std_msgs sens
 
 set(CMAKE_CXX_FLAGS "-O4 -fPIC -std=c++0x -fpermissive ${CMAKE_CXX_FLAGS}")
 
-catkin_python_setup()
+# catkin_python_setup()
 
 
 add_message_files(
@@ -37,4 +37,8 @@ include_directories(include
     )
 
 
+install(PROGRAMS
+   scripts/bellbot_schedule_interface.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 

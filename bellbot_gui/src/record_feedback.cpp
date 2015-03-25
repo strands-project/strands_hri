@@ -35,8 +35,10 @@ int main(int argc, char** argv) {
   client = n.serviceClient<std_srvs::Empty>("/bellbot/gui/feedback_done");
   ros::Subscriber sub = n.subscribe("/bellbot_gui_feedback", 1000, recordCallBack);
 
-  ros::spin();
+
   ROS_INFO("Atomic batteries to power. Bellbot feedback recorder v0.445.14 online");
+  ros::spin();
+
 
   return 0;
 }
