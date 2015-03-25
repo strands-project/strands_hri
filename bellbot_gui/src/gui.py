@@ -200,6 +200,7 @@ class GUI_Destination_Selection(object):
             print "Getting offices"
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
             res = proxy(NodeMetadataRequest(map_name, map_name, 'office')) # 'office' | 'Meeting Rooms'
+            res = proxy(NodeMetadataRequest("aaf_bellbot", "aaf_bellbot", 'office')) # 'office' | 'Meeting Rooms'
             for i in range(0, len(res.name)):
                 # foo = res.name[i].replace("-", "_")
                 foo = res.name[i]
@@ -207,7 +208,6 @@ class GUI_Destination_Selection(object):
 
             print "Getting meeting rooms"
             res = proxy(NodeMetadataRequest(map_name, map_name, 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
-
             for i in range(0, len(res.name)):
                 # foo = res.name[i].replace("-", "_")
                 foo = res.name[i]
