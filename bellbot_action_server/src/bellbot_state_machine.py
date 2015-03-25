@@ -14,6 +14,7 @@ from actionlib_msgs.msg import *
 from std_msgs.msg import String
 import topological_navigation.msg
 
+import std_srvs.srv
 from bellbot_action_server.srv import *
 from bellbot_action_server.msg import * 
 
@@ -379,7 +380,7 @@ class WaitingForFeedback(smach.State, StatePublisher):
             rospy.wait_for_service(service_name, timeout=1)
         except:
             rospy.loginfo('Setting up service: %s', service_name )
-            self.service = rospy.Service(service_name, Feedback, self.service_cb)
+            self.service = rospy.Service(service_name, std_srvs.srv.Empty, self.service_cb)
             rospy.loginfo('Service running: %s', service_name )
         self._got_feedback = False
     

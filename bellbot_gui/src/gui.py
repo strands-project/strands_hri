@@ -198,12 +198,12 @@ class GUI_Destination_Selection(object):
         try:
             print "Getting offices"
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
-            res = proxy(NodeMetadataRequest("lg_20140618", "lg_20140618", 'office')) # 'office' | 'Meeting Rooms'
+            res = proxy(NodeMetadataRequest("aaf_bellbot", "aaf_bellbot", 'office')) # 'office' | 'Meeting Rooms'
             for i in range(0, len(res.name)):
                 dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
 
             print "Getting meeting rooms"
-            res = proxy(NodeMetadataRequest("lg_20140618", "lg_20140618", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
+            res = proxy(NodeMetadataRequest("aaf_bellbot", "aaf_bellbot", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
 
             for i in range(0, len(res.name)):
                 dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
