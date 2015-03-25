@@ -58,7 +58,7 @@ class Bellbot_GUI(object):
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
 
     def manage(self, state):
-        print state
+        print "STATE:", state.name
         try:
             self.states_cbs[state.name](state)
         except KeyError:
@@ -195,18 +195,23 @@ class GUI_Destination_Selection(object):
     def get_metadata(self):
         dests = {}
         rospy.wait_for_service('/query_node_metadata')
+        map_name = rospy.get_param("/topological_map_name")
         try:
             print "Getting offices"
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
-            res = proxy(NodeMetadataRequest("lg_20140618", "lg_20140618", 'office')) # 'office' | 'Meeting Rooms'
+            res = proxy(NodeMetadataRequest(map_name, map_name, 'office')) # 'office' | 'Meeting Rooms'
             for i in range(0, len(res.name)):
-                dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+                # foo = res.name[i].replace("-", "_")
+                foo = res.name[i]
+                dests[foo] = Destination_Data(name=foo, description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
 
             print "Getting meeting rooms"
-            res = proxy(NodeMetadataRequest("lg_20140618", "lg_20140618", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
+            res = proxy(NodeMetadataRequest(map_name, map_name, 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
 
             for i in range(0, len(res.name)):
-                dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+                # foo = res.name[i].replace("-", "_")
+                foo = res.name[i]
+                dests[foo] = Destination_Data(name=foo, description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
             return dests
 
         except rospy.ServiceException, e:
