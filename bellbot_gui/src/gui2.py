@@ -6,6 +6,8 @@ import ConfigParser
 import os
 import roslib
 import rospy
+from datetime import datetime
+import csv
 
 import strands_webserver.page_utils
 import strands_webserver.client_utils
@@ -36,7 +38,7 @@ class Bellbot_GUI(object):
         self.gui_setup = GUI_Setup()
         self.gui_dest_selection = GUI_Destination_Selection(self.http_root)
         self.gui_operation_feedback = GUI_Operation_Feedback()
-        self.gui_evaluation = GUI_User_Evaluation()
+        self.gui_evaluation = GUI_User_Evaluation(self.http_root)
         # self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
         # self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
@@ -66,16 +68,19 @@ class GUI_Destination_Selection(object):
         # self.dests_ab_sorted = sorted(self.dests.keys())
         self.dests_per_categ = self.sort_dests_per_categ()
         self.select_dest_page = self.create_select_dest_page()
-        self.service_prefix = '/bellbot_gui_services'
-        rospy.Subscriber("/bellbot_gui/sel_dest", String, self.sel_dest_cbk)
+        # self.service_prefix = '/bellbot_gui_services'
+        self.sub = None
 
     def display(self, state=None):
+        if self.sub is not None:
+            self.sub.unregister()
         strands_webserver.client_utils.display_relative_page(display_no, self.select_dest_page)
+        self.sub = rospy.Subscriber("/bellbot_gui/sel_dest", String, self.sel_dest_cbk)
 
     def sel_dest_cbk(self, data):
+        print(data.data)
         dest = data.data
         rospy.loginfo("Going to %s", dest)
-        rospy.wait_for_service('/bellbot_new_target')
         try:
           proxy = rospy.ServiceProxy('/bellbot_new_target', NewTarget)
           res = proxy(NewTargetRequest(dest))
@@ -144,7 +149,9 @@ class GUI_Destination_Selection(object):
         return select_dest_page_filename
 
     def ret_options_str(self, room):
-        return '<option desc="' + room.description + '">' + room.name + "</option>\n"
+        print(room.name, room.goto)
+        return '<option' + ' id="' + room.id + '" name="' + room.name + '" description="' + room.description + '" kind="' + room.kind + '" goto="' + room.goto + '" available="' + str(room.available) + '" at_node="' + str(room.at_node) +'">' + room.name + "</option>\n"
+        # return '<option' + ' value="' + room.goto + '" id="' + room.id + '" name="' + room.name + '" description="' + room.description + '" kind="' + room.kind + '" goto="' + room.goto + '" available="' + str(room.available) + '" at_node="' + str(room.at_node) +'">' + room.name + "</option>\n"
 
 
 class GUI_Wait_For_Single_Guest(object):
@@ -209,21 +216,39 @@ class GUI_Operation_Feedback(object):
 
 
 class GUI_User_Evaluation(object):
-    def __init__(self):
-        rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
+    def __init__(self, http_root):
+        self.sub = None
+        self.http_root = http_root
+        self.feedback_filename = os.path.join(self.http_root, "user_feedback.csv")
+        # rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
 
-    def handle_feedback_done(self, req):
-        print "feedback done"
+    def display(self, state=None):
+        if self.sub is not None:
+            self.sub.unregister()
+        strands_webserver.client_utils.display_relative_page(display_no, 'feedback.html')
+        self.sub = rospy.Subscriber("/bellbot_gui_feedback", String, self.cb_got_feedback)
+
+    def cb_got_feedback(self, data):
+        feedback = data.data
+        feedback = feedback.split(",")
+        for i in range(len(feedback)):
+            feedback[i] = int(feedback[i])
+        time_now_str = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+        line_lst = [time_now_str] + feedback
+        with open(self.feedback_filename, "a") as f:
+            writer = csv.writer(f, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(line_lst)
+        self.handle_feedback_done()
+
+    def handle_feedback_done(self):
         rospy.wait_for_service('/bellbot_feedback')
         try:
-            proxy = rospy.ServiceProxy('/bellbot_feedback', Feedback)
-            proxy(FeedbackRequest())
+            proxy = rospy.ServiceProxy('/bellbot_feedback', std_srvs.srv.Empty)
+            proxy(std_srvs.srv.EmptyRequest())
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
         return
 
-    def display(self, state=None):
-        strands_webserver.client_utils.display_relative_page(display_no, 'feedback.html')
 
 
 if __name__ == '__main__':

@@ -38,7 +38,7 @@
 //	textbox.value = "Some useful info about " + sel.value
 //	msg = $("#destinations_info option[value=sel.value]").text()
 //	document.getElementById("info").innerHTML = "Some useful info about " + sel.value
-	document.getElementById("info").innerHTML = $('option:selected', sel).attr('desc');
+	document.getElementById("info").innerHTML = $('option:selected', sel).attr('description');
     }
 </script>
 
@@ -47,11 +47,11 @@
 $(document).ready(function(){
   $('#button1').click(function(){
     dest = $('#destinations :selected').text()
-    destv = $('#destinations :selected').val()
     if (dest == "") {
     	alert( 'Please select a destination from the list' );
     } else {
-	foo(dest, destv)
+    console.log("else")
+	foo()
     }
   });
 });
@@ -60,7 +60,29 @@ $(document).ready(function(){
 
 
 <script type="text/javascript">
-function foo(dest, destv) {
+function foo() {
+console.log("foo entered")
+
+  // Connecting to ROS
+  // -----------------
+
+  var ros = new ROSLIB.Ros({
+    url : 'ws://localhost:9090'
+  });
+
+  ros.on('connection', function() {
+    console.log('Connected to websocket server.');
+  });
+
+  ros.on('error', function(error) {
+    console.log('Error connecting to websocket server: ', error);
+  });
+
+  ros.on('close', function() {
+    console.log('Connection to websocket server closed.');
+  });
+
+
 //alert('Destination is: ' + dest + " - " + destv)
 //alert('Destination is: ' + dest)
   // Publishing a Topic
@@ -71,11 +93,14 @@ function foo(dest, destv) {
     name : '/bellbot_gui/sel_dest',
     messageType : 'std_msgs/String'
   });
-
+  goto = $('#destinations option:selected').attr('goto');
+  console.log(goto)
   var dest_msg = new ROSLIB.Message({
-    data : destv
+    data : goto
   });
+  console.log("foo publishing")
   goto_dest_topic.publish(dest_msg);
+  console.log("foo exited")
 }
 </script>
 
