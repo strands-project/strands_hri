@@ -4,6 +4,7 @@ import cPickle as pickle
 import sys
 import ConfigParser
 import os
+import subprocess
 import roslib
 import rospy
 from datetime import datetime
@@ -25,6 +26,21 @@ def random_page(choices=('http://strands-project.eu',
                              'http://www.hausderbarmherzigkeit.at')):
     return random.choice(choices)
 
+def florence():
+    try:
+        ids = subprocess.check_output(["pidof", "florence"])
+        if len(ids.split()) > 1:
+            subprocess.call(["pkill", "florence"])
+            try:
+                subprocess.Popen("florence")
+            except:
+                rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
+    except:
+        try:
+            subprocess.Popen("florence")
+        except:
+            rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
+
 
 class Bellbot_GUI(object):
     def __init__(self):
@@ -39,16 +55,17 @@ class Bellbot_GUI(object):
         self.gui_dest_selection = GUI_Destination_Selection(self.http_root)
         self.gui_operation_feedback = GUI_Operation_Feedback()
         self.gui_evaluation = GUI_User_Evaluation(self.http_root)
-        # self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
-        # self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
+        self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
+        self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
         self.states_cbs = {'Setup': self.gui_setup.display,
                            'WaitingForGoal': self.gui_dest_selection.display,
-                           # 'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
-                           # 'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
+                           'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
+                           'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
                            'Guiding': self.gui_operation_feedback.display,
                            'WaitingForFeedback': self.gui_evaluation.display}
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
+        rospy.on_shutdown(self._on_node_shutdown)
 
     def manage(self, state):
         print "STATE:", state.name
@@ -57,6 +74,10 @@ class Bellbot_GUI(object):
         except KeyError:
             rospy.logerr("Bellbot_GUI/manager: sad panda")
             strands_webserver.client_utils.display_url(display_no, random_page())
+
+    def _on_node_shutdown(self):
+        subprocess.call(["pkill", "florence"])
+        strands_webserver.client_utils.display_url(display_no, random_page())
 
 
 class GUI_Destination_Selection(object):
@@ -74,11 +95,12 @@ class GUI_Destination_Selection(object):
     def display(self, state=None):
         if self.sub is not None:
             self.sub.unregister()
+        florence()
         strands_webserver.client_utils.display_relative_page(display_no, self.select_dest_page)
         self.sub = rospy.Subscriber("/bellbot_gui/sel_dest", String, self.sel_dest_cbk)
 
     def sel_dest_cbk(self, data):
-        print(data.data)
+        os.system("pkill florence")
         dest = data.data
         rospy.loginfo("Going to %s", dest)
         try:

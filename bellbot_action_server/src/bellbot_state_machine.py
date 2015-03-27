@@ -6,6 +6,7 @@ import sys
 import getopt
 import random
 import json
+import subprocess
 
 from agent import Agent
 
@@ -436,5 +437,6 @@ class Shutdown(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
+        subprocess.call(["pkill", "florence"])
         self.publish(BellbotState(name=self.__class__.__name__))
         return 'succeeded'
