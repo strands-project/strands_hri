@@ -188,6 +188,7 @@ class WaitingForGoal(smach.State, StatePublisher):
     def service_cb(self, request):
         self._got_request = True
         self._target = request.target
+        return NewTargetResponse()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
@@ -386,6 +387,7 @@ class WaitingForFeedback(smach.State, StatePublisher):
     
     def service_cb(self, request):
         self._got_feedback = True
+        return std_srvs.srv.EmptyResponse()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
