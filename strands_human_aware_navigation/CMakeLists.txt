@@ -1,21 +1,36 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(strands_human_aware_navigation)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
     bayes_people_tracker
-    geometry_msgs 
-    message_filters 
+    dynamic_reconfigure
+    geometry_msgs
+    message_filters
     roscpp
+)
+
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+generate_dynamic_reconfigure_options(
+  cfg/HumanAwareNavigation.cfg
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS 
+  CATKIN_DEPENDS
     bayes_people_tracker
-    geometry_msgs 
-    message_filters 
+    geometry_msgs
+    message_filters
     roscpp
 )
 
