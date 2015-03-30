@@ -8,7 +8,7 @@ from bayes_people_tracker.msg import PeopleTracker
 from strands_human_aware_navigation.cfg import HumanAwareNavigationConfig
 #from strands_head_orientation.srv import StartHeadAnalysis, StopHeadAnalysis
 import move_base_msgs.msg
-import thread
+import numpy as np
 import actionlib_msgs.msg
 import strands_gazing.msg
 
@@ -41,15 +41,20 @@ class DynamicVelocityReconfigure():
         )
         self.gazeClient.wait_for_server()
         rospy.loginfo("...done")
-        self.dyn_srv = DynServer(HumanAwareNavigationConfig, self.dyn_callback)
         rospy.loginfo("Reading move_base parameters")
         self.getCurrentSettings()
         rospy.loginfo("Reading parameters")
-        self.threshold = rospy.get_param(name+"/timeout", 4.0)
+
+        # Magic numbers overwritten in dyn_callback
+        self.threshold = 4.0
+        self.max_dist = 5.0
+        self.min_dist = 1.5
+        self.detection_angle = 90.0
+
+        self.dyn_srv = DynServer(HumanAwareNavigationConfig, self.dyn_callback)
+
         current_time = rospy.get_time()
         self.timeout = current_time + self.threshold
-        self.max_dist = rospy.get_param(name+"/max_dist", 5.0)
-        self.min_dist = rospy.get_param(name+"/min_dist", 1.5)
         rospy.loginfo("Creating action server.")
         self._as = actionlib.SimpleActionServer(
             self._action_name,
@@ -78,7 +83,11 @@ class DynamicVelocityReconfigure():
     def dyn_callback(self, config, level):
         if config["gaze_type"] == DynamicVelocityReconfigure.NO_GAZE:
             self.cancel_gaze_goal()
-        self.gaze_type = config["gaze_type"]
+        self.gaze_type       = config["gaze_type"]
+        self.threshold       = config["timeout"]
+        self.max_dist        = config["max_dist"]
+        self.min_dist        = config["min_dist"]
+        self.detection_angle = config["detection_angle"]
         return config
 
     def cancel_time_checker_cb(self, msg):
@@ -131,6 +140,11 @@ class DynamicVelocityReconfigure():
                     self.cancel_gaze_goal()
                     self._as.set_aborted()
 
+    def get_min_dist(self, data, angle):
+        rad = angle * (np.pi / 180.0)
+        distances = [x for idx, x in enumerate(data.distances) if data.angles[idx] >= -rad and data.angles[idx] <= rad]
+        return np.min(distances)
+
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
             rospy.logdebug("No active goal. Unsubscribing.")
@@ -140,8 +154,9 @@ class DynamicVelocityReconfigure():
 
         if len(pl.poses) > 0:
             rospy.logdebug("Found people: ")
-            rospy.logdebug(" People distance: %s", pl.min_distance)
-            factor = pl.min_distance - self.min_dist
+            min_distance = self.get_min_dist(pl, self.detection_angle)
+            rospy.logdebug(" People distance: %s", min_distance)
+            factor = min_distance - self.min_dist
             factor = factor if factor > 0.0 else 0.0
             factor /= (self.max_dist - self.min_dist)
             factor = 1.0 if factor > 1.0 else factor
