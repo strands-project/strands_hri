@@ -23,7 +23,6 @@ class DynamicVelocityReconfigure():
         self._action_name = name
         self.fast = True
         self.gaze_type = DynamicVelocityReconfigure.GAZE
-        self.dyn_srv = DynServer(HumanAwareNavigationConfig, self.dyn_callback)
         rospy.loginfo("Creating dynamic reconfigure client")
         self.client = dynamic_reconfigure.client.Client(
             "/move_base/DWAPlannerROS"
@@ -42,6 +41,7 @@ class DynamicVelocityReconfigure():
         )
         self.gazeClient.wait_for_server()
         rospy.loginfo("...done")
+        self.dyn_srv = DynServer(HumanAwareNavigationConfig, self.dyn_callback)
         rospy.loginfo("Reading move_base parameters")
         self.getCurrentSettings()
         rospy.loginfo("Reading parameters")
