@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
     dynamic_reconfigure
     geometry_msgs
     message_filters
+    message_generation
     roscpp
 )
 
