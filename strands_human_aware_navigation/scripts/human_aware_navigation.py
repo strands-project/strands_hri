@@ -143,7 +143,7 @@ class DynamicVelocityReconfigure():
     def get_min_dist(self, data, angle):
         rad = angle * (np.pi / 180.0)
         distances = [x for idx, x in enumerate(data.distances) if data.angles[idx] >= -rad and data.angles[idx] <= rad]
-        return np.min(distances)
+        return np.min(distances) if len(distances) else 1000.0
 
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
