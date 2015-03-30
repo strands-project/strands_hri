@@ -3,10 +3,12 @@
 import rospy
 import actionlib
 import dynamic_reconfigure.client
+from dynamic_reconfigure.server import Server as DynServer
 from bayes_people_tracker.msg import PeopleTracker
+from strands_human_aware_navigation.cfg import HumanAwareNavigationConfig
 #from strands_head_orientation.srv import StartHeadAnalysis, StopHeadAnalysis
 import move_base_msgs.msg
-import thread
+import numpy as np
 import actionlib_msgs.msg
 import strands_gazing.msg
 
@@ -14,10 +16,13 @@ import strands_gazing.msg
 class DynamicVelocityReconfigure():
     "A calss to reconfigure the velocity of the DWAPlannerROS."
 
+    GAZE, NO_GAZE = range(2)
+
     def __init__(self, name):
         rospy.loginfo("Starting %s", name)
         self._action_name = name
         self.fast = True
+        self.gaze_type = DynamicVelocityReconfigure.GAZE
         rospy.loginfo("Creating dynamic reconfigure client")
         self.client = dynamic_reconfigure.client.Client(
             "/move_base/DWAPlannerROS"
@@ -39,11 +44,17 @@ class DynamicVelocityReconfigure():
         rospy.loginfo("Reading move_base parameters")
         self.getCurrentSettings()
         rospy.loginfo("Reading parameters")
-        self.threshold = rospy.get_param(name+"/timeout", 4.0)
+
+        # Magic numbers overwritten in dyn_callback
+        self.threshold = 4.0
+        self.max_dist = 5.0
+        self.min_dist = 1.5
+        self.detection_angle = 90.0
+
+        self.dyn_srv = DynServer(HumanAwareNavigationConfig, self.dyn_callback)
+
         current_time = rospy.get_time()
         self.timeout = current_time + self.threshold
-        self.max_dist = rospy.get_param(name+"/max_dist", 5.0)
-        self.min_dist = rospy.get_param(name+"/min_dist", 1.5)
         rospy.loginfo("Creating action server.")
         self._as = actionlib.SimpleActionServer(
             self._action_name,
@@ -69,8 +80,29 @@ class DynamicVelocityReconfigure():
             self.cancel_time_checker_cb
         )
 
+    def dyn_callback(self, config, level):
+        if config["gaze_type"] == DynamicVelocityReconfigure.NO_GAZE:
+            self.cancel_gaze_goal()
+        self.gaze_type       = config["gaze_type"]
+        self.threshold       = config["timeout"]
+        self.max_dist        = config["max_dist"]
+        self.min_dist        = config["min_dist"]
+        self.detection_angle = config["detection_angle"]
+        return config
+
     def cancel_time_checker_cb(self, msg):
         self.last_cancel_time = rospy.get_rostime()
+
+    def send_gaze_goal(self, topic):
+        if self.gaze_type == DynamicVelocityReconfigure.GAZE:
+            gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
+            gaze_goal.runtime_sec = 0
+            gaze_goal.topic_name = topic
+            self.gazeClient.send_goal(gaze_goal)
+
+    def cancel_gaze_goal(self):
+        if self.gaze_type == DynamicVelocityReconfigure.GAZE:
+            self.gazeClient.cancel_all_goals()
 
     def getCurrentSettings(self):
         max_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
@@ -105,8 +137,13 @@ class DynamicVelocityReconfigure():
                 except rospy.ServiceException as exc:
                     rospy.logerr("Caught service exception: %s", exc)
                     self.baseClient.cancel_all_goals()
-                    self.gazeClient.cancel_all_goals()
+                    self.cancel_gaze_goal()
                     self._as.set_aborted()
+
+    def get_min_dist(self, data, angle):
+        rad = angle * (np.pi / 180.0)
+        distances = [x for idx, x in enumerate(data.distances) if data.angles[idx] >= -rad and data.angles[idx] <= rad]
+        return np.min(distances) if len(distances) else 1000.0
 
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
@@ -117,8 +154,9 @@ class DynamicVelocityReconfigure():
 
         if len(pl.poses) > 0:
             rospy.logdebug("Found people: ")
-            rospy.logdebug(" People distance: %s", pl.min_distance)
-            factor = pl.min_distance - self.min_dist
+            min_distance = self.get_min_dist(pl, self.detection_angle)
+            rospy.logdebug(" People distance: %s", min_distance)
+            factor = min_distance - self.min_dist
             factor = factor if factor > 0.0 else 0.0
             factor /= (self.max_dist - self.min_dist)
             factor = 1.0 if factor > 1.0 else factor
@@ -129,10 +167,7 @@ class DynamicVelocityReconfigure():
             rot_speed = round(rot_speed, 2)
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
             if not trans_speed == self.fast_param['max_vel_x']:  # and not rot_speed == self.fast_param['max_rot_vel']:
-                gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
-                gaze_goal.runtime_sec = 0
-                gaze_goal.topic_name = "/upper_body_detector/closest_bounding_box_centre"
-                self.gazeClient.send_goal(gaze_goal)
+                self.send_gaze_goal("/upper_body_detector/closest_bounding_box_centre")
                 self.slow_param = {'max_vel_x': trans_speed, 'max_trans_vel': trans_speed}  #, 'max_rot_vel' : rot_speed}
                 try:
                     print 'making it slow'
@@ -145,10 +180,7 @@ class DynamicVelocityReconfigure():
         elif rospy.get_time() > self.timeout:
             rospy.logdebug("Not found any pedestrians:")
             if not self.fast:
-                gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
-                gaze_goal.runtime_sec = 0
-                gaze_goal.topic_name = "/pose_extractor/pose"
-                self.gazeClient.send_goal(gaze_goal)
+                self.send_gaze_goal("/pose_extractor/pose")
                 self.resetSpeed()
                 self.fast = True
             else:
@@ -164,10 +196,7 @@ class DynamicVelocityReconfigure():
             5
         )
         self._goal = goal
-        gaze_goal = strands_gazing.msg.GazeAtPoseGoal()
-        gaze_goal.runtime_sec = 0
-        gaze_goal.topic_name = "/pose_extractor/pose"
-        self.gazeClient.send_goal(gaze_goal)
+        self.send_gaze_goal("/pose_extractor/pose")
         #self.getCurrentSettings()
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
@@ -184,14 +213,14 @@ class DynamicVelocityReconfigure():
         if rospy.get_rostime()-self.last_cancel_time < rospy.Duration(1):
             rospy.logdebug("Cancelled execution of goal:\n%s", self._goal)
             self.baseClient.cancel_all_goals()
-            self.gazeClient.cancel_all_goals()
+            self.cancel_gaze_goal()
             self.resetSpeed()
         self._as.set_preempted()
 
     def moveBaseThread(self, goal):
         ret = self.moveBase(goal)
         self.resetSpeed()
-        self.gazeClient.cancel_all_goals()
+        self.cancel_gaze_goal()
         #try:
             #s = rospy.ServiceProxy('/stop_head_analysis', StopHeadAnalysis)
             #s()
