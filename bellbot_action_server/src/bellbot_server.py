@@ -4,6 +4,7 @@ import roslib; roslib.load_manifest('bellbot_action_server')
 import rospy
 
 import threading
+import subprocess
 
 import actionlib
 
@@ -31,16 +32,19 @@ class BellbotServer(object):
         rospy.Service(self._action_name + '_is_interruptible', IsTaskInterruptible, self.is_interruptible)
 
     def is_interruptible(self, req):
-        # rospy.loginfo('Yes, interrupt me, go ahead')
-        # return True
-        rospy.loginfo('No, I will never stop')
-        return False
+        rospy.loginfo('Yes, interrupt me, go ahead')
+        return True
+        # rospy.loginfo('No, I will never stop')
+        # return False
         
     def is_preempt_requested(self):
         return self._as.is_preempt_requested()
 
     def shutdown_hook(self):
         self._stop = True
+
+    def cleanup(self):
+        subprocess.call(["pkill", "florence"])
 
     def execute_cb(self, goal):
 
@@ -70,6 +74,7 @@ class BellbotServer(object):
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self._as.set_preempted()
                 self.bellbot_sm.get_sm().request_preempt()
+                self.cleanup()
                 self.success = False
                 break
 
