@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
     dynamic_reconfigure
     geometry_msgs
     message_filters
-    message_generation
     roscpp
 )
 
@@ -16,12 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 generate_dynamic_reconfigure_options(
   cfg/HumanAwareNavigation.cfg
-)
-
-## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
 )
 
 ###################################
