@@ -4,6 +4,7 @@ import roslib; roslib.load_manifest('bellbot_action_server')
 import rospy
 
 import threading
+import subprocess
 
 import actionlib
 
@@ -42,6 +43,9 @@ class BellbotServer(object):
     def shutdown_hook(self):
         self._stop = True
 
+    def cleanup(self):
+        subprocess.call(["pkill", "florence"])
+
     def execute_cb(self, goal):
 
         rospy.loginfo('Received goal request: %s', goal)
@@ -70,6 +74,7 @@ class BellbotServer(object):
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self._as.set_preempted()
                 self.bellbot_sm.get_sm().request_preempt()
+                self.cleanup()
                 self.success = False
                 break
 
