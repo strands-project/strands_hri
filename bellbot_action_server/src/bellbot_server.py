@@ -32,10 +32,10 @@ class BellbotServer(object):
         rospy.Service(self._action_name + '_is_interruptible', IsTaskInterruptible, self.is_interruptible)
 
     def is_interruptible(self, req):
-        # rospy.loginfo('Yes, interrupt me, go ahead')
-        # return True
-        rospy.loginfo('No, I will never stop')
-        return False
+        rospy.loginfo('Yes, interrupt me, go ahead')
+        return True
+        # rospy.loginfo('No, I will never stop')
+        # return False
         
     def is_preempt_requested(self):
         return self._as.is_preempt_requested()
