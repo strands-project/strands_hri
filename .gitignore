@@ -26,3 +26,6 @@ server.log
 
 # Folder
 .ropeproject/
+
+#spyder
+.spyder*
