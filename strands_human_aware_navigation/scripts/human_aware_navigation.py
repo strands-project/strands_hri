@@ -148,8 +148,9 @@ class DynamicVelocityReconfigure():
     def pedestrianCallback(self, pl):
         if not self._as.is_active():
             rospy.logdebug("No active goal. Unsubscribing.")
-            self.ppl_sub.unregister()
-            self.ppl_sub = None
+            if self.ppl_sub:
+                self.ppl_sub.unregister()
+                self.ppl_sub = None
             return
 
         if len(pl.poses) > 0:
@@ -193,7 +194,7 @@ class DynamicVelocityReconfigure():
             PeopleTracker,
             self.pedestrianCallback,
             None,
-            5
+            1
         )
         self._goal = goal
         self.send_gaze_goal("/pose_extractor/pose")
