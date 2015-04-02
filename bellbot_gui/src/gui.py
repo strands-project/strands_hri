@@ -4,6 +4,8 @@ import sys
 import os
 import roslib
 import rospy
+from datetime import datetime
+import csv
 
 import strands_webserver.page_utils
 import strands_webserver.client_utils
@@ -45,7 +47,7 @@ class Bellbot_GUI(object):
         self.gui_setup = GUI_Setup()
         self.gui_dest_selection = GUI_Destination_Selection()
         self.gui_operation_feedback = GUI_Operation_Feedback()
-        self.gui_evaluation = GUI_User_Evaluation()
+        self.gui_evaluation = GUI_User_Evaluation(self.http_root)
         self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
         self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
@@ -58,7 +60,7 @@ class Bellbot_GUI(object):
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
 
     def manage(self, state):
-        print state
+        print "STATE:", state.name
         try:
             self.states_cbs[state.name](state)
         except KeyError:
@@ -129,21 +131,38 @@ class GUI_Operation_Feedback(object):
 	    strands_webserver.client_utils.display_relative_page(display_no, 'livescreen.html')
 
 class GUI_User_Evaluation(object):
-    def __init__(self):
-        rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
+    def __init__(self, http_root):
+        self.sub = None
+        self.http_root = http_root
+        self.feedback_filename = os.path.join(self.http_root, "user_feedback.csv")
+        # rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
 
-    def handle_feedback_done(self, req):
-        print "feedback done"
+    def display(self, state=None):
+        if self.sub is not None:
+            self.sub.unregister()
+        strands_webserver.client_utils.display_relative_page(display_no, 'feedback.html')
+        self.sub = rospy.Subscriber("/bellbot_gui_feedback", String, self.cb_got_feedback)
+
+    def cb_got_feedback(self, data):
+        feedback = data.data
+        feedback = feedback.split(",")
+        for i in range(len(feedback)):
+            feedback[i] = int(feedback[i])
+        time_now_str = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+        line_lst = [time_now_str] + feedback
+        with open(self.feedback_filename, "a") as f:
+            writer = csv.writer(f, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(line_lst)
+        self.handle_feedback_done()
+
+    def handle_feedback_done(self):
         rospy.wait_for_service('/bellbot_feedback')
         try:
-            proxy = rospy.ServiceProxy('/bellbot_feedback', Feedback)
-            proxy(FeedbackRequest())
+            proxy = rospy.ServiceProxy('/bellbot_feedback', std_srvs.srv.Empty)
+            proxy(std_srvs.srv.EmptyRequest())
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
         return
-
-    def display(self, state=None):
-        strands_webserver.client_utils.display_relative_page(display_no, 'feedback.html')
 
 
 class GUI_Destination_Selection(object):
@@ -155,6 +174,7 @@ class GUI_Destination_Selection(object):
         self.callbacks = {}
         self.cat_select_callbacks = {}
         self.dests_types = {'office': 'Offices', 'Meeting Rooms': 'Meeting Rooms'}
+        self.sub = None
 
         name = "Click to select destination type:"
         cat_select_buttons = [('Offices', "select_offices"), ("Meeting Rooms", "select_meeting_rooms")]
@@ -195,18 +215,23 @@ class GUI_Destination_Selection(object):
     def get_metadata(self):
         dests = {}
         rospy.wait_for_service('/query_node_metadata')
+        map_name = rospy.get_param("/topological_map_name")
         try:
             print "Getting offices"
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
+            res = proxy(NodeMetadataRequest(map_name, map_name, 'office')) # 'office' | 'Meeting Rooms'
             res = proxy(NodeMetadataRequest("aaf_bellbot", "aaf_bellbot", 'office')) # 'office' | 'Meeting Rooms'
             for i in range(0, len(res.name)):
-                dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+                # foo = res.name[i].replace("-", "_")
+                foo = res.name[i]
+                dests[foo] = Destination_Data(name=foo, description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
 
             print "Getting meeting rooms"
-            res = proxy(NodeMetadataRequest("aaf_bellbot", "aaf_bellbot", 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
-
+            res = proxy(NodeMetadataRequest(map_name, map_name, 'Meeting Rooms')) # 'office' | 'Meeting Rooms'
             for i in range(0, len(res.name)):
-                dests[res.name[i]] = Destination_Data(name=res.name[i], description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
+                # foo = res.name[i].replace("-", "_")
+                foo = res.name[i]
+                dests[foo] = Destination_Data(name=foo, description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
             return dests
 
         except rospy.ServiceException, e:
@@ -242,11 +267,11 @@ class Callback_Trigger_Select_Destination(object):
         self.www_content += foo
 
     def trigger(self, req):
-        print "button " + self.dest.name + " pressed."
+        print "button " + self.dest.id + " pressed."
         strands_webserver.client_utils.display_content(display_no, self.www_content)
 
     def trigger_go(self, req):
-        print "go pressed"
+        print "go pressed", self.dest.goto
         rospy.wait_for_service('/bellbot_new_target')
         try:
           proxy = rospy.ServiceProxy('/bellbot_new_target', NewTarget)
