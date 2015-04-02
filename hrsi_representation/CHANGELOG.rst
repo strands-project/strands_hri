@@ -2,8 +2,8 @@
 Changelog for package hrsi_representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2015-04-02)
+------------------
 * Adjusted cmake and package files
 * First working version of the onlie qtc creation.
 * Training now works.

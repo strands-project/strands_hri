@@ -2,8 +2,8 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2015-04-02)
+------------------
 * bellbot_action_server changed to interruptible
   pending to check whether individual states are also interruptible
 * preparing bellbot_action_server for release 0.0.7

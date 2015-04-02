@@ -2,8 +2,8 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2015-04-02)
+------------------
 * closes `#90 <https://github.com/strands-project/strands_hri/issues/90>`_ - preparing bellbot_gui for release 0.0.7
 * florence virtual keyboard
 * gui2 should be OK for WaitingForGoal

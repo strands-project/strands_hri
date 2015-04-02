@@ -2,8 +2,8 @@
 Changelog for package bellbot_scheduler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2015-04-02)
+------------------
 * bellbot_scheduler preparing for release 0.0.7
 * fixing CMakeLists.txt for `#92 <https://github.com/strands-project/strands_hri/issues/92>`_
 * creeating dir
