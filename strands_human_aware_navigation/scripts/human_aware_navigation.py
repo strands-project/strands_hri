@@ -14,7 +14,7 @@ import strands_gazing.msg
 
 
 class DynamicVelocityReconfigure():
-    "A calss to reconfigure the velocity of the DWAPlannerROS."
+    "A class to reconfigure the velocity of the DWAPlannerROS."
 
     GAZE, NO_GAZE = range(2)
 
@@ -169,7 +169,11 @@ class DynamicVelocityReconfigure():
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
             if not trans_speed == self.fast_param['max_vel_x']:  # and not rot_speed == self.fast_param['max_rot_vel']:
                 self.send_gaze_goal("/upper_body_detector/closest_bounding_box_centre")
-                self.slow_param = {'max_vel_x': trans_speed, 'max_trans_vel': trans_speed}  #, 'max_rot_vel' : rot_speed}
+                self.slow_param = {
+                    'max_vel_x': trans_speed,
+                    'max_trans_vel': trans_speed,
+                    'max_rot_vel': 0.0 if trans_speed < 0.05 else self.fast_param["max_rot_vel"]
+                }
                 try:
                     print 'making it slow'
                     self.client.update_configuration(self.slow_param)
