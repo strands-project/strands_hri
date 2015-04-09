@@ -61,10 +61,10 @@ add_dependencies(bellbot_feedback_recorder bellbot_feedback_recorder_generate_me
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
 install(PROGRAMS
-  src/gui.py
-  src/gui2.py
-  src/livescreen.py
-  src/destination_data.py
+  #src/gui.py
+  scripts/gui2.py
+  #src/livescreen.py
+  #src/destination_data.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
