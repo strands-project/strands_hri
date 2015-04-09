@@ -16,7 +16,7 @@ import std_srvs.srv
 from std_msgs.msg import String
 
 import random
-from destination_data import Destination_Data
+from bellbot_gui.destination_data import Destination_Data
 from bellbot_action_server.srv import *
 from bellbot_action_server.msg import *
 from topological_utils.srv import NodeMetadata, NodeMetadataRequest, NodeMetadataResponse
