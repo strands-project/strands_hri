@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   bellbot_action_server
-  bellbot_scheduler
   strands_webserver
   topological_utils
 )
