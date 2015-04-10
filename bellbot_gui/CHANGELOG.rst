@@ -2,8 +2,8 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.9 (2015-04-10)
+------------------
 * adding missing dependencies
 * tiding up fixing files
 * Contributors: Jaime Pulido Fentanes

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>bellbot_scheduler</name>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
     <description>The bellbot scheduler package</description>
 
     <maintainer email="raambrus@kth.se">Rares Ambrus</maintainer>
