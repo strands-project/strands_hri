@@ -2,6 +2,9 @@
 Changelog for package bellbot_scheduler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.9 (2015-04-10)
 ------------------
 * tiding up fixing files

@@ -2,6 +2,11 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removing bellbot scheduller from CMakeLists
+* Contributors: Jaime Pulido Fentanes
+
 0.0.9 (2015-04-10)
 ------------------
 * adding missing dependencies

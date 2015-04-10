@@ -2,6 +2,9 @@
 Changelog for package strands_gazing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.9 (2015-04-10)
 ------------------
 
