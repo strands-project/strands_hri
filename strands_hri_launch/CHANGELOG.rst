@@ -2,6 +2,9 @@
 Changelog for package strands_hri_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.7 (2014-12-01)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package bellbot_scheduler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* tiding up fixing files
+* Contributors: Jaime Pulido Fentanes
+
 0.0.8 (2015-04-02)
 ------------------
 * bellbot_scheduler preparing for release 0.0.7

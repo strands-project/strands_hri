@@ -2,6 +2,14 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Changing default and min values for some of the params
+  Min distance can now be 0.0. The problem is that, the robot will stop moving before the min distance is reached, because the transitional velocity will be too low for the planner to find a valid plan. This PR sets more conservative default values as wll to allow for easier testing and not having the robot stop because of @jsantos all the time ;)
+  During the pre-deployment, we have to find a suitable set for AAF.
+* Setting rot vel to 0 if trans vel is below magic number.
+* Contributors: Christian Dondrup
+
 0.0.7 (2014-12-01)
 ------------------
 * [human_aware_navigation] Reading default velocities from move_base params on start

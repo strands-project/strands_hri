@@ -2,6 +2,9 @@
 Changelog for package strands_interaction_behaviours
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.7 (2014-12-01)
 ------------------
 
