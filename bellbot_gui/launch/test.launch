@@ -6,6 +6,7 @@
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER )" user="$(arg user)" default="true" />
 
   <node name="bellbot_gui" pkg="bellbot_gui" type="gui2.py" output="screen">
+    <rosparam>~deployment: "aaf_bellbot"</rosparam>
     <rosparam file="$(find aaf_bellbot)/conf/destinations_types.yaml" />
   </node>
 

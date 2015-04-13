@@ -38,17 +38,17 @@ def florence():
     except:
         try:
             pass
-            subprocess.Popen("florence")
+            # subprocess.Popen("florence")
         except:
             rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
 
 
 class Bellbot_GUI(object):
-    def __init__(self, deployment="aaf_bellbot"):
+    def __init__(self):
         # display a start-up page
         strands_webserver.client_utils.display_url(display_no, random_page())
 
-        self.deployment = deployment
+        self.deployment = rospy.get_param("/bellbot_gui/deployment")
 
         self.pre_setup()
 
@@ -91,7 +91,7 @@ class Bellbot_GUI(object):
 
 
     def manage(self, state):
-        print "STATE:", state.name
+        # print "STATE:", state.name
         try:
             self.states_cbs[state.name](state)
         except KeyError:
@@ -157,7 +157,7 @@ class GUI_Destination_Selection(object):
         try:
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
             for c in self.categories:
-                print "Getting", c
+                # print "Getting", c
                 res = proxy(NodeMetadataRequest("aaf_bellbot", "aaf_bellbot", c)) # 'office' | 'Meeting Rooms'
                 for i in range(0, len(res.name)):
                     foo = res.name[i]
@@ -204,7 +204,7 @@ class GUI_Destination_Selection(object):
         return select_dest_page_filename, data_gui_select_dest_template
 
     def ret_options_str(self, room):
-        print(room.name, room.goto)
+        # print(room.name, room.goto)
         return '<option' + ' id="' + room.id + '" name="' + room.name + '" description="' + room.description + '" kind="' + room.kind + '" goto="' + room.goto + '" available="' + str(room.available) + '" at_node="' + str(room.at_node) +'">' + room.name + "</option>\n"
         # return '<option' + ' value="' + room.goto + '" id="' + room.id + '" name="' + room.name + '" description="' + room.description + '" kind="' + room.kind + '" goto="' + room.goto + '" available="' + str(room.available) + '" at_node="' + str(room.at_node) +'">' + room.name + "</option>\n"
 
