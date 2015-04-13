@@ -43,25 +43,32 @@ def florence():
 
 
 class Bellbot_GUI(object):
-    def __init__(self):
+    def __init__(self, deployment="aaf_bellbot"):
         # display a start-up page
         strands_webserver.client_utils.display_url(display_no, random_page())
+
+        self.deployment = deployment
+
+        # writeable directory
+        self.write_dir = os.path.join(os.environ["HOME"], ".ros", "bellbot")
+        if not os.path.exists(self.write_dir):
+            os.makedirs(self.write_dir)
 
         # tell the webserver where it should look for web files to serve
         self.http_root = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "www")
         strands_webserver.client_utils.set_http_root(self.http_root)
 
         self.gui_setup = GUI_Setup()
-        self.gui_dest_selection = GUI_Destination_Selection(self.http_root)
+        self.gui_dest_selection = GUI_Destination_Selection(self.http_root, self.write_dir, self.deployment)
         self.gui_operation_feedback = GUI_Operation_Feedback()
         self.gui_evaluation = GUI_User_Evaluation(self.http_root)
-        self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
-        self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
+        # self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
+        # self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
         self.states_cbs = {'Setup': self.gui_setup.display,
                            'WaitingForGoal': self.gui_dest_selection.display,
-                           'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
-                           'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
+                           # 'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
+                           # 'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
                            'Guiding': self.gui_operation_feedback.display,
                            'WaitingForFeedback': self.gui_evaluation.display}
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
@@ -81,15 +88,16 @@ class Bellbot_GUI(object):
 
 
 class GUI_Destination_Selection(object):
-    def __init__(self, http_root, srv_prefix="/bellbot_gui_services", categories=["office", "Meeting Rooms"]):
+    def __init__(self, http_root, write_dir, deployment):
         self.http_root = http_root
-        self.ini = os.path.join(self.http_root, "bellbot.ini")
-        self.categories = categories
+        self.write_dir = write_dir
+        self.deployment = deployment
+        # self.categories = rospy.get_param('~destination_types')
+        self.categories = rospy.get_param('/bellbot_gui/destinations_types')
         self.dests = self.get_metadata()
         # self.dests_ab_sorted = sorted(self.dests.keys())
         self.dests_per_categ = self.sort_dests_per_categ()
         self.select_dest_page = self.create_select_dest_page()
-        # self.service_prefix = '/bellbot_gui_services'
         self.sub = None
 
     def display(self, state=None):
@@ -143,16 +151,12 @@ class GUI_Destination_Selection(object):
         return dests
 
     def create_select_dest_page(self):
-        config_parser = ConfigParser.SafeConfigParser()
-        if len(config_parser.read(self.ini)) == 0:
-            raise IOError("ini file not found")
-        try:
-            gui_select_dest_header = os.path.join(self.http_root, config_parser.get("gui", "gui_select_dest_header"))
-            gui_select_dest_footer = os.path.join(self.http_root, config_parser.get("gui", "gui_select_dest_footer"))
-            select_dest_page_filename = config_parser.get("gui", "gui_select_dest_page")
-            gui_select_dest_page = os.path.join(self.http_root, select_dest_page_filename)
-        except ConfigParser.NoOptionError:
-            raise
+        gui_select_dest_header = os.path.join(self.http_root, "gui_select_dest_header.txt")
+        gui_select_dest_footer = os.path.join(self.http_root, "gui_select_dest_footer.txt")
+        select_dest_page_filename = "gui_select_dest_page.html"
+        gui_select_dest_page = os.path.join(self.http_root, select_dest_page_filename)
+        # gui_select_dest_page = os.path.join(self.write, select_dest_page_filename)
+
         with open(gui_select_dest_header, "r") as f:
             data_gui_select_dest_header = f.read()
         with open(gui_select_dest_footer, "r") as f:
