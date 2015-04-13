@@ -1,6 +1,7 @@
 # custom
 user_feedback.csv
 gui_select_dest_page.html
+.idea/
 
 # Compiled Object files
 *.slo
