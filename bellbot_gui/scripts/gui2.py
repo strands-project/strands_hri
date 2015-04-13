@@ -61,7 +61,7 @@ class Bellbot_GUI(object):
         self.gui_setup = GUI_Setup()
         self.gui_dest_selection = GUI_Destination_Selection(self.http_root, self.write_dir, self.deployment)
         self.gui_operation_feedback = GUI_Operation_Feedback()
-        self.gui_evaluation = GUI_User_Evaluation(self.http_root)
+        self.gui_evaluation = GUI_User_Evaluation(self.http_root, self.write_dir)
         # self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
         # self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
@@ -155,7 +155,7 @@ class GUI_Destination_Selection(object):
         gui_select_dest_footer = os.path.join(self.http_root, "gui_select_dest_footer.txt")
         select_dest_page_filename = "gui_select_dest_page.html"
         gui_select_dest_page = os.path.join(self.http_root, select_dest_page_filename)
-        # gui_select_dest_page = os.path.join(self.write, select_dest_page_filename)
+        # gui_select_dest_page = os.path.join(self.write_dir, select_dest_page_filename)
 
         with open(gui_select_dest_header, "r") as f:
             data_gui_select_dest_header = f.read()
@@ -242,10 +242,11 @@ class GUI_Operation_Feedback(object):
 
 
 class GUI_User_Evaluation(object):
-    def __init__(self, http_root):
+    def __init__(self, http_root, write_dir):
         self.sub = None
         self.http_root = http_root
-        self.feedback_filename = os.path.join(self.http_root, "user_feedback.csv")
+        self.write_dir = write_dir
+        self.feedback_filename = os.path.join(self.write_dir, "user_feedback.csv")
         # rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
 
     def display(self, state=None):
