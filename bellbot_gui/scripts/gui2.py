@@ -37,6 +37,7 @@ def florence():
                 rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
     except:
         try:
+            pass
             subprocess.Popen("florence")
         except:
             rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
@@ -49,13 +50,11 @@ class Bellbot_GUI(object):
 
         self.deployment = deployment
 
-        # writeable directory
-        self.write_dir = os.path.join(os.environ["HOME"], ".ros", "bellbot")
-        if not os.path.exists(self.write_dir):
-            os.makedirs(self.write_dir)
+        self.pre_setup()
 
         # tell the webserver where it should look for web files to serve
-        self.http_root = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "www")
+        # self.http_root = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "www")
+        self.http_root = os.path.join(roslib.packages.get_pkg_dir(self.deployment), "www")
         strands_webserver.client_utils.set_http_root(self.http_root)
 
         self.gui_setup = GUI_Setup()
@@ -73,6 +72,23 @@ class Bellbot_GUI(object):
                            'WaitingForFeedback': self.gui_evaluation.display}
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
         rospy.on_shutdown(self._on_node_shutdown)
+
+    def pre_setup(self):
+        # writeable directory
+        self.write_dir = os.path.join(os.environ["HOME"], ".ros", "bellbot")
+        if not os.path.exists(self.write_dir):
+            os.makedirs(self.write_dir)
+
+        # move www to deployment package
+        copy_to = roslib.packages.get_pkg_dir(self.deployment)
+        already_set = os.path.join(copy_to, "www", "already_set")
+        if not os.path.isfile(already_set):
+            copy_dir = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "www")
+            subprocess.call(["cp", "-r", copy_dir, copy_to])
+            with open(already_set, "w") as f:
+                f.write("")
+
+
 
     def manage(self, state):
         print "STATE:", state.name
@@ -95,9 +111,9 @@ class GUI_Destination_Selection(object):
         # self.categories = rospy.get_param('~destination_types')
         self.categories = rospy.get_param('/bellbot_gui/destinations_types')
         self.dests = self.get_metadata()
-        # self.dests_ab_sorted = sorted(self.dests.keys())
+        ## self.dests_ab_sorted = sorted(self.dests.keys())
         self.dests_per_categ = self.sort_dests_per_categ()
-        self.select_dest_page = self.create_select_dest_page()
+        self.select_dest_page, self.page = self.create_select_dest_page()
         self.sub = None
 
     def display(self, state=None):
@@ -105,6 +121,8 @@ class GUI_Destination_Selection(object):
             self.sub.unregister()
         florence()
         strands_webserver.client_utils.display_relative_page(display_no, self.select_dest_page)
+        # strands_webserver.client_utils.display_content(display_no, self.page) # hmmm does not display it relative to http_root
+
         self.sub = rospy.Subscriber("/bellbot_gui/sel_dest", String, self.sel_dest_cbk)
 
     def sel_dest_cbk(self, data):
@@ -151,16 +169,26 @@ class GUI_Destination_Selection(object):
         return dests
 
     def create_select_dest_page(self):
-        gui_select_dest_header = os.path.join(self.http_root, "gui_select_dest_header.txt")
-        gui_select_dest_footer = os.path.join(self.http_root, "gui_select_dest_footer.txt")
+        cfg = ConfigParser.SafeConfigParser()
+        if len(cfg.read(os.path.join(roslib.packages.get_pkg_dir(self.deployment), "conf", "locale.ini"))) == 0:
+            raise IOError("locale.ini not found")
+
+        gui_select_dest_template = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "templates", "gui_select_dest_template.html")
+
         select_dest_page_filename = "gui_select_dest_page.html"
         gui_select_dest_page = os.path.join(self.http_root, select_dest_page_filename)
         # gui_select_dest_page = os.path.join(self.write_dir, select_dest_page_filename)
 
-        with open(gui_select_dest_header, "r") as f:
-            data_gui_select_dest_header = f.read()
-        with open(gui_select_dest_footer, "r") as f:
-            data_gui_select_dest_footer = f.read()
+        with open(gui_select_dest_template, "r") as f:
+            data_gui_select_dest_template = f.read()
+        # foo = str("file://" + os.path.join(roslib.packages.get_pkg_dir(self.deployment), "www", "images", cfg.get("select_destination_page", "logo")))
+        foo = cfg.get("select_destination_page", "logo")
+        data_gui_select_dest_template = data_gui_select_dest_template.replace("REPLACE_LOGO", foo)
+        # data_gui_select_dest_template = data_gui_select_dest_template.replace("REPLACE_LOGO_ALT", cfg.get("select_destination_page", "logo_alt"))
+        data_gui_select_dest_template = data_gui_select_dest_template.replace("REPLACE_WELCOME", cfg.get("select_destination_page", "welcome"))
+        data_gui_select_dest_template = data_gui_select_dest_template.replace("REPLACE_BUTTON", cfg.get("select_destination_page", "button"))
+        data_gui_select_dest_template = data_gui_select_dest_template.replace("REPLACE_NO_DESTINATION_SELECTED", cfg.get("select_destination_page", "no_destination_selected"), 1)
+
         options_str = ""
         for categ, rooms in self.dests_per_categ.items():
             options_str += '<optgroup label="' + categ + '">\n'
@@ -168,11 +196,12 @@ class GUI_Destination_Selection(object):
             for room_id in rooms_ids:
                 options_str += self.ret_options_str(rooms[room_id])
             options_str += "</optgroup>\n"
+        data_gui_select_dest_template = data_gui_select_dest_template.replace("REPLACE_DESTINATION_OPTIONS", options_str, 1)
         with open(gui_select_dest_page, "w") as f:
-            f.write(data_gui_select_dest_header)
-            f.write(options_str)
-            f.write(data_gui_select_dest_footer)
-        return select_dest_page_filename
+            f.write(data_gui_select_dest_template)
+            # f.write(options_str)
+            # f.write(data_gui_select_dest_footer)
+        return select_dest_page_filename, data_gui_select_dest_template
 
     def ret_options_str(self, room):
         print(room.name, room.goto)
