@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import cPickle as pickle
 import sys
 import ConfigParser
 import os
@@ -38,7 +37,7 @@ def florence():
     except:
         try:
             pass
-            # subprocess.Popen("florence")
+            subprocess.Popen("florence")
         except:
             rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
 
