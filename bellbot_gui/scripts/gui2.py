@@ -60,7 +60,7 @@ class Bellbot_GUI(object):
         self.gui_setup = GUI_Setup()
         self.gui_dest_selection = GUI_Destination_Selection(self.http_root, self.write_dir, self.deployment)
         self.gui_operation_feedback = GUI_Operation_Feedback()
-        self.gui_evaluation = GUI_User_Evaluation(self.http_root, self.write_dir)
+        self.gui_evaluation = GUI_User_Evaluation(self.http_root, self.write_dir, self.deployment)
         # self.gui_confirm_single_guest = GUI_Wait_For_Single_Guest()
         # self.gui_confirm_multi_guests = GUI_Wait_For_Multi_Guests()
 
@@ -113,7 +113,7 @@ class GUI_Destination_Selection(object):
         self.dests = self.get_metadata()
         ## self.dests_ab_sorted = sorted(self.dests.keys())
         self.dests_per_categ = self.sort_dests_per_categ()
-        self.select_dest_page, self.page = self.create_select_dest_page()
+        self.select_dest_page, self.page = self.make_page()
         self.sub = None
 
     def display(self, state=None):
@@ -168,7 +168,7 @@ class GUI_Destination_Selection(object):
             print "Service call failed: %s"%e
         return dests
 
-    def create_select_dest_page(self):
+    def make_page(self):
         cfg = ConfigParser.SafeConfigParser()
         if len(cfg.read(os.path.join(roslib.packages.get_pkg_dir(self.deployment), "conf", "locale.ini"))) == 0:
             raise IOError("locale.ini not found")
@@ -209,48 +209,48 @@ class GUI_Destination_Selection(object):
         # return '<option' + ' value="' + room.goto + '" id="' + room.id + '" name="' + room.name + '" description="' + room.description + '" kind="' + room.kind + '" goto="' + room.goto + '" available="' + str(room.available) + '" at_node="' + str(room.at_node) +'">' + room.name + "</option>\n"
 
 
-class GUI_Wait_For_Single_Guest(object):
-    def __init__(self):
-        self.service_prefix = '/bellbot_gui_services'
-        self.buttons = [('Go', 'trigger_confirm_single_guest')]
-        rospy.Service(self.service_prefix+'/trigger_confirm_single_guest', std_srvs.srv.Empty, self.trigger_go)
-
-    def display(self, state=None):
-        buttons_content = strands_webserver.page_utils.generate_alert_button_page("", self.buttons, self.service_prefix)
-        message = "<div>Click to confirm that you would like to go to " + state.goal + "</div>" + "<div>" + state.text + "</div>"
-        www_content = message + buttons_content
-        strands_webserver.client_utils.display_content(display_no, www_content)
-
-    def trigger_go(self, req):
-        rospy.wait_for_service('/bellbot_accept_target_single')
-        try:
-            proxy = rospy.ServiceProxy('/bellbot_accept_target_single', NewTarget)
-            res = proxy(NewTargetRequest(""))
-            return res
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-
-
-class GUI_Wait_For_Multi_Guests(object):
-    def __init__(self):
-        self.service_prefix = '/bellbot_gui_services'
-        self.buttons = [('Go', 'trigger_confirm_multi_guests')]
-        rospy.Service(self.service_prefix+'/trigger_confirm_multi_guests', std_srvs.srv.Empty, self.trigger_go)
-
-    def display(self, state=None):
-        buttons_content = strands_webserver.page_utils.generate_alert_button_page("", self.buttons, self.service_prefix)
-        message = "<div>Click to confirm that you would like to go to " + state.goal + "</div>" + "<div>" + state.text + "</div>"
-        www_content = message + buttons_content
-        strands_webserver.client_utils.display_content(display_no, www_content)
-
-    def trigger_go(self, req):
-        rospy.wait_for_service('/bellbot_accept_target_mult')
-        try:
-            proxy = rospy.ServiceProxy('/bellbot_accept_target_mult', NewTarget)
-            res = proxy(NewTargetRequest(""))
-            return res
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+# class GUI_Wait_For_Single_Guest(object):
+#     def __init__(self):
+#         self.service_prefix = '/bellbot_gui_services'
+#         self.buttons = [('Go', 'trigger_confirm_single_guest')]
+#         rospy.Service(self.service_prefix+'/trigger_confirm_single_guest', std_srvs.srv.Empty, self.trigger_go)
+#
+#     def display(self, state=None):
+#         buttons_content = strands_webserver.page_utils.generate_alert_button_page("", self.buttons, self.service_prefix)
+#         message = "<div>Click to confirm that you would like to go to " + state.goal + "</div>" + "<div>" + state.text + "</div>"
+#         www_content = message + buttons_content
+#         strands_webserver.client_utils.display_content(display_no, www_content)
+#
+#     def trigger_go(self, req):
+#         rospy.wait_for_service('/bellbot_accept_target_single')
+#         try:
+#             proxy = rospy.ServiceProxy('/bellbot_accept_target_single', NewTarget)
+#             res = proxy(NewTargetRequest(""))
+#             return res
+#         except rospy.ServiceException, e:
+#             print "Service call failed: %s"%e
+#
+#
+# class GUI_Wait_For_Multi_Guests(object):
+#     def __init__(self):
+#         self.service_prefix = '/bellbot_gui_services'
+#         self.buttons = [('Go', 'trigger_confirm_multi_guests')]
+#         rospy.Service(self.service_prefix+'/trigger_confirm_multi_guests', std_srvs.srv.Empty, self.trigger_go)
+#
+#     def display(self, state=None):
+#         buttons_content = strands_webserver.page_utils.generate_alert_button_page("", self.buttons, self.service_prefix)
+#         message = "<div>Click to confirm that you would like to go to " + state.goal + "</div>" + "<div>" + state.text + "</div>"
+#         www_content = message + buttons_content
+#         strands_webserver.client_utils.display_content(display_no, www_content)
+#
+#     def trigger_go(self, req):
+#         rospy.wait_for_service('/bellbot_accept_target_mult')
+#         try:
+#             proxy = rospy.ServiceProxy('/bellbot_accept_target_mult', NewTarget)
+#             res = proxy(NewTargetRequest(""))
+#             return res
+#         except rospy.ServiceException, e:
+#             print "Service call failed: %s"%e
 
 
 class GUI_Setup(object):
@@ -271,10 +271,12 @@ class GUI_Operation_Feedback(object):
 
 
 class GUI_User_Evaluation(object):
-    def __init__(self, http_root, write_dir):
+    def __init__(self, http_root, write_dir, deployment):
         self.sub = None
         self.http_root = http_root
         self.write_dir = write_dir
+        self.deployment = deployment
+        self.make_page()
         self.feedback_filename = os.path.join(self.write_dir, "user_feedback.csv")
         # rospy.Service('/bellbot/gui/feedback_done', std_srvs.srv.Empty, self.handle_feedback_done)
 
@@ -283,6 +285,25 @@ class GUI_User_Evaluation(object):
             self.sub.unregister()
         strands_webserver.client_utils.display_relative_page(display_no, 'feedback.html')
         self.sub = rospy.Subscriber("/bellbot_gui_feedback", String, self.cb_got_feedback)
+
+    def make_page(self):
+        cfg = ConfigParser.SafeConfigParser()
+        if len(cfg.read(os.path.join(roslib.packages.get_pkg_dir(self.deployment), "conf", "locale.ini"))) == 0:
+            raise IOError("locale.ini not found")
+
+        template_file = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "templates", "feedback_template.html")
+        target_path_file = os.path.join(self.http_root, "feedback.html")
+
+        with open(template_file, "r") as f:
+            template = f.read()
+        template = template.replace("REPLACE_Q1", cfg.get("user_feedback_page", "q1"))
+        template = template.replace("REPLACE_Q2", cfg.get("user_feedback_page", "q2"))
+        template = template.replace("REPLACE_Q3", cfg.get("user_feedback_page", "q3"))
+        template = template.replace("REPLACE_Q4", cfg.get("user_feedback_page", "q4"))
+        template = template.replace("REPLACE_Q5", cfg.get("user_feedback_page", "q5"))
+
+        with open(target_path_file, "w") as f:
+            f.write(template)
 
     def cb_got_feedback(self, data):
         feedback = data.data
