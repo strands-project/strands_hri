@@ -30,8 +30,8 @@ class BellbotStateMachine(Agent):
         # the super().__init__() methods calls make_sm(),
         super(BellbotStateMachine,self).__init__()
 
-       
-    
+
+
     def make_sm(self):
         self.sm = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
         

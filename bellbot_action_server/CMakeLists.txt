@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-#catkin_python_setup()
+catkin_python_setup()
 
 
 ## Generate messages in the 'msg' folder
@@ -86,10 +86,10 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
 #  launch/bellbot_action_server.launch
-  src/bellbot_server.py
-  src/bellbot_state_machine.py
-  src/agent.py
-  src/bellbot_test_client.py
+  scripts/bellbot_server.py
+  #src/bellbot_state_machine.py
+  #src/agent.py
+  #scripts/bellbot_test_client.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
