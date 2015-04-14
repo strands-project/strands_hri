@@ -36,8 +36,8 @@ def florence():
                 rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
     except:
         try:
-            pass
             subprocess.Popen("florence")
+            # pass
         except:
             rospy.logerr("virtual keyboard not found, please install it by running:\nsudo apt-get install florence")
 
