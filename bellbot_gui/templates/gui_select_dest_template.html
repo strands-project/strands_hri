@@ -1,8 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bellbot</title>
+  <link rel="stylesheet" href="docsupport/style.css">
+  <link rel="stylesheet" href="docsupport/prism.css">
+  <link rel="stylesheet" href="chosen.css">
+  <style type="text/css" media="all">
+    /* fix rtl for demo */
+    .chosen-rtl .chosen-drop { left: -9000px; }
+  </style>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+<!--
+<script type="text/javascript" type="text/javascript">
+  // Connecting to ROS
+  // -----------------
+
+  var ros = new ROSLIB.Ros({
+    url : 'ws://localhost:9090'
+  });
+
+  ros.on('connection', function() {
+    console.log('Connected to websocket server.');
+  });
+
+  ros.on('error', function(error) {
+    console.log('Error connecting to websocket server: ', error);
+  });
+
+  ros.on('close', function() {
+    console.log('Connection to websocket server closed.');
+  });
+</script>
+-->
+</head>
+
+<body>
+  <form>
+    <div id="container">
+      <div id="content">
+      <img src="REPLACE_LOGO" alt="logo">
+      <h2>AAF Bellbot</h2>
+      <p><em>REPLACE_WELCOME</em></p>
+      <div class="side-by-side clearfix">
+        <div>
+          <select id="destinations" onchange="getval(this);" data-placeholder="Select your destination" style="width:350px;" class="chosen-select" tabindex="5">
+            <option value=""></option>
+            REPLACE_DESTINATION_OPTIONS
           </select>
         </div>
 	<div>
-	<!-- <button id="button1">Click to go to selected destination</button> -->
-	<div id="button1" align="center" style="border: 1px solid; border-color: #a8a6a3; border-radius: 5px; cursor:pointer;">Click to go to selected destination</div>
+	<!-- <button id="button1">REPLACE_BUTTON</button> -->
+	<div id="button1" align="center" style="border: 1px solid; border-color: #a8a6a3; border-radius: 5px; cursor:pointer;">REPLACE_BUTTON</div>
 	</div>
       </div>
 
@@ -48,7 +98,7 @@ $(document).ready(function(){
   $('#button1').click(function(){
     dest = $('#destinations :selected').text()
     if (dest == "") {
-    	alert( 'Please select a destination from the list' );
+    	alert( 'REPLACE_NO_DESTINATION_SELECTED' );
     } else {
     console.log("else")
 	foo()

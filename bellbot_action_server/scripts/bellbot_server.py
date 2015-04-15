@@ -11,7 +11,7 @@ import actionlib
 from bellbot_action_server.msg import *
 from strands_executive_msgs.srv import IsTaskInterruptible
 
-from bellbot_state_machine import BellbotStateMachine
+from bellbot_action_server.bellbot_state_machine import BellbotStateMachine
 
 
 class BellbotServer(object):
