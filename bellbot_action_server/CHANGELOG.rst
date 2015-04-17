@@ -2,6 +2,13 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* reverting manually changing release numbers
+* 0.0.11
+* tidy up bellbot_action_server
+* Contributors: Yiannis Gatsoulis
+
 0.0.10 (2015-04-10)
 -------------------
 

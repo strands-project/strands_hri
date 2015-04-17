@@ -2,6 +2,21 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* reverting manually changing release numbers
+* 0.0.11
+* install targets
+* added locale support for user feedback
+* removed ros2djs from feedback.html
+* read deployment from rosparam, also forgot to mention there is limited support for locale from previous commit
+* tidying up
+* bellbot_gui uses bellbot deployment dir for writing
+* user feedback now is written in /home/yiannis/.ros/bellbot/
+* get destinations types from param server
+* removed scripts/foo.py and ignore jetbrains IDE
+* Contributors: Yiannis Gatsoulis
+
 0.0.10 (2015-04-10)
 -------------------
 * removing bellbot scheduller from CMakeLists
