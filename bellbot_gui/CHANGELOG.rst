@@ -2,8 +2,8 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.11 (2015-04-17)
+-------------------
 * reverting manually changing release numbers
 * 0.0.11
 * install targets

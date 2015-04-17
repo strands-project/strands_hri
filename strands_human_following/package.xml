@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>strands_human_following</name>
-  <version>0.0.10</version>
+  <version>0.0.11</version>
   <description>The strands_human_following package</description>
 
    <maintainer email="fxj345@cs.bham.ac.uk">Ferdian Jovan</maintainer>

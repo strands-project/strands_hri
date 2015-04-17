@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>strands_human_aware_navigation</name>
-  <version>0.0.10</version>
+  <version>0.0.11</version>
   <description>The strands_human_aware_velocity package</description>
 
   <maintainer email="cdondrup@lincoln.ac.uk">Christian Dondrup</maintainer>
