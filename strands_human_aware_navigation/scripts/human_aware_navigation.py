@@ -2,11 +2,10 @@
 
 import rospy
 import actionlib
-import dynamic_reconfigure.client
 from dynamic_reconfigure.server import Server as DynServer
+from dynamic_reconfigure.client import Client as DynClient
 from bayes_people_tracker.msg import PeopleTracker
 from strands_human_aware_navigation.cfg import HumanAwareNavigationConfig
-#from strands_head_orientation.srv import StartHeadAnalysis, StopHeadAnalysis
 import move_base_msgs.msg
 import numpy as np
 import actionlib_msgs.msg
@@ -24,7 +23,7 @@ class DynamicVelocityReconfigure():
         self.fast = True
         self.gaze_type = DynamicVelocityReconfigure.GAZE
         rospy.loginfo("Creating dynamic reconfigure client")
-        self.client = dynamic_reconfigure.client.Client(
+        self.client = DynClient(
             "/move_base/DWAPlannerROS"
         )
         rospy.loginfo(" ...done")
@@ -41,9 +40,6 @@ class DynamicVelocityReconfigure():
         )
         self.gazeClient.wait_for_server()
         rospy.loginfo("...done")
-        rospy.loginfo("Reading move_base parameters")
-        self.getCurrentSettings()
-        rospy.loginfo("Reading parameters")
 
         # Magic numbers overwritten in dyn_callback
         self.threshold = 4.0
@@ -62,8 +58,7 @@ class DynamicVelocityReconfigure():
             self.goalCallback,
             auto_start=False
         )
-        #self._as.register_goal_callback()
-        #self._as.register_preempt_callback(self.preemptCallback)
+
         rospy.loginfo(" ...starting")
         self._as.start()
         rospy.loginfo(" ...done")
@@ -88,6 +83,14 @@ class DynamicVelocityReconfigure():
         self.max_dist        = config["max_dist"]
         self.min_dist        = config["min_dist"]
         self.detection_angle = config["detection_angle"]
+        max_vel_x            = config["max_vel_x"]
+        max_trans_vel        = config["max_trans_vel"]
+        max_rot_vel          = config["max_rot_vel"]
+        self.fast_param = {
+            "max_vel_x" : max_vel_x,
+            "max_trans_vel" : max_trans_vel,
+            "max_rot_vel" : max_rot_vel
+        }
         return config
 
     def cancel_time_checker_cb(self, msg):
@@ -103,23 +106,6 @@ class DynamicVelocityReconfigure():
     def cancel_gaze_goal(self):
         if self.gaze_type == DynamicVelocityReconfigure.GAZE:
             self.gazeClient.cancel_all_goals()
-
-    def getCurrentSettings(self):
-        max_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/max_vel_x"), 2)
-        max_trans_vel = round(rospy.get_param("/move_base/DWAPlannerROS/max_trans_vel"),2)
-        max_rot_vel = round(rospy.get_param("/move_base/DWAPlannerROS/max_rot_vel"), 2)
-        #min_vel_x = round(rospy.get_param("/move_base/DWAPlannerROS/min_vel_x"), 2)
-        #min_trans_vel = round(rospy.get_param("/move_base/DWAPlannerROS/min_trans_vel"),2)
-        #min_rot_vel = round(rospy.get_param("/move_base/DWAPlannerROS/min_rot_vel"), 2)
-        self.fast_param = {
-            'max_vel_x': max_vel_x,
-            'max_trans_vel': max_trans_vel,
-            'max_rot_vel': max_rot_vel,
-            #'min_vel_x': min_vel_x,
-            #'min_trans_vel': min_trans_vel,
-            #'min_rot_vel': min_rot_vel
-        }
-        rospy.loginfo("Found following default values for move_base: %s", self.fast_param)
 
     def resetSpeed(self):
         rospy.logdebug("Resetting speeds to max:")
@@ -192,7 +178,6 @@ class DynamicVelocityReconfigure():
                 rospy.logdebug(" Already fast")
 
     def goalCallback(self, goal):
-        #self._goal = self._as.accept_new_goal()
         self.ppl_sub = rospy.Subscriber(
             self.sub_topic,
             PeopleTracker,
@@ -202,15 +187,8 @@ class DynamicVelocityReconfigure():
         )
         self._goal = goal
         self.send_gaze_goal("/pose_extractor/pose")
-        #self.getCurrentSettings()
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
-        #thread.start_new_thread(self.moveBaseThread,(self._goal,))
-        #try:
-            #s = rospy.ServiceProxy('/start_head_analysis', StartHeadAnalysis)
-            #s()
-        #except rospy.ServiceException, e:
-            #print "Service call failed: %s" % e
 
         self.moveBaseThread(self._goal)
 
@@ -226,11 +204,6 @@ class DynamicVelocityReconfigure():
         ret = self.moveBase(goal)
         self.resetSpeed()
         self.cancel_gaze_goal()
-        #try:
-            #s = rospy.ServiceProxy('/stop_head_analysis', StopHeadAnalysis)
-            #s()
-        #except rospy.ServiceException, e:
-            #print "Service call failed: %s" % e
         if not self._as.is_preempt_requested() and ret:
             self._as.set_succeeded(self.result)
         elif not self._as.is_preempt_requested() and not ret:
