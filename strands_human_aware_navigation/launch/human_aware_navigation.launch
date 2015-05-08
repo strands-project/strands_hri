@@ -1,0 +1,9 @@
+<launch>
+  <arg name="machine" default="localhost" />
+  <arg name="user" default="" />
+
+  <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER)" user="$(arg user)" default="true"/>
+  
+  <node pkg="strands_human_aware_navigation" type="human_aware_navigation.py" name="human_aware_navigation" output="screen" respawn="true"/>
+  <node pkg="strands_human_aware_navigation" type="dwa_dyn_wrapper" name="DWAPlannerROS_dyn_wrapper" output="screen" respawn="true"/>
+</launch>
