@@ -1,0 +1,155 @@
+$var title: Status
+$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/dashboard.js
+
+
+
+
+<script>
+document.onready = function() {
+ init();
+}
+</script>
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Übersichtskarte</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="nav"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row">
+                    <button data-toggle="modal" data-target="#emergency_dlg" class="btn btn-default col-md-12 btn-lg btn-danger">Notstopp</button>
+                    <br/>
+                    <br/>
+                    <br/>
+                </div>
+                <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Anstehende Aufgaben</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-condensed table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Username</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Larry</td>
+                                    <td>the Bird</td>
+                                    <td>@twitter</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Roboter Status</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-condensed table-striped">
+                            <tbody>
+                                <tr>
+                                    <td class="col-md-3">Aktuelle Aufgabe:</td>
+                                    <td class="col-md-9"><p id="tasktext">Whatever I'm doing right now</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-3">Zuletzt gesagt:</td>
+                                    <td class="col-md-9"><p id="saytext">famous last words that can be quite long so let's see how that works</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-3">Batterie-Stand:</td>
+                                    <td class="col-md-9"><p id="batterytext">xx%</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-3">Kilometer-Stand:</td>
+                                    <td class="col-md-9"><p id="mileagetext">XXX</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-3">Aktueller Wegpunkt:</td>
+                                    <td class="col-md-9"><p id="currentnodetext">XXX</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-3">Letzte Fehlermeldung:</td>
+                                    <td class="col-md-9"><p id="rosouttext"></p></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Kamera</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="embed-responsive embed-responsive-4by3">
+                            <div id="mjpeg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Roboter Bildschirm</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>Hier wird der aktuelle Inhalt von Henry's Bildschirm wieder gegeben</p>
+                        <div class="embed-responsive embed-responsive-4by3">
+                            <iframe class="embed-responsive-item" src="/robotscreen"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+<div class="modal fade" id="emergency_dlg">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Notfall-Progamm aktivieren?</h4>
+      </div>
+      <div class="modal-body">
+        <p>Soll das Notfall-Programm aktiviert werden? Der Roboter wird zur naechsten Sicherheitszone fahren und sich dort abschalten. Sollte er dort im Weg sein, kann er einfach weg geschoben werden. Bitte informieren Sie nach der Aktivierung das Roboter-Admin Team, damit zu einem späteren Zeitpunkt der Betrieb wieder aufgenommen werden kann.</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="emergency_stop();" type="button" class="btn btn-danger btn-default" data-dismiss="modal">Notfall auslösen</button>
+        <button type="button" class="btn" data-dismiss="modal">Zurück zum Normalbetrieb</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

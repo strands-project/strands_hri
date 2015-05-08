@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-catkin_python_setup()
+#catkin_python_setup()
 
 
 ###################################
@@ -60,10 +60,7 @@ add_dependencies(bellbot_feedback_recorder bellbot_feedback_recorder_generate_me
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
 install(PROGRAMS
-  #src/gui.py
-  scripts/gui2.py
-  #src/livescreen.py
-  #src/destination_data.py
+  scripts/server.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
