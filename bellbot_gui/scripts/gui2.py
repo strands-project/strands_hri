@@ -13,12 +13,14 @@ import strands_webserver.page_utils
 import strands_webserver.client_utils
 import std_srvs.srv
 from std_msgs.msg import String
+from actionlib import SimpleActionClient
 
 import random
 from bellbot_gui.destination_data import Destination_Data
 from bellbot_action_server.srv import *
 from bellbot_action_server.msg import *
 from topological_utils.srv import NodeMetadata, NodeMetadataRequest, NodeMetadataResponse
+from aaf_walking_group.msg import EmptyAction, EmptyGoal
 
 def random_page(choices=('http://strands-project.eu',
                              'http://www.nachrichten.at',
@@ -50,6 +52,7 @@ class Bellbot_GUI(object):
         self.deployment = rospy.get_param("/bellbot_gui/deployment")
 
         self.pre_setup()
+        self.last_state = ""
 
         # tell the webserver where it should look for web files to serve
         # self.http_root = os.path.join(roslib.packages.get_pkg_dir("bellbot_gui"), "www")
@@ -69,6 +72,12 @@ class Bellbot_GUI(object):
                            # 'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
                            'Guiding': self.gui_operation_feedback.display,
                            'WaitingForFeedback': self.gui_evaluation.display}
+        self.states_clear_cbs = {'Setup': self.gui_setup.clear,
+                           'WaitingForGoal': self.gui_dest_selection.clear,
+                           # 'WaitingForSingleGuest': self.gui_confirm_single_guest.display,
+                           # 'WaitingForMultipleGuests':self.gui_confirm_multi_guests.display,
+                           'Guiding': self.gui_operation_feedback.clear,
+                           'WaitingForFeedback': self.gui_evaluation.clear}
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
         rospy.on_shutdown(self._on_node_shutdown)
 
@@ -92,7 +101,10 @@ class Bellbot_GUI(object):
     def manage(self, state):
         # print "STATE:", state.name
         try:
+            if not self.last_state == "":
+                self.states_clear_cbs[self.last_state]()
             self.states_cbs[state.name](state)
+            self.last_state = state.name
         except KeyError:
             rospy.logerr("Bellbot_GUI/manager: sad panda")
             strands_webserver.client_utils.display_url(display_no, random_page())
@@ -123,6 +135,9 @@ class GUI_Destination_Selection(object):
         # strands_webserver.client_utils.display_content(display_no, self.page) # hmmm does not display it relative to http_root
 
         self.sub = rospy.Subscriber("/bellbot_gui/sel_dest", String, self.sel_dest_cbk)
+
+    def clear(self):
+        pass
 
     def sel_dest_cbk(self, data):
         os.system("pkill florence")
@@ -259,14 +274,22 @@ class GUI_Setup(object):
     def display(self, state=None):
         strands_webserver.client_utils.display_url(display_no, random_page())
 
+    def clear(self):
+        pass
+
 
 class GUI_Operation_Feedback(object):
     def __init__(self):
-        pass
+        self.client = SimpleActionClient("bellbot_guiding_interface", EmptyAction)
 
     def display(self, state):
+         self.client.send_goal(EmptyGoal())
         #strands_webserver.client_utils.display_relative_page(display_no, 'cake.html')
-	    strands_webserver.client_utils.display_relative_page(display_no, 'livescreen.html')
+#	    strands_webserver.client_utils.display_relative_page(display_no, 'livescreen.html')
+
+    def clear(self):
+        rospy.loginfo("Cancelling guiding interface")
+        self.client.cancel_all_goals()
 
 
 class GUI_User_Evaluation(object):
@@ -324,6 +347,9 @@ class GUI_User_Evaluation(object):
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
         return
+
+    def clear(self):
+        pass
 
 
 
