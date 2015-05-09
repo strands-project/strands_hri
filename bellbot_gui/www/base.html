@@ -8,13 +8,15 @@ $def with (page)
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script type="text/javascript" src="static/jquery.min.js"></script>
+        <script type="text/javascript" src="static/jquery-ui.min.js"></script>
         <script type="text/javascript" src="static/bootstrap.min.js"></script>
-        <link rel="stylesheet" href="static/onScreenKeyboard.css">
         <link rel="stylesheet" href="static/aaf.css">
+        <link rel="stylesheet" href="static/keyboard.css">
+        <link rel="stylesheet" href="static/jquery-ui.css">
 
 
         <script type="text/javascript">
-            rosws_url = "$:rosws_url"
+            rosws_suffix = "$:html_config['rosws_suffix']"
         </script>
         $if page.jsfiles:
             $for f in page.jsfiles.split():

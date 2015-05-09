@@ -1,5 +1,5 @@
 $var title: Bellbot - Zielauswahl
-$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/jquery.onScreenKeyboard.js static/typeahead.bundle.js static/destination.js 
+$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/jquery.keyboard.min.js  static/jquery.keyboard.extension-typing.min.js static/jquery.keyboard.extension-autocomplete.min.js static/destination.js 
 
 
 
@@ -11,21 +11,12 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
                     <div class="panel-heading">
                         <h3 class="panel-title">Zielauswahl</h3>
                     </div>
+                    <p id="completion">
+                    </p>
                     <div class="panel-body">
-
-
-
-                        <input class="typeahead osk-trigger" type="text" placeholder="States of USA">
-
-                        <script>
-                            $$(function () {
-                                $$('.osk-trigger').onScreenKeyboard({
-                                    rewireReturn : 'submit',
-                                    rewireTab : true
-                                });
-                            });
-                        </script>
-
+                      <div id="wrap">
+                          <input class="destination" type="text" placeholder=" Enter something...">
+                      </div>
                     </div>
                 </div>
             </div>
@@ -52,49 +43,42 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
 
 document.onready = function() {
  init();
+ // Autocomplete demo
+var availableTags = $:available_destinations;
+
+$$('.destination:eq(0)')
+  .keyboard({
+    layout: 'qwerty',
+    css: {
+      // input & preview
+      // "label-default" for a darker background
+      // "light" for white text
+      input: 'input-sm dark',
+      // keyboard container
+      container: 'center-block well',
+      // default state
+      buttonDefault: 'btn btn-default',
+      // hovered button
+      buttonHover: 'btn-primary',
+      // Action keys (e.g. Accept, Cancel, Tab, etc);
+      // this replaces "actionClass" option
+      buttonAction: 'active',
+      // used when disabling the decimal button {dec}
+      // when a decimal exists in the input area
+      buttonDisabled: 'disabled'
+    }    
+  })
+  .autocomplete({
+    source: availableTags,
+    appendTo: "#completion"
+  })
+  .addAutocomplete()
+  .addTyping();
+
 }
 
-var substringMatcher = function(strs) {
-  return function findMatches(q, cb) {
-    var matches, substringRegex;
- 
-    // an array that will be populated with substring matches
-    matches = [];
- 
-    // regex used to determine if a string contains the substring `q`
-    substrRegex = new RegExp(q, 'i');
- 
-    // iterate through the pool of strings and for any string that
-    // contains the substring `q`, add it to the `matches` array
-    $$.each(strs, function(i, str) {
-      if (substrRegex.test(str)) {
-        matches.push(str);
-      }
-    });
- 
-    cb(matches);
-  };
-};
- 
-var states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California',
-  'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii',
-  'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
-  'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
-  'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
-  'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
-  'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
-  'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
-  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
-];
- 
-$$('.typeahead').typeahead({
-  hint: true,
-  highlight: true,
-  minLength: 1
-},
-{
-  name: 'states',
-  source: substringMatcher(states)
-});
+
+
+
 
 </script>

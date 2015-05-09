@@ -2669,7 +2669,7 @@ fieldset[disabled] .checkbox label {
 .input-sm {
   height: 36px;
   padding: 5px 10px;
-  font-size: 16px;
+  font-size: 24px;
   line-height: 1.5;
   border-radius: 2px;
 }
@@ -2966,7 +2966,7 @@ select[multiple].form-group-lg .form-control {
   border: 1px solid transparent;
   white-space: nowrap;
   padding: 6px 12px;
-  font-size: 18px;
+  font-size: 28px;
   line-height: 1.42857143;
   border-radius: 4px;
   -webkit-user-select: none;

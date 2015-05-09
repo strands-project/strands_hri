@@ -12,13 +12,17 @@ from os.path import join
 TEMPLATE_DIR = roslib.packages.get_pkg_dir('bellbot_gui') + '/www'
 WEBTOOLS_DIR = roslib.packages.get_pkg_dir('strands_webtools')
 
+html_config = {
+    'rosws_suffix': ':9090'
 
-rosws_url = ':9090'
+}
+
+available_destinations = ['test', 'tst2']
+
 render = web.template.render(TEMPLATE_DIR, base='base', globals=globals())
 
-
-
 chdir(TEMPLATE_DIR)
+
 
 class ControlServer(web.application):
     def __init__(self):
@@ -41,7 +45,6 @@ class ControlServer(web.application):
     def signal_handler(self, signum, frame):
         self.stop()
 
-        
 
 class DestinationPage(object):
     def GET(self):
