@@ -108,7 +108,7 @@ class DestinationPage(object):
                 print res
                 for i in range(0, len(res.name)):
                     foo = res.name[i].decode('utf-8')
-                    print foo
+                    #print foo
                     # foo = res.name[i].replace("-", "_")
                     
                     dests[foo] = res.goto_node[i]
