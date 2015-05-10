@@ -2,6 +2,11 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding ability of reconfiguring movebase and human_aware together. Taking new parameters into account in human_aware when resetting speeds.
+* Contributors: Christian Dondrup
+
 0.0.11 (2015-04-17)
 -------------------
 

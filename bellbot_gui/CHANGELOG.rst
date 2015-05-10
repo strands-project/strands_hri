@@ -2,6 +2,11 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removing hardcoded param in bellbot
+* Contributors: Jaime Pulido Fentanes
+
 0.0.11 (2015-04-17)
 -------------------
 * reverting manually changing release numbers
