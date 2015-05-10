@@ -14,11 +14,6 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
                     <div class="col-md-3">
                         <form action="SetGoal">
                             <input type="text" name="destination" id="destination" class="typeahead col-md-8" placeholder="Ziel eingeben"/>
-                            <div class="panel panel-default">
-                                <div class="panel-body" id="explanation">
-                                  Information
-                                </div>
-                            </div>
                             <button type="submit" class="btn btn-success col-md-12">Los gehen</button>
                         </form>
                     </div>
@@ -60,7 +55,7 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
 document.onready = function() {
  init();
  // Autocomplete demo
-var availableTags = $:available_destinations;
+var availableTags = $:html_config['available_destinations'];
 
 $$('input').mlKeyboard({
   is_hidden: false,
@@ -93,7 +88,8 @@ var substringMatcher = function(strs) {
 $$('.typeahead').typeahead({
   hint: true,
   highlight: true,
-  minLength: 0
+  minLength: 0,
+  autocomplete: true
 },
 {
   name: 'availableTags',
