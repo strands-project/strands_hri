@@ -28,15 +28,15 @@ chdir(TEMPLATE_DIR)
 class ControlServer(web.application):
     def __init__(self):
         urls = (
-            '/', 'DestinationPage',
-            '/navigation', 'NavigationPage',
-            '/feedback', 'FeedbackPage',
+            '/WaitingForGoal', 'DestinationPage',
+            '/SetGoal', 'SetGoalPage',
+            '/Guiding', 'NavigationPage',
+            '/WaitingForFeedback', 'FeedbackPage',
             '/webtools/(.*)', 'Webtools'
         )
 
         print globals()
         web.application.__init__(self, urls, globals())
-        #rospy.Service(rospy.get_name()+'/demand_task', DemandTask, self.demand_task)
         signal.signal(signal.SIGINT, self.signal_handler)
 
     def run(self, port=8027, *middleware):
@@ -59,15 +59,16 @@ class NavigationPage(object):
         html_config['destination_waypoint'] = user_data.destination
         return render.navigation()
 
-
-class SetupPage(object):
+class SetGoalPage(object):
     def GET(self):
-        return render.setup()
+        user_data = web.input()
+        rospy.loginfo("requested to go to %s" % user_data.destination)
+        html_config['destination_waypoint'] = user_data.destination
+        return render.waiting()
 
-
-class HelpPage(object):
+class FeedbackPage(object):
     def GET(self):
-        return render.help()
+        return render.feedback()
 
 
 class Webtools(object):

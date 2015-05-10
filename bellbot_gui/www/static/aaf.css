@@ -6796,3 +6796,215 @@ body {
 
 
 /* PINGENDO COMMENT DO NOT REMOVE */
+
+
+
+p {
+  font-family : Arial;
+}
+.ques {
+  width: 40%;
+  float: left;
+}
+
+.buttons {
+  width: 60%;
+  float:right;
+}
+
+.heading {
+  padding-bottom: 30px;
+  margin-bottom: 48px;
+  margin-top: 40px;
+  font-size: 20px;
+}
+
+
+.main-element {
+
+}
+.feedback-button-speed{
+  width:324px;
+  height: 216px;
+}
+
+.feedback-button-speed p{
+  font-size: 50px;
+  margin-top: 80px;
+}
+
+.feedback-button {
+  width: 135px;
+  margin: 2px 5px;
+  border: 5px solid grey;
+  border-radius: 25px;
+}
+
+
+.buttons .disabled {
+  background-color: grey;!important
+}
+.selected {
+  pointer-events: none;
+  border-color: black;
+}
+
+.imgs, .feedback-button {
+  display:inline-block;
+}
+
+.feed-back-cont {
+   text-align: center;
+}
+
+.submit {
+  background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffffff), color-stop(1, #bfbfbf));
+  background:-moz-linear-gradient(top, #ffffff 5%, #bfbfbf 100%);
+  background:-webkit-linear-gradient(top, #ffffff 5%, #bfbfbf 100%);
+  background:-o-linear-gradient(top, #ffffff 5%, #bfbfbf 100%);
+  background:-ms-linear-gradient(top, #ffffff 5%, #bfbfbf 100%);
+  background:linear-gradient(to bottom, #ffffff 5%, #bfbfbf 100%);
+  filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#bfbfbf',GradientType=0);
+  background-color:#ffffff;
+  -moz-border-radius:28px;
+  -webkit-border-radius:28px;
+  border-radius:28px;
+  border:1px solid #737373;
+  display:inline-block;
+  cursor:pointer;
+  color:#4d4d4d;
+  font-family:arial;
+  font-size:17px;
+  padding:16px 200px;
+  text-decoration:none;
+  text-shadow:0px 1px 0px #dbdbdb;
+margin-top: 10px;
+  width: 60px;
+  margin-left: 42px;
+}
+.good1,.good2,.good3,.good4,.good5 {
+  background-color: #70b244;
+}
+
+.average1,.average2,.average3,.average4,.average5 {
+  background-color: yellow;
+}
+
+.bad1,.bad2,.bad3,.bad4,.bad5 {
+  background-color: red;
+}
+
+
+.button {
+   border-top: 1px solid #96d1f8;
+   background: #65a9d7;
+   background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+   background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+   background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+   background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+   background: -o-linear-gradient(top, #3e779d, #65a9d7);
+   padding: 18.5px 37px;
+   -webkit-border-radius: 31px;
+   -moz-border-radius: 31px;
+   border-radius: 31px;
+   -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+   -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+   box-shadow: rgba(0,0,0,1) 0 1px 0;
+   text-shadow: rgba(0,0,0,.4) 0 1px 0;
+   color: white;
+   font-size: 24px;
+   font-family: 'Lucida Grande', Helvetica, Arial, Sans-Serif;
+   text-decoration: none;
+   vertical-align: middle;
+  display: inline-block;
+  width: 360px;
+  text-align: center;
+   }
+.button:hover {
+   border-top-color: #28597a;
+   background: #28597a;
+   color: #ffffff;
+   }
+.button:active {
+   border-top-color: #1b435e;
+   background: #1b435e;
+   }
+
+.button p {
+  padding : 0;
+  margin : 0;
+}
+
+.call-robot .heading {
+  font-size: 50px;
+}
+
+#wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0,0,0,.5);
+  text-align: center;
+}
+
+#light-frame {
+  position: relative;
+  width: 450px;
+  height: 212px;
+  background: white;
+  border: 3px solid black;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+#button-cont .button {
+  width: 50px;
+}
+
+.livescreen .line {
+  height: 2px;
+  background-color: grey;
+}
+
+.livescreen .heading, .livescreen .status {
+  display: inline-block;
+}
+
+.livescreen #status-head {
+  text-align: center;
+}
+
+.livescreen .status {
+  font-size: 35px;
+  /* margin-top: -26px; */
+  margin-left: 24px;
+  color: green;
+}
+
+.livescreen .right, .livescreen .left {
+  display: inline-block;
+}
+
+.livescreen .feedback-button {
+  width: 515px;
+  height: 410px;
+  border-color: black;
+}
+
+#statustext {
+
+  height: 38px;
+
+  border: none;
+
+  resize: none;
+
+  position: relative;
+
+  top: 8px;
+
+  overflow: hidden;
+
+}
