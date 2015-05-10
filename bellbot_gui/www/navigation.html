@@ -1,0 +1,45 @@
+$var title: Bellbot - Zielauswahl
+$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/destination.js 
+
+
+
+<div class="section">
+    <div class="container">
+        <H1>Ich werde Sie nun zum Ziel "$html_config['destination_waypoint']" bringen.</H1> 
+        <H2>Bitte folgen Sie mir.</H2>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Richtung</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div id="arrows"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Karte</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div id="nav"> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form action"preempt">
+            <button type="submit" class="btn btn-warning col-md-12">Bellbot abbrechen und ohne Roboter weitergehen.</button>
+        </form>
+    </div>
+</div>
+
+<script>
+
+document.onready = function() {
+ init_map();
+}
+
+</script>

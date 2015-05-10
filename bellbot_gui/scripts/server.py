@@ -14,8 +14,9 @@ WEBTOOLS_DIR = roslib.packages.get_pkg_dir('strands_webtools')
 
 html_config = {
     'rosws_suffix': ':9090'
-
 }
+
+destination_waypoint = ''
 
 available_destinations = ['test', 'tst2']
 
@@ -53,6 +54,9 @@ class DestinationPage(object):
 
 class NavigationPage(object):
     def GET(self):
+        user_data = web.input()
+        rospy.loginfo("requested to go to %s" % user_data.destination)
+        html_config['destination_waypoint'] = user_data.destination
         return render.navigation()
 
 

@@ -8,8 +8,8 @@
     // Create the main viewer.
     var viewer = new ROS2D.Viewer({
       divID : 'nav',
-      width : 400,
-      height : 800
+      width : 200,
+      height : 400
     });
 
     // Subscribes to the robot's OccupancyGrid, which is ROS representation of
@@ -68,7 +68,7 @@
   }
 
 
-
+  
   function init() {
     //init_map();
   }

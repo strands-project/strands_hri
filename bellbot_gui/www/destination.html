@@ -12,12 +12,15 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
                 </div>
                 <div class="panel-body">
                     <div class="col-md-3">
-                        <input type="text" id="destination" class="typeahead col-md-12" placeholder="Ziel eingeben"/>
-                        <div class="panel panel-default">
-                            <div class="panel-body" id="explanation">
-                              Basic panel example
+                        <form action="navigation">
+                            <input type="text" name="destination" id="destination" class="typeahead col-md-8" placeholder="Ziel eingeben"/>
+                            <div class="panel panel-default">
+                                <div class="panel-body" id="explanation">
+                                  Information
+                                </div>
                             </div>
-                        </div>
+                            <button type="submit" class="btn btn-success col-md-12">Los gehen</button>
+                        </form>
                     </div>
                     <div class="col-md-9">
                       <div id="keyboard-container" />
@@ -46,7 +49,13 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
 
 <script>
 
-
+// function go(arg) {
+//     var t = $$("#destination")[0].value;
+//     console.log("destination selected: " + t)
+//     $$.post("navigation", function(data, status){
+//         alert("Data: " + data + "\nStatus: " + status);
+//     });
+// }
 
 document.onready = function() {
  init();
@@ -90,6 +99,9 @@ $$('.typeahead').typeahead({
   name: 'availableTags',
   source: substringMatcher(availableTags)
 });
+
+
+
 
 }
 
