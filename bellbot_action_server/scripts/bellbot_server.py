@@ -14,6 +14,7 @@ from strands_executive_msgs.srv import IsTaskInterruptible
 from bellbot_action_server.bellbot_state_machine import BellbotStateMachine
 from collections import namedtuple
 from std_msgs.msg import String
+from std_srvs.srv import Empty, EmptyResponse
 
 Goal = namedtuple("Goal", "starting_waypoint_name")
 
@@ -31,6 +32,7 @@ class BellbotServer(object):
         rospy.loginfo('Started action server for the bellbot')
 
         self._stop = False
+        self.preempt_srv = None
         rospy.on_shutdown(self.shutdown_hook)
 
         rospy.Service(self._action_name + '_is_interruptible', IsTaskInterruptible, self.is_interruptible)
@@ -76,6 +78,7 @@ class BellbotServer(object):
 
         #outcome = self.bellbot_sm.execute_sm_with_introspection()
         r.sleep()
+        self.preempt_srv = rospy.Service('/bellbot/cancel', Empty, self.preempt_srv_cb)
 
         while self.bellbot_sm.get_sm().is_running() and not self.bellbot_sm.get_sm().preempt_requested():
             # check that preempt has not been requested by the client
@@ -95,6 +98,7 @@ class BellbotServer(object):
             rospy.loginfo('%s: Succeeded' % self._action_name)
 
         smach_thread.join()
+        self.preempt_srv.shutdown()
         if self._as.is_preempt_requested():
             self._as.set_preempted()
         else:
@@ -103,6 +107,10 @@ class BellbotServer(object):
     def preempt_callback(self):
         rospy.logwarn("Bellbot preempt requested")
         self.bellbot_sm.get_sm().request_preempt()
+
+    def preempt_srv_cb(self, req):
+        self.preempt_callback()
+        return EmptyResponse()
 
 if __name__ == '__main__':
     rospy.init_node('bellbot_action_server')
