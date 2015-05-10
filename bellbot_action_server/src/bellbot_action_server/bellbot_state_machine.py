@@ -119,7 +119,7 @@ class Setup(smach.State, StatePublisher):
         self.client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)
 
         self.client.wait_for_server()
-#        StatePublisher.__init__(self)
+        StatePublisher.__init__(self)
         rospy.loginfo(" Setup ... Init done")
 
     def _on_node_shutdown(self):
@@ -127,7 +127,7 @@ class Setup(smach.State, StatePublisher):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state %s', self.__class__.__name__)
-#        self.publish(BellbotState(name=self.__class__.__name__))
+        self.publish(BellbotState(name=self.__class__.__name__))
         navgoal = topological_navigation.msg.GotoNodeGoal()
 
         rospy.loginfo("Requesting Navigation to %s", userdata.goal.starting_waypoint_name)
