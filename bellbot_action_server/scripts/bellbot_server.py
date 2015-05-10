@@ -15,7 +15,7 @@ from bellbot_action_server.bellbot_state_machine import BellbotStateMachine
 from collections import namedtuple
 from std_msgs.msg import String
 
-Goal = namedtuple("Goal", "mode starting_waypoint_name preselected_goal text")
+Goal = namedtuple("Goal", "starting_waypoint_name")
 
 class BellbotServer(object):
     # create messages that are used to publish feedback/result
@@ -25,6 +25,7 @@ class BellbotServer(object):
     def __init__(self, name):
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, bellbot_action_server.msg.bellbotAction, execute_cb=self.execute_cb, auto_start = False)
+        self._as.register_preempt_callback(self.preempt_callback)
 
         self._as.start()
         rospy.loginfo('Started action server for the bellbot')
@@ -52,12 +53,9 @@ class BellbotServer(object):
     def execute_cb(self, empty):
         # No user input given anyway. hard coding mode and text. Taking current node as start and goal.
         # Scheduler ensures we are at the right goal before executing this.
-        current_node = rospy.wait_for_message("/current_node", String)
+        current_node = rospy.wait_for_message("/closest_node", String)
         goal = Goal(
-            mode=1, #Could be param but no other mode implemented.
-            starting_waypoint_name=current_node.data,
-            preselected_goal=current_node.data,
-            text="Henry im Haus der Barmherzigkeit"
+            starting_waypoint_name=current_node.data
         )
         rospy.loginfo('Goal struct: %s', goal)
 
@@ -97,10 +95,14 @@ class BellbotServer(object):
             rospy.loginfo('%s: Succeeded' % self._action_name)
 
         smach_thread.join()
+        if self._as.is_preempt_requested():
+            self._as.set_preempted()
+        else:
+            self._as.set_succeeded(self._result)
 
-        self._as.set_succeeded(self._result)
-
-
+    def preempt_callback(self):
+        rospy.logwarn("Bellbot preempt requested")
+        self.bellbot_sm.get_sm().request_preempt()
 
 if __name__ == '__main__':
     rospy.init_node('bellbot_action_server')
