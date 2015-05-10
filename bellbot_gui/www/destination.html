@@ -1,23 +1,28 @@
 $var title: Bellbot - Zielauswahl
-$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/jquery.keyboard.min.js  static/jquery.keyboard.extension-typing.min.js static/jquery.keyboard.extension-autocomplete.min.js static/destination.js 
+$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/jquery.ml-keyboard.js static/typeahead.bundle.js static/destination.js 
 
 
 
 <div class="section">
     <div class="container">
         <div class="row">
-            <div class="col-md-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Zielauswahl</h3>
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Zielauswahl</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="col-md-3">
+                        <input type="text" id="destination" class="typeahead col-md-12" placeholder="Ziel eingeben"/>
+                        <div class="panel panel-default">
+                            <div class="panel-body" id="explanation">
+                              Basic panel example
+                            </div>
+                        </div>
                     </div>
-                    <p id="completion">
-                    </p>
-                    <div class="panel-body">
-                      <div id="wrap">
-                          <input class="destination" type="text" placeholder=" Enter something...">
-                      </div>
+                    <div class="col-md-9">
+                      <div id="keyboard-container" />
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -41,44 +46,51 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
 
 <script>
 
+
+
 document.onready = function() {
  init();
  // Autocomplete demo
 var availableTags = $:available_destinations;
 
-$$('.destination:eq(0)')
-  .keyboard({
-    layout: 'qwerty',
-    css: {
-      // input & preview
-      // "label-default" for a darker background
-      // "light" for white text
-      input: 'input-sm dark',
-      // keyboard container
-      container: 'center-block well',
-      // default state
-      buttonDefault: 'btn btn-default',
-      // hovered button
-      buttonHover: 'btn-primary',
-      // Action keys (e.g. Accept, Cancel, Tab, etc);
-      // this replaces "actionClass" option
-      buttonAction: 'active',
-      // used when disabling the decimal button {dec}
-      // when a decimal exists in the input area
-      buttonDisabled: 'disabled'
-    }    
-  })
-  .autocomplete({
-    source: availableTags,
-    appendTo: "#completion"
-  })
-  .addAutocomplete()
-  .addTyping();
+$$('input').mlKeyboard({
+  is_hidden: false,
+  active_caps: false,
+  active_shift: false
+});
+
+var substringMatcher = function(strs) {
+  return function findMatches(q, cb) {
+    var matches, substringRegex;
+ 
+    // an array that will be populated with substring matches
+    matches = [];
+ 
+    // regex used to determine if a string contains the substring `q`
+    substrRegex = new RegExp(q, 'i');
+ 
+    // iterate through the pool of strings and for any string that
+    // contains the substring `q`, add it to the `matches` array
+    $$.each(strs, function(i, str) {
+      if (substrRegex.test(str)) {
+        matches.push(str);
+      }
+    });
+ 
+    cb(matches);
+  };
+};
+ 
+$$('.typeahead').typeahead({
+  hint: true,
+  highlight: true,
+  minLength: 0
+},
+{
+  name: 'availableTags',
+  source: substringMatcher(availableTags)
+});
 
 }
-
-
-
-
 
 </script>
