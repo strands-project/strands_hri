@@ -2,8 +2,8 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.12 (2015-05-10)
+-------------------
 * removing hardcoded param in bellbot
 * Contributors: Jaime Pulido Fentanes
 
