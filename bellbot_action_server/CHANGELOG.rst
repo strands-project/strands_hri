@@ -2,8 +2,8 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.12 (2015-05-10)
+-------------------
 * Using empty action to start bellbot.
 * Contributors: Christian Dondrup
 
