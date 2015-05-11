@@ -1,0 +1,104 @@
+$var title: Bellbot - Zielauswahl
+$var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/ros2djs/include/EaselJS/easeljs.js webtools/roslibjs/build/roslib.js webtools/ros2djs/build/ros2d.js webtools/nav2djs/build/nav2d.js webtools/mjpegcanvasjs/build/mjpegcanvas.min.js static/jquery.ml-keyboard.js static/typeahead.bundle.js static/destination.js 
+
+
+
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Zielauswahl</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="col-md-3">
+                        <form action="SetGoal">
+                            <input type="text" name="destination" id="destination" class="typeahead col-md-8" placeholder="Ziel eingeben"/>
+                            <button type="submit" class="btn btn-success col-md-12">Los gehen</button>
+                        </form>
+                    </div>
+                    <div class="col-md-9">
+                      <div id="keyboard-container" />
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+<!--         <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Karte</h3>
+                    </div>
+                    <div class="panel-body">
+                    <div id="nav">
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+ -->
+    </div>
+</div>
+
+<script>
+
+// function go(arg) {
+//     var t = $$("#destination")[0].value;
+//     console.log("destination selected: " + t)
+//     $$.post("navigation", function(data, status){
+//         alert("Data: " + data + "\nStatus: " + status);
+//     });
+// }
+
+document.onready = function() {
+ init();
+ // Autocomplete demo
+var availableTags = $:html_config['available_destinations'];
+
+$$('input').mlKeyboard({
+  is_hidden: false,
+  active_caps: false,
+  active_shift: false
+});
+
+var substringMatcher = function(strs) {
+  return function findMatches(q, cb) {
+    var matches, substringRegex;
+ 
+    // an array that will be populated with substring matches
+    matches = [];
+ 
+    // regex used to determine if a string contains the substring `q`
+    substrRegex = new RegExp(q, 'i');
+ 
+    // iterate through the pool of strings and for any string that
+    // contains the substring `q`, add it to the `matches` array
+    $$.each(strs, function(i, str) {
+      if (substrRegex.test(str)) {
+        matches.push(str);
+      }
+    });
+ 
+    cb(matches);
+  };
+};
+ 
+$$('.typeahead').typeahead({
+  hint: true,
+  highlight: true,
+  minLength: 0,
+  autocomplete: true
+},
+{
+  name: 'availableTags',
+  source: substringMatcher(availableTags)
+});
+
+
+
+
+}
+
+</script>

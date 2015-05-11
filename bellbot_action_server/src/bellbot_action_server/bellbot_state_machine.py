@@ -41,7 +41,7 @@ class BellbotStateMachine(Agent):
                                    transitions={ 'succeeded': 'WaitingForGoal',
 #                                                 'succeeded_mode2': 'WaitingForMultipleGuests',
 #                                                 'succeeded_mode3': 'WaitingForSingleGuest',
-                                                 'aborted': 'aborted',
+                                                 'aborted': 'Setup',
                                                  'preempted': 'preempted'
                                                })
             smach.StateMachine.add('WaitingForGoal', WaitingForGoal(),
@@ -61,7 +61,7 @@ class BellbotStateMachine(Agent):
 #                                               })
             smach.StateMachine.add('Guiding', Guiding(),
                                    transitions={ 'succeeded': 'WaitingForFeedback',
-                                                 'aborted': 'aborted',
+                                                 'aborted': 'Guiding',
                                                  'preempted': 'preempted'
                                                })
             smach.StateMachine.add('WaitingForFeedback', WaitingForFeedback(),

@@ -1,0 +1,45 @@
+$def with (page)
+
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>$page.title</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="text/javascript" src="static/jquery.min.js"></script>
+        <script type="text/javascript" src="static/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="static/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="static/aaf.css">
+        <link rel="stylesheet" href="static/jquery.ml-keyboard.css">
+
+
+        <script type="text/javascript">
+            rosws_suffix = "$:html_config['rosws_suffix']"
+        </script>
+        $if page.jsfiles:
+            $for f in page.jsfiles.split():
+                <script src="$f" type="text/javascript"></script>
+
+
+        <!--
+        <script src="webtools/js/display.js"></script>
+        <script src="webtools/js/jquery-ui.js"></script>
+        <script src="webtools/roslibjs/include/EventEmitter2/eventemitter2.js"></script>
+        <script src="webtools/roslibjs/build/roslib.js"></script>
+        <script src="webtools/ros2djs/include/EaselJS/easeljs.js"></script>
+        <script src="webtools/ros2djs/build/ros2d.js"></script>
+        <script src="webtools/ros3djs/include/threejs/three.js"></script>
+        <script src="webtools/ros3djs/include/ColladaAnimationCompress/ColladaLoader2.js"></script>
+        <script src="webtools/ros3djs/build/ros3d.min.js"></script>
+        <script src="webtools/nav2djs/build/nav2d.js"></script>
+ 
+        -->
+    </head>
+    <body>
+
+        $:page
+
+    </body>
+
+</html>
