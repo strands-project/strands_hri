@@ -49,10 +49,10 @@ class InputBaseAbstractclass(object):
         }
         self.qtc = None
 
-    def _request_qtc(self, qsr, world, include_missing_data=True):
+    def _request_qtc(self, qsr, world, include_missing_data=True, qsrs_for=[]):
         """reads all .qtc files from a given directory and resturns them as numpy arrays"""
 
-        qrmsg = QSRlib_Request_Message(which_qsr=qsr, input_data=world, include_missing_data=include_missing_data)
+        qrmsg = QSRlib_Request_Message(which_qsr=qsr, input_data=world, include_missing_data=include_missing_data, qsrs_for=qsrs_for)
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
@@ -138,7 +138,7 @@ class InputBaseAbstractclass(object):
             except KeyError:
                 rospy.logfatal("Unknown QTC type: %s" % qtc_type)
                 return
-            ret.append(self._request_qtc(qsr=qsr, world=world))
+            ret.append(self._request_qtc(qsr=qsr, world=world, qsrs_for=[(elem["agent1"]["name"],elem["agent2"]["name"])]))
         return ret
 
     def _to_np_array(self, string):
