@@ -12,6 +12,7 @@ import strands_webserver.client_utils
 import threading
 import simplejson
 
+from mongodb_store.message_store import MessageStoreProxy
 
 from os import chdir
 from os.path import join
@@ -64,6 +65,8 @@ class ControlServer(web.application):
             '/webtools/(.*)', 'Webtools'
         )
 
+        self._feedback_msg_store = MessageStoreProxy(collection='bellbot_feedback')
+
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
         rospy.Subscriber("/bellbot_gui_feedback", String, self.store_feedback)
 
@@ -71,10 +74,12 @@ class ControlServer(web.application):
         signal.signal(signal.SIGINT, self.signal_handler)
 
     def store_feedback(self, feedback):
-        rospy.wait_for_service('/bellbot_feedback')
+        #rospy.wait_for_service('/bellbot_feedback')
         service = rospy.ServiceProxy('/bellbot_feedback', Empty)
         request = EmptyRequest()
-        rospy.logwarn('feedback should be stored, but is not yet.')
+        self._feedback_msg_store.insert(feedback)
+        rospy.loginfo('feedback stored: %s' % feedback)
+
         try:
             service.call(request)
         except Exception, e:
