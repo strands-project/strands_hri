@@ -70,5 +70,16 @@
 
   
   function init() {
-    //init_map();
+    init_map();
+
+    var dir = new ROSLIB.Topic({
+      ros : ros,
+      name : '/walking_interface_server/direction',
+      messageType : 'std_msgs/String'
+    });
+    dir.subscribe(function(msg) {
+      document.getElementById("direction").setAttribute("src", "static/"+msg.data+".png");
+    });
+
+
   }

@@ -29,7 +29,8 @@ TEMPLATE_DIR = roslib.packages.get_pkg_dir('bellbot_gui') + '/www'
 WEBTOOLS_DIR = roslib.packages.get_pkg_dir('strands_webtools')
 
 html_config = {
-    'rosws_suffix': ':9090'
+    'rosws_suffix': ':9090',
+	'destination_waypoint': 'not defined'
 }
 
 destination_waypoint = ''
