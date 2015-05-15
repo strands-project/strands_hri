@@ -3,63 +3,27 @@ $var jsfiles:  webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools
 
 
 
-<div class="section">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Bewertung</h3>
-                    </div>
-                    <div class="panel-body">
-						<div class="ques">
-						  <p class ="heading">REPLACE_Q1</p>
-						  <p class ="heading">REPLACE_Q2</p>
-						  <p class ="heading">REPLACE_Q3</p>
-						  <p class ="heading">REPLACE_Q4</p>
-						  <p class ="heading">REPLACE_Q5</p>
-						</div>
-						<div class="buttons">
-						  <div class = "feed-back-cont">
-						    <div class="good1 enabled feedback-button"><img class="imgs" src="static/images/happy.png" height="100%" width="100%"></div>
-						    <div class="average1 enabled feedback-button"><img class="imgs" src="static/images/neutral.png" height="100%" width="100%"></div>
-						    <div class="bad1 enabled feedback-button"><img class="imgs" src="static/images/sad.png" height="100%" width="100%"></div>
-						  </div>
-
-						  <div class = "feed-back-cont">
-						    <div class="good2 enabled feedback-button"><img class="imgs" src="static/images/happy.png" height="100%" width="100%"></div>
-						    <div class="average2 enabled feedback-button"><img class="imgs" src="static/images/neutral.png" height="100%" width="100%"></div>
-						    <div class="bad2 enabled feedback-button"><img class="imgs" src="static/images/sad.png" height="100%" width="100%"></div>
-						  </div>
-
-						 <div class = "feed-back-cont">
-						    <div class="good3 enabled feedback-button"><img class="imgs" src="static/images/happy.png" height="100%" width="100%"></div>
-						    <div class="average3 enabled feedback-button"><img class="imgs" src="static/images/neutral.png" height="100%" width="100%"></div>
-						    <div class="bad3 enabled feedback-button"><img class="imgs" src="static/images/sad.png" height="100%" width="100%"></div>
-						  </div>
-
-						 <div class = "feed-back-cont">
-						    <div class="good4 enabled feedback-button"><img class="imgs" src="static/images/happy.png" height="100%" width="100%"></div>
-						    <div class="average4 enabled feedback-button"><img class="imgs" src="static/images/neutral.png" height="100%" width="100%"></div>
-						    <div class="bad4 enabled feedback-button"><img class="imgs" src="static/images/sad.png" height="100%" width="100%"></div>
-						  </div>
-
-						 <div class = "feed-back-cont">
-						    <div class="good5 enabled feedback-button"><img class="imgs" src="static/images/happy.png" height="100%" width="100%"></div>
-						    <div class="average5 enabled feedback-button"><img class="imgs" src="static/images/neutral.png" height="100%" width="100%"></div>
-						    <div class="bad5 enabled feedback-button"><img class="imgs" src="static/images/sad.png" height="100%" width="100%"></div>
-						  </div>
-						  <p>
-						  <br/>
-						  <button class ="btn submit">Bewertung abgeben</button>
-						  </p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+<table class="table table-striped">
+    $for f in range(1,len(html_config['questions'])+1): 
+        <tr >
+            <td width="30%">
+                <p class ="heading">$html_config['questions'][f-1]</p>
+            </td>
+            <td width="70%">
+                <div class="buttons">
+                  <div class = "feed-back-cont">
+                    <div class="good$f enabled feedback-button"><img class="imgs" src="static/images/happy.png" height="100%" width="100%"></div>
+                    <div class="average$f enabled feedback-button"><img class="imgs" src="static/images/neutral.png" height="100%" width="100%"></div>
+                    <div class="bad$f enabled feedback-button"><img class="imgs" src="static/images/sad.png" height="100%" width="100%"></div>
+                  </div>
+                </div>
+            </td>
+        </tr>
+</table>
+<p style="text-align: center;" >
+    <br/>
+    <button id="submit" class ="btn btn-LG btn-success">Bewertung abgeben</button>
+</p>
 <script>
 
 
@@ -71,21 +35,21 @@ document.onready = function() {
 function main() {
 
 
-	$$(".feedback-button").click(function(){
+    $$(".feedback-button").click(function(){
 
-	  var clickBtnValue = $$(this).attr("class").split(" ")[0];
+      var clickBtnValue = $$(this).attr("class").split(" ")[0];
 
-		// This deals with making the buttons look nice
-		$$("." + clickBtnValue).siblings().removeClass("enabled");
+        // This deals with making the buttons look nice
+        $$("." + clickBtnValue).siblings().removeClass("enabled");
     $$("." + clickBtnValue).siblings().removeClass("selected");
-	  $$("." + clickBtnValue).siblings().addClass("disabled");
+      $$("." + clickBtnValue).siblings().addClass("disabled");
     $$("." + clickBtnValue).removeClass("disabled");
- 	  $$("." + clickBtnValue).addClass("selected");
+      $$("." + clickBtnValue).addClass("selected");
 
   });
 
 
-  $$(".submit").click(function(){
+  $$("#submit").click(function(){
  var selection = ['good','average','bad'];    
     var message = ['-1','-1','-1','-1','-1'];
     $$( ".feedback-button" ).each(function( index ) {
@@ -97,37 +61,37 @@ function main() {
       }
     });
     //alert(message);
-	  // this makes sure the topic is only published to
-	  // after the second button has been pressed.
-  	console.log('Publishing feedback to ROS.');
+      // this makes sure the topic is only published to
+      // after the second button has been pressed.
+    console.log('Publishing feedback to ROS.');
 
-		// connect to ROS
-		var ros = new ROSLIB.Ros({
-			url : 'ws://localhost:9090'
-		});
+        // connect to ROS
+        var ros = new ROSLIB.Ros({
+            url : 'ws://localhost:9090'
+        });
 
-		ros.on('connection', function() {
-			console.log('Connected to websocket server.');
-		});
-		ros.on('error', function(error) {
-			console.log('Error connecting to websocket server: ', error);
-		});
-		ros.on('close', function() {
-			console.log('Connection to websocket server closed.');
-		});
+        ros.on('connection', function() {
+            console.log('Connected to websocket server.');
+        });
+        ros.on('error', function(error) {
+            console.log('Error connecting to websocket server: ', error);
+        });
+        ros.on('close', function() {
+            console.log('Connection to websocket server closed.');
+        });
 
-		// publish the response to the bellbot_gui_feedback topic
-		// the topic is monitored by the bellbot_feedback_recorder
-		// node.
-		var cmdVel = new ROSLIB.Topic({
-			ros : ros,
-			name : '/bellbot_gui_feedback',
-			messageType : 'std_msgs/String'
-		});
-		var output = {"data":message.toString()};
-		cmdVel.publish(output);
+        // publish the response to the bellbot_gui_feedback topic
+        // the topic is monitored by the bellbot_feedback_recorder
+        // node.
+        var cmdVel = new ROSLIB.Topic({
+            ros : ros,
+            name : '/bellbot_gui_feedback',
+            messageType : 'std_msgs/String'
+        });
+        var output = {"data":message.toString()};
+        cmdVel.publish(output);
   });
-	
+    
   
 }
 

@@ -30,7 +30,14 @@ WEBTOOLS_DIR = roslib.packages.get_pkg_dir('strands_webtools')
 
 html_config = {
     'rosws_suffix': ':9090',
-	'destination_waypoint': 'not defined'
+	'destination_waypoint': 'not defined',
+	'questions': [
+		'Ich bin mit dem Botenservice des Roboters zufrieden',
+		'Es ist praktisch einen Botenroboter zu haben',
+		'Ich wuerde den Botenroboter wieder benutzen',
+		'Ich fand den Botenroboter einfach zu bedienen',
+		'Ich war mit der Geschwindigkeit des Roboters zufrieden'
+	]
 }
 
 destination_waypoint = ''

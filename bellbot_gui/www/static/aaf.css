@@ -6803,20 +6803,16 @@ p {
   font-family : Arial;
 }
 .ques {
-  width: 40%;
   float: left;
 }
 
 .buttons {
-  width: 60%;
-  float:right;
 }
 
 .heading {
-  padding-bottom: 30px;
-  margin-bottom: 48px;
-  margin-top: 40px;
-  font-size: 20px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  font-size: 24px;
 }
 
 
@@ -6824,7 +6820,7 @@ p {
 
 }
 .feedback-button-speed{
-  width:324px;
+  width:624px;
   height: 216px;
 }
 
@@ -6835,8 +6831,8 @@ p {
 
 .feedback-button {
   width: 135px;
-  margin: 2px 5px;
-  border: 5px solid grey;
+  margin: 1px 1px;
+  border: 1px solid grey;
   border-radius: 25px;
 }
 
@@ -6912,7 +6908,7 @@ margin-top: 10px;
    box-shadow: rgba(0,0,0,1) 0 1px 0;
    text-shadow: rgba(0,0,0,.4) 0 1px 0;
    color: white;
-   font-size: 24px;
+   font-size: 48px;
    font-family: 'Lucida Grande', Helvetica, Arial, Sans-Serif;
    text-decoration: none;
    vertical-align: middle;
