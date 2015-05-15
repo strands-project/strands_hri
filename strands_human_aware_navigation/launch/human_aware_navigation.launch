@@ -1,9 +1,20 @@
 <launch>
   <arg name="machine" default="localhost" />
   <arg name="user" default="" />
+  <arg name="timeout" default="1.0" />
+  <arg name="max_dist" default="4.0" />
+  <arg name="min_dist" default="1.0" />
+  <arg name="detection_angle" default="45.0" />
+  <arg name="gaze_type" default="0" />
 
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER)" user="$(arg user)" default="true"/>
   
-  <node pkg="strands_human_aware_navigation" type="human_aware_navigation.py" name="human_aware_navigation" output="screen" respawn="true"/>
+  <node pkg="strands_human_aware_navigation" type="human_aware_navigation.py" name="human_aware_navigation" output="screen" respawn="true">
+    <param name="timeout" value="$(arg timeout)" type="double"/>
+    <param name="max_dist" value="$(arg max_dist)" type="double"/>
+    <param name="min_dist" value="$(arg min_dist)" type="double"/>
+    <param name="detection_angle" value="$(arg detection_angle)" type="double"/>
+    <param name="gaze_type" value="$(arg gaze_type)" type="int"/>
+  </node>
   <node pkg="strands_human_aware_navigation" type="dwa_dyn_wrapper" name="DWAPlannerROS_dyn_wrapper" output="screen" respawn="true"/>
 </launch>
