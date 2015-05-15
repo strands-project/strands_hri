@@ -30,14 +30,14 @@ WEBTOOLS_DIR = roslib.packages.get_pkg_dir('strands_webtools')
 
 html_config = {
     'rosws_suffix': ':9090',
-	'destination_waypoint': 'not defined',
-	'questions': [
-		'Ich bin mit dem Botenservice des Roboters zufrieden',
-		'Es ist praktisch einen Botenroboter zu haben',
-		'Ich wuerde den Botenroboter wieder benutzen',
-		'Ich fand den Botenroboter einfach zu bedienen',
-		'Ich war mit der Geschwindigkeit des Roboters zufrieden'
-	]
+    'destination_waypoint': 'not defined',
+    'questions': [
+        'Ich bin mit dem Botenservice des Roboters zufrieden',
+        'Es ist praktisch einen Botenroboter zu haben',
+        'Ich wuerde den Botenroboter wieder benutzen',
+        'Ich fand den Botenroboter einfach zu bedienen',
+        'Ich war mit der Geschwindigkeit des Roboters zufrieden'
+    ]
 }
 
 destination_waypoint = ''
@@ -105,7 +105,7 @@ class DestinationPage(object):
 
     def get_metadata(self):
         dests = {}
-        rospy.wait_for_service('/query_node_metadata')
+        #rospy.wait_for_service('/query_node_metadata')
         try:
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
             
@@ -116,12 +116,7 @@ class DestinationPage(object):
                 print res
                 for i in range(0, len(res.name)):
                     foo = res.name[i].decode('utf-8')
-                    #print foo
-                    # foo = res.name[i].replace("-", "_")
-                    
                     dests[foo] = res.goto_node[i]
-
-                    #dests[foo] = Destination_Data(name=foo, description=res.description[i], kind=res.node_type[i], goto=res.goto_node[i], available=True, at_node=res.at_node[i])
 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
@@ -149,22 +144,22 @@ class SetupPage(object):
 class SetGoalPage(object):
     def GET(self):
         user_data = web.input()
-        waypoint = html_config['dests'][user_data.destination]
-        rospy.loginfo("requested to go to %s (%s)" % (user_data.destination, waypoint))
-
-        html_config['destination_waypoint'] = user_data.destination
-        rospy.wait_for_service('/bellbot_new_target')
-
-        target_service = rospy.ServiceProxy('/bellbot_new_target', NewTarget)
-
-        request = NewTargetRequest()
-        request.target = waypoint
         try:
+            waypoint = html_config['dests'][user_data.destination]
+            rospy.loginfo("requested to go to %s (%s)" % (user_data.destination, waypoint))
+
+            html_config['destination_waypoint'] = user_data.destination
+            rospy.wait_for_service('/bellbot_new_target')
+
+            target_service = rospy.ServiceProxy('/bellbot_new_target', NewTarget)
+
+            request = NewTargetRequest()
+            request.target = waypoint
             rospy.loginfo("calling to go to waypoint %s" % waypoint)
             rospy.loginfo(target_service.call(request))
         except Exception, e:
-            rospy.logerr('error when calling bellbot service %s' % e)
-
+            rospy.logerr('error when calling bellbot service. %s' % e)
+            return web.seeother('/WaitingForGoal')
         return render.waiting()
 
 
