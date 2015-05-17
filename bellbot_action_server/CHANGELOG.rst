@@ -2,6 +2,20 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* more stable transitions, minor GUI fix
+* Offering cancel service.
+  Publishing setup again.
+* Removing unused bellbot functionalities, simplifying state machine. Making state machine preemptable.
+* 0.0.12
+* updated changelogs
+* Offering cancel service.
+  Publishing setup again.
+* Removing unused bellbot functionalities, simplifying state machine. Making state machine preemptable.
+* Using empty action to start bellbot.
+* Contributors: Christian Dondrup, Jenkins, Marc Hanheide
+
 0.0.12 (2015-05-10)
 -------------------
 * Using empty action to start bellbot.

@@ -2,6 +2,12 @@
 Changelog for package strands_visualise_speech
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* 0.0.12
+* updated changelogs
+* Contributors: Jenkins
+
 0.0.12 (2015-05-10)
 -------------------
 

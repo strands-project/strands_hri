@@ -2,6 +2,13 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Exposing human_aware_navigation params via launch file.
+* 0.0.12
+* updated changelogs
+* Contributors: Christian Dondrup, Jenkins
+
 0.0.12 (2015-05-10)
 -------------------
 * Adding ability of reconfiguring movebase and human_aware together. Taking new parameters into account in human_aware when resetting speeds.

@@ -2,6 +2,29 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* feedback is stored
+* added arrows to setup.html
+* minor fixes and more robust behaviour
+* feedback working
+* added arrows
+* more stable transitions, minor GUI fix
+* more or less working, with new setup page, and correct pages displayed via topics
+* new urls and feebdack page
+* 0.0.12
+* updated changelogs
+* basic navigation skeleton working
+* deleted unused files
+* new on screen kb that works
+* intermediate checkin
+* removing hardcoded param in bellbot
+* new stuff
+* removed obsolete
+* copied content
+* moved old files to static
+* Contributors: Jaime Pulido Fentanes, Jenkins, Marc Hanheide
+
 0.0.12 (2015-05-10)
 -------------------
 * removing hardcoded param in bellbot
