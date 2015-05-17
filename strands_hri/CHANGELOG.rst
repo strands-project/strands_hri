@@ -2,8 +2,8 @@
 Changelog for package strands_hri
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2015-05-17)
+-------------------
 * 0.0.12
 * updated changelogs
 * Contributors: Jenkins

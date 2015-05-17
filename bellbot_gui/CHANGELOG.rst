@@ -2,8 +2,8 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2015-05-17)
+-------------------
 * feedback is stored
 * added arrows to setup.html
 * minor fixes and more robust behaviour

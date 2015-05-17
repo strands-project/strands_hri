@@ -2,8 +2,8 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2015-05-17)
+-------------------
 * more stable transitions, minor GUI fix
 * Offering cancel service.
   Publishing setup again.

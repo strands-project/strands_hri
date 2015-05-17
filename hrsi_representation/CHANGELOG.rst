@@ -2,8 +2,8 @@
 Changelog for package hrsi_representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2015-05-17)
+-------------------
 * Merge pull request `#112 <https://github.com/strands-project/strands_hri/issues/112>`_ from cdondrup/qsrs_for
   [hrsi_representation] Using 'qsrs_for' to prevent redundancy.
 * 0.0.12

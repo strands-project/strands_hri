@@ -2,8 +2,8 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2015-05-17)
+-------------------
 * Exposing human_aware_navigation params via launch file.
 * 0.0.12
 * updated changelogs
