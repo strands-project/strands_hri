@@ -36,7 +36,6 @@ class Manager(object):
 
     def callback(self, msg):
         rospy.loginfo("STATE: %s" % msg.name)
-        print self.last_state
         if self.last_state in self.config.keys():
             try:
                 rospy.loginfo("saying: " + self.config[self.last_state][self.END])
