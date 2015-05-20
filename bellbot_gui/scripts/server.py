@@ -65,7 +65,7 @@ class ControlServer(web.application):
         )
 
         self._feedback_msg_store = MessageStoreProxy(collection='bellbot_feedback')
-
+        self._dest_pub = rospy.Publisher('~destination', String, queue_size=1, latch=True)
         rospy.Subscriber("/bellbot_state", BellbotState, self.manage)
         rospy.Subscriber("/bellbot_gui_feedback", String, self.store_feedback)
 
@@ -87,6 +87,8 @@ class ControlServer(web.application):
 
     def manage(self, state):
         rospy.loginfo("STATE: %s" % state.name)
+        if state.goal is not None:
+            self._dest_pub.publish(state.goal)
         try:
             url = "%s%s?destination=%s" % (self.gui_prefix, state.name, state.goal)
             strands_webserver.client_utils.display_url(0, url)
