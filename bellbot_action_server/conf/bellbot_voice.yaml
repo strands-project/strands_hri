@@ -1,0 +1,20 @@
+###############################################################################
+### Possible states:
+# Setup
+# WaitingForGoal
+# Guiding
+# WaitingForFeedback
+###############################################################################
+
+Setup:
+    start: "Setup start"
+    end: "Setup end"
+WaitingForGoal:
+    start: "Waiting For Goal start"
+    end: "Waiting For Goal end"
+Guiding:
+    start: "Guiding start"
+    end: "Guiding end"
+WaitingForFeedback:
+    start: "Waiting For Feedback start"
+    end: "Waiting For Feedback end"
