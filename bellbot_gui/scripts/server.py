@@ -17,7 +17,6 @@ from mongodb_store.message_store import MessageStoreProxy
 from os import chdir
 from os.path import join
 
-from bellbot_gui.destination_data import Destination_Data
 from bellbot_action_server.srv import NewTarget, NewTargetRequest
 from bellbot_action_server.msg import BellbotState
 from std_srvs.srv import Empty, EmptyRequest
@@ -105,7 +104,7 @@ class ControlServer(web.application):
 class DestinationPage(object):
 
     def __init__(self):
-        self.categories = rospy.get_param('/bellbot_gui/destinations_types', 
+        self.categories = rospy.get_param('/bellbot_gui/destinations_types',
                                           ["department", "person", "office", "Meeting Rooms"])
 
     def get_metadata(self):
@@ -113,7 +112,7 @@ class DestinationPage(object):
         #rospy.wait_for_service('/query_node_metadata')
         try:
             proxy = rospy.ServiceProxy('/query_node_metadata', NodeMetadata)
-            
+
             for c in self.categories:
                 # print "Getting", c
                 map_name = rospy.get_param("/topological_map_name","aaf_predep")
@@ -131,7 +130,7 @@ class DestinationPage(object):
     def GET(self):
         dests = self.get_metadata()
         html_config['dests'] = dests
-        
+
         html_config['available_destinations'] = simplejson.dumps(dests.keys()) #[simplejson.dumps(s) for s in dests.keys()]
         print html_config['available_destinations']
         return render.destination()
