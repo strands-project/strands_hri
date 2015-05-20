@@ -68,7 +68,6 @@ class Manager(object):
 
     def call_topic(self, regex):
         topic = regex.group(0).split(' ')[1][:-1]
-        print topic
         return rospy.wait_for_message(topic, String, True).data
 
 
