@@ -11,6 +11,8 @@ import rosparam
 from actionlib import SimpleActionClient
 from mary_tts.msg import maryttsAction, maryttsGoal
 from bellbot_action_server.msg import BellbotState
+import re
+from std_msgs.msg import String
 
 
 class Manager(object):
@@ -38,19 +40,36 @@ class Manager(object):
         rospy.loginfo("STATE: %s" % msg.name)
         if self.last_state in self.config.keys():
             try:
-                rospy.loginfo("saying: " + self.config[self.last_state][self.END])
-                self.mary_client.send_goal_and_wait(maryttsGoal(text=self.config[self.last_state][self.END]))
+                text = self.substitude(self.config[self.last_state][self.END])
+                rospy.loginfo("saying: " + text)
+                self.mary_client.send_goal_and_wait(maryttsGoal(text=text))
             except KeyError:
                 pass # No end message given
 
         if msg.name in self.config.keys():
             try:
-                rospy.loginfo("saying: " + self.config[msg.name][self.START])
-                self.mary_client.send_goal_and_wait(maryttsGoal(text=self.config[msg.name][self.START]))
+                text = self.substitude(self.config[self.last_state][self.START])
+                rospy.loginfo("saying: " + text)
+                self.mary_client.send_goal_and_wait(maryttsGoal(text=text))
             except KeyError:
                 pass # No start message given
 
         self.last_state = msg.name
+
+    def substitude(self, text):
+        sub, reg = self.check_for_substitues(text)
+        if sub:
+            text = re.sub(reg, self.call_topic, text)
+        return text
+
+    def check_for_substitues(self, text):
+        reg = re.compile("\$\(topic .*\)")
+        return re.search(reg, text), reg
+
+    def call_topic(self, regex):
+        topic = regex.group(0).split(' ')[1][:-1]
+        print topic
+        return rospy.wait_for_message(topic, String, True).data
 
 
 if __name__ == "__main__":

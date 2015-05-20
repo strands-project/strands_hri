@@ -13,8 +13,8 @@ WaitingForGoal:
     start: "Waiting For Goal start"
     end: "Waiting For Goal end"
 Guiding:
-    start: "Guiding start"
-    end: "Guiding end"
+    start: "Guiding start to $(topic /current_node)"
+    end: "Guiding ended at $(topic /current_node)"
 WaitingForFeedback:
     start: "Waiting For Feedback start"
     end: "Waiting For Feedback end"
