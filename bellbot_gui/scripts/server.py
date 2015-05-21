@@ -10,7 +10,7 @@ import strands_webserver.page_utils
 import strands_webserver.client_utils
 
 import threading
-import simplejson
+import json
 
 from mongodb_store.message_store import MessageStoreProxy
 
@@ -133,8 +133,8 @@ class DestinationPage(object):
         dests = self.get_metadata()
         html_config['dests'] = dests
 
-        html_config['available_destinations'] = simplejson.dumps(dests.keys()) #[simplejson.dumps(s) for s in dests.keys()]
-        print html_config['available_destinations']
+        html_config['available_destinations'] = json.dumps(dests.keys()) #[simplejson.dumps(s) for s in dests.keys()]
+        print "destionations: " + html_config['available_destinations']
         return render.destination()
 
 
