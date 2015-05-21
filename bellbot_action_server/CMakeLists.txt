@@ -85,7 +85,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
-#  launch/bellbot_action_server.launch
+  scripts/voice_output.py
   scripts/bellbot_server.py
   #src/bellbot_state_machine.py
   #src/agent.py
