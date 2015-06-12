@@ -49,10 +49,16 @@ class InputBaseAbstractclass(object):
         }
         self.qtc = None
 
-    def _request_qtc(self, qsr, world, include_missing_data=True, qsrs_for=[]):
+    def _request_qtc(self, qsr, world, parameters, include_missing_data=True, qsrs_for=[]):
         """reads all .qtc files from a given directory and resturns them as numpy arrays"""
 
-        qrmsg = QSRlib_Request_Message(which_qsr=qsr, input_data=world, include_missing_data=include_missing_data, qsrs_for=qsrs_for)
+        qrmsg = QSRlib_Request_Message(
+            which_qsr=qsr,
+            input_data=world,
+            include_missing_data=include_missing_data,
+            qsrs_for=qsrs_for,
+            dynamic_args={"parameters": parameters}
+        )
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
@@ -71,7 +77,7 @@ class InputBaseAbstractclass(object):
 
         return ret
 
-    def _convert_to_world(self, data_dict, quantisation_factor=0, validate=True, no_collapse=False, distance_threshold=np.Inf):
+    def _convert_to_world(self, data_dict):
         world = World_Trace()
 
         agent1 = data_dict["agent1"]
@@ -92,21 +98,13 @@ class InputBaseAbstractclass(object):
                 name=name1,
                 timestamp=idx,
                 x=e_x1,
-                y=e_y1,
-                quantisation_factor=quantisation_factor,
-                validate=validate,
-                no_collapse=no_collapse,
-                distance_threshold=distance_threshold
+                y=e_y1
             ))
             ob.append(Object_State(
                 name=name2,
                 timestamp=idx,
                 x=e_x2,
-                y=e_y2,
-                quantisation_factor=quantisation_factor,
-                validate=validate,
-                no_collapse=no_collapse,
-                distance_threshold=distance_threshold
+                y=e_y2
             ))
 
         world.add_object_state_series(ob)
@@ -117,7 +115,7 @@ class InputBaseAbstractclass(object):
         """Input data into the conversion process"""
         pass
 
-    def convert(self, data, qtc_type, quantisation_factor=0, validate=True, no_collapse=False, distance_threshold=np.Inf):
+    def convert(self, data, qtc_type, parameters):
         """Convert data inserted via put() into QTC
 
         :param qtc_type: qtcb|qtcc|qtcbc
@@ -125,20 +123,14 @@ class InputBaseAbstractclass(object):
         data = [data] if not isinstance(data, list) else data
         ret = []
         for elem in np.array(data):
-            world = self._convert_to_world(
-                data_dict=elem,
-                quantisation_factor=quantisation_factor,
-                validate=validate,
-                no_collapse=no_collapse,
-                distance_threshold=distance_threshold
-            )
+            world = self._convert_to_world(data_dict=elem)
 
             try:
                 qsr = self.qtc_types[qtc_type]
             except KeyError:
                 rospy.logfatal("Unknown QTC type: %s" % qtc_type)
                 return
-            ret.append(self._request_qtc(qsr=qsr, world=world, qsrs_for=[(elem["agent1"]["name"],elem["agent2"]["name"])]))
+            ret.append(self._request_qtc(qsr=qsr, world=world, parameters=parameters, qsrs_for=[(elem["agent1"]["name"],elem["agent2"]["name"])]))
         return ret
 
     def _to_np_array(self, string):
