@@ -84,9 +84,6 @@ class OnlineQTCCreator(object):
                 rate.sleep()
                 continue
 
-            print "################ MESSAGE BUFFER ################"
-            print len(self._msg_buffer)
-
             ppl_msg = self._msg_buffer[0]["ppl"]
             robot_msg = self._msg_buffer[0]["robot"]
             del self._msg_buffer[0]
@@ -134,8 +131,6 @@ class OnlineQTCCreator(object):
                         ]
                     ).reshape(-1,4)
 
-            print "################ SMOOTHING BUFFER ################"
-            print len(self._smoothing_buffer)
             # Flush smoothing buffer and create QSR
             # Looping through smoothing buffer
             for uuid, data in self._smoothing_buffer.items():
