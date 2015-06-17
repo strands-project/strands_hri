@@ -19,6 +19,8 @@
   <build_depend>nav_msgs</build_depend>
   <build_depend>qsr_lib</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rostest</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <run_depend>bayes_people_tracker</run_depend>
@@ -27,8 +29,12 @@
   <run_depend>nav_msgs</run_depend>
   <run_depend>qsr_lib</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rostest</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+
+  <test_depend>rosunit</test_depend>
 
 
   <export/>

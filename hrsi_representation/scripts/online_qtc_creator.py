@@ -16,6 +16,7 @@ from hrsi_representation.online_input import OnlineInput
 import numpy as np
 import tf
 import json
+import thread
 
 class OnlineQTCCreator(object):
     """Creates QTC state sequences from online input"""
@@ -27,28 +28,35 @@ class OnlineQTCCreator(object):
     }
     _robot_pose = None
     _buffer = dict()
+    _smoothing_buffer = dict()
+    _msg_buffer = []
 
     def __init__(self, name):
         rospy.loginfo("Starting %s" % name)
-        self.input        = OnlineInput()
-        ppl_topic         = rospy.get_param("~ppl_topic", "/people_tracker/positions")
-        robot_topic       = rospy.get_param("~robot_topic", "/robot_pose")
-        self.target_frame = rospy.get_param("~target_frame", "/map")
-        self.dyn_srv      = DynServer(OnlineQTCCreatorConfig, self.dyn_callback)
-        self.listener     = tf.TransformListener()
-        self.pub          = rospy.Publisher("~qtc_array", QTCArray, queue_size=10)
+        self.input           = OnlineInput()
+        ppl_topic            = rospy.get_param("~ppl_topic", "/people_tracker/positions")
+        robot_topic          = rospy.get_param("~robot_topic", "/robot_pose")
+        self.target_frame    = rospy.get_param("~target_frame", "/map")
+        self.decay_time      = rospy.get_param("~decay_time", 120.)
+        self.processing_rate = rospy.get_param("~processing_rate", 30)
+        self.dyn_srv         = DynServer(OnlineQTCCreatorConfig, self.dyn_callback)
+        self.listener        = tf.TransformListener()
+        self.pub             = rospy.Publisher("~qtc_array", QTCArray, queue_size=10)
+        self.last_msg        = QTCArray()
         rospy.Subscriber(
             ppl_topic,
             PeopleTracker,
             callback=self.ppl_callback,
-            queue_size=1
+            queue_size=10
         )
         rospy.Subscriber(
             robot_topic,
             Pose,
             callback=self.pose_callback,
-            queue_size=1
+            queue_size=10
         )
+
+        self.request_thread = thread.start_new(self.generate_qtc, ())
 
     def dyn_callback(self, config, level):
         self.qtc_type            = self._qtc_types[config["qtc_type"]]
@@ -60,47 +68,108 @@ class OnlineQTCCreator(object):
         return config
 
     def ppl_callback(self, msg):
-        print len(self._buffer)
-        out = QTCArray()
-        out.header = msg.header
-        out.header.frame_id = self.target_frame
+        msgs = {
+            "ppl": msg,
+            "robot": self._robot_pose
+        }
+        self._msg_buffer.append(msgs)
 
-        for (uuid, pose) in zip(msg.uuids, msg.poses):
-            person = PoseStamped()
-            person.header = msg.header
-            person.pose = pose
-            try:
-                self.listener.waitForTransform(msg.header.frame_id, self.target_frame, msg.header.stamp, rospy.Duration(1.0))
-                transformed = self.listener.transformPose(self.target_frame, person)
-            except (tf.Exception, tf.LookupException, tf.ConnectivityException) as ex:
-                rospy.logwarn(ex)
-                return
+    def pose_callback(self, msg):
+        self._robot_pose = msg
 
-            if self._robot_pose:
-                if not uuid in self._buffer.keys():
-                    self._buffer[uuid] = {"data": np.array(
-                        [
-                            self._robot_pose.position.x,
-                            self._robot_pose.position.y,
-                            transformed.pose.position.x,
-                            transformed.pose.position.y
-                        ]
-                    ).reshape(-1,4), "last_seen": msg.header.stamp.to_sec()}
+    def generate_qtc(self):
+        rate = rospy.Rate(self.processing_rate)
+        while not rospy.is_shutdown():
+            if not self._msg_buffer:
+                rate.sleep()
+                continue
+
+            print "################ MESSAGE BUFFER ################"
+            print len(self._msg_buffer)
+
+            ppl_msg = self._msg_buffer[0]["ppl"]
+            robot_msg = self._msg_buffer[0]["robot"]
+            del self._msg_buffer[0]
+            # Creating an new message
+            out = QTCArray()
+            out.header = ppl_msg.header
+            out.header.frame_id = self.target_frame
+
+            # Looping through detected humans
+            for (uuid, pose) in zip(ppl_msg.uuids, ppl_msg.poses):
+                # Transforming pose into target_frame if necessary
+                person = PoseStamped()
+                person.header = ppl_msg.header
+                person.pose = pose
+                if ppl_msg.header.frame_id != self.target_frame:
+                    try:
+                        self.listener.waitForTransform(ppl_msg.header.frame_id, self.target_frame, ppl_msg.header.stamp, rospy.Duration(1.0))
+                        transformed = self.listener.transformPose(self.target_frame, person)
+                    except (tf.Exception, tf.LookupException, tf.ConnectivityException) as ex:
+                        rospy.logwarn(ex)
+                        return
                 else:
-                    self._buffer[uuid]["data"] = np.append(
-                        self._buffer[uuid]["data"],
+                    transformed = person
+
+
+                if not uuid in self._smoothing_buffer.keys(): # No entry yet
+                    self._smoothing_buffer[uuid] = {
+                        "start_time": ppl_msg.header.stamp.to_sec(),
+                        "data": np.array(
+                            [
+                                robot_msg.position.x,
+                                robot_msg.position.y,
+                                transformed.pose.position.x,
+                                transformed.pose.position.y
+                            ]
+                    ).reshape(-1,4), "last_seen": ppl_msg.header.stamp.to_sec()}
+                else: # Already in buffer
+                    self._smoothing_buffer[uuid]["data"] = np.append(
+                        self._smoothing_buffer[uuid]["data"],
                         [
-                            self._robot_pose.position.x,
-                            self._robot_pose.position.y,
+                            robot_msg.position.x,
+                            robot_msg.position.y,
                             transformed.pose.position.x,
                             transformed.pose.position.y
                         ]
                     ).reshape(-1,4)
-                    if self._buffer[uuid]["data"].shape[0] > 3:
-                        self._buffer[uuid]["data"] = self._buffer[uuid]["data"][:-1] if np.allclose(self._buffer[uuid]["data"][-1], self._buffer[uuid]["data"][-3]) else self._buffer[uuid]["data"]
-                self._buffer[uuid]["last_seen"] = msg.header.stamp.to_sec()
 
-                if self._buffer[uuid]["data"].shape[0] > 2:
+            print "################ SMOOTHING BUFFER ################"
+            print len(self._smoothing_buffer)
+            # Flush smoothing buffer and create QSR
+            # Looping through smoothing buffer
+            for uuid, data in self._smoothing_buffer.items():
+                # If the smoothing time is not up, do nothing for this entry
+                if not data["start_time"] + self.smoothing_rate <= ppl_msg.header.stamp.to_sec():
+                    continue
+
+                # Put smoothed values in buffer
+                if not uuid in self._buffer.keys(): # No entry yet, create a new one
+                    self._buffer[uuid] = {"data": np.array(
+                        [
+                            np.mean(data["data"][:,0]), # Mean over the coordinates to smooth them
+                            np.mean(data["data"][:,1]),
+                            np.mean(data["data"][:,2]),
+                            np.mean(data["data"][:,3])
+                        ]
+                    ).reshape(-1,4), "last_seen": ppl_msg.header.stamp.to_sec()}
+                else: # Already in buffer, append latest values
+                    self._buffer[uuid]["data"] = np.append(
+                        self._buffer[uuid]["data"],
+                        [
+                            np.mean(data["data"][:,0]),
+                            np.mean(data["data"][:,1]),
+                            np.mean(data["data"][:,2]),
+                            np.mean(data["data"][:,3])
+                        ]
+                    ).reshape(-1,4)
+                self._buffer[uuid]["last_seen"] = ppl_msg.header.stamp.to_sec() # Add time of laast update for decay
+
+                del self._smoothing_buffer[uuid] # Delete element from smoothing buffer
+
+                # If there are more than 1 entries in the buffer for this person
+                # Create QTC representation
+                if self._buffer[uuid]["data"].shape[0] > 1:
                     qtc = self.input.convert(
                         data=self.input.generate_data_from_input(
                             agent1="Robot",
@@ -117,6 +186,7 @@ class OnlineQTCCreator(object):
                         distance_threshold=self.distance_threshold
                     )[0]
 
+                    # Create new message
                     qtc_msg                     = QTC()
                     qtc_msg.collapsed           = not self.no_collapse
                     qtc_msg.qtc_type            = self.qtc_type
@@ -131,18 +201,17 @@ class OnlineQTCCreator(object):
 
                     out.qtc.append(qtc_msg)
 
-        self.pub.publish(out)
-        self.decay()
-        rospy.sleep(self.smoothing_rate)
+            # If there is something to publish and it heasn't been published before, publish
+            if out.qtc and out.qtc != self.last_msg.qtc:
+                self.pub.publish(out)
+                self.last_msg = out
+            self.decay(ppl_msg.header.stamp) # Delete old elements from buffer
+            rate.sleep()
 
-    def pose_callback(self, msg):
-        self._robot_pose = msg
-
-    def decay(self):
+    def decay(self, last_time):
         for uuid in self._buffer.keys():
-            if self._buffer[uuid]["last_seen"] + 120. < rospy.Time.now().to_sec():
+            if self._buffer[uuid]["last_seen"] + self.decay_time < last_time.to_sec():
                 del self._buffer[uuid]
-
 
 if __name__ == "__main__":
     rospy.init_node("online_qtc_creator")

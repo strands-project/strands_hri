@@ -56,3 +56,7 @@ install(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+if (CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS rostest)
+  add_rostest(tests/online_creator_tester.test)
+endif()
