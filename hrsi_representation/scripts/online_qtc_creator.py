@@ -188,7 +188,7 @@ class OnlineQTCCreator(object):
                     qtc_msg.l                   = "Human"
                     qtc_msg.quantisation_factor = self.parameters["quantisation_factor"]
                     qtc_msg.distance_threshold  = self.parameters["distance_threshold"]
-                    qtc_msg.smoothing_rate      = self.parameters["smoothing_rate"]
+                    qtc_msg.smoothing_rate      = self.smoothing_rate
                     qtc_msg.validated           = self.parameters["validate"]
                     qtc_msg.uuid                = uuid
                     qtc_msg.qtc_serialised      = json.dumps(qtc.tolist())
