@@ -57,7 +57,7 @@ class InputBaseAbstractclass(object):
             input_data=world,
             include_missing_data=include_missing_data,
             qsrs_for=qsrs_for,
-            dynamic_args={"parameters": parameters}
+            dynamic_args=parameters
         )
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
