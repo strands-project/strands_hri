@@ -11,7 +11,8 @@ from geometry_msgs.msg import PoseStamped, Pose
 from bayes_people_tracker.msg import PeopleTracker
 from dynamic_reconfigure.server import Server as DynServer
 from hrsi_representation.cfg import OnlineQTCCreatorConfig
-from hrsi_representation.msg import QTCArray, QTC
+from hrsi_representation.msg import QTCArray
+import hrsi_representation.output as output
 from hrsi_representation.online_input import OnlineInput
 import numpy as np
 import tf
@@ -90,9 +91,10 @@ class OnlineQTCCreator(object):
             robot_msg = self._msg_buffer[0]["robot"]
             del self._msg_buffer[0]
             # Creating an new message
-            out = QTCArray()
-            out.header = ppl_msg.header
-            out.header.frame_id = self.target_frame
+            out = output.create_qtc_array_msg(
+                header=ppl_msg.header,
+                frame_id=self.target_frame
+            )
 
             # Looping through detected humans
             for (uuid, pose) in zip(ppl_msg.uuids, ppl_msg.poses):
@@ -181,17 +183,18 @@ class OnlineQTCCreator(object):
                     )[0]
 
                     # Create new message
-                    qtc_msg                     = QTC()
-                    qtc_msg.collapsed           = not self.parameters["no_collapse"]
-                    qtc_msg.qtc_type            = self.qtc_type
-                    qtc_msg.k                   = "Robot"
-                    qtc_msg.l                   = "Human"
-                    qtc_msg.quantisation_factor = self.parameters["quantisation_factor"]
-                    qtc_msg.distance_threshold  = self.parameters["distance_threshold"]
-                    qtc_msg.smoothing_rate      = self.smoothing_rate
-                    qtc_msg.validated           = self.parameters["validate"]
-                    qtc_msg.uuid                = uuid
-                    qtc_msg.qtc_serialised      = json.dumps(qtc.tolist())
+                    qtc_msg = output.create_qtc_msg(
+                        collapsed=not self.parameters["no_collapse"],
+                        qtc_type=self.qtc_type,
+                        k="Robot",
+                        l="Human",
+                        quantisation_factor=self.parameters["quantisation_factor"],
+                        distance_threshold=self.parameters["distance_threshold"],
+                        smoothing_rate=self.smoothing_rate,
+                        validated=self.parameters["validate"],
+                        uuid=uuid,
+                        qtc_serialised=json.dumps(qtc.tolist())
+                    )
 
                     out.qtc.append(qtc_msg)
 

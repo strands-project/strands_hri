@@ -7,14 +7,16 @@ Created on Fri Jan 30 15:28:58 2015
 """
 
 import rospy
-import argparse
 from hrsi_representation.file_input import FileInput
+import hrsi_representation.output as output
+from hrsi_representation.msg import QTCArray
+import json
 
 
 class OfflineQTCCreator(object):
     """trains hmm from raw data files"""
 
-    def __init__(self, name, args):
+    def __init__(self, name):
         """Creates a new instance of the class
         """
         rospy.loginfo("Starting %s", name)
@@ -25,40 +27,59 @@ class OfflineQTCCreator(object):
             "distance_threshold":  rospy.get_param("~distance_threshold", 1.2)
         }
 
-        self.input = rospy.get_param("~input")
-        self.output = rospy.get_param("~output")
+        self.input = rospy.get_param("~input", "")
+        self.outpath = rospy.get_param("~outpath", "")
         self.qsr = rospy.get_param("~qsr", "qtcc")
 
-        if not self.input:
-            rospy.logfatal("No input path provided. Cannot load files.")
+        self.pub = rospy.Publisher("~qtc_array", QTCArray, queue_size=10)
 
         self.file_input = FileInput()
 
+        if self.input == "":
+            rospy.logfatal("No input path provided. Cannot load files.")
+            return
+
     def create(self):
-        rospy.loginfo("Reading file '%s':" % self.i)
+        rospy.loginfo("Reading from dir: '%s'" % self.input)
+        data, files = self.file_input.generate_data_from_input(path=self.input)
         qtc = self.file_input.convert(
-            data=self.file_input.generate_data_from_input(path=self.i),
+            data=data,
             qtc_type=self.qsr,
-            quantisation_factor=self.q,
-            validate=self.v,
-            no_collapse=self.n,
-            distance_threshold=self.d
+            parameters=self.parameters
         )
-        return qtc
+        return qtc, files, data
+
+    def publish(self, qtc, data, files):
+        out = output.create_qtc_array_msg(
+            stamp=rospy.Time.now()
+        )
+        for q, d, f in zip(qtc, data, files):
+            m = output.create_qtc_msg(
+                collapsed=not self.parameters["no_collapse"],
+                qtc_type=self.qsr,
+                k=d["agent1"]["name"],
+                l=d["agent2"]["name"],
+                quantisation_factor=self.parameters["quantisation_factor"],
+                distance_threshold=self.parameters["distance_threshold"],
+                smoothing_rate=0.0,
+                validated=self.parameters["validate"],
+                uuid=f,
+                qtc_serialised=json.dumps(q.tolist())
+            )
+            out.qtc.append(m)
+
+        self.pub.publish(out)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("qsr", help="choose qsr: qtcc|qtcc|qtcbc", type=str)
-    parser.add_argument("-i", "--input", help="path under which to read csv files", type=str)
-    parser.add_argument("--output", help="path in which to store the resulting qtc files", type=str)
-    parser.add_argument("--quantisation_factor", help="quantisation factor for 0-states.", type=float)
-    parser.add_argument("--no_collapse", help="does not collapse similar adjacent states.", action="store_true")
-    parser.add_argument("--distance_threshold", help="distance threshold for qtcb <-> qtcc transition. Only QTCBC", type=float)
-    args = parser.parse_args()
-
     rospy.init_node("offline_qtc_creator")
-    t = OfflineQTCCreator(rospy.get_name(), args)
-    qtc = t.train()
-    print qtc
+    t = OfflineQTCCreator(rospy.get_name())
+    qtc, files, data = t.create()
+    t.publish(qtc, data, files)
+    if t.outpath != "":
+        output.write_files(qtc,files,t.outpath)
+#    for elem, f in zip(qtc, files):
+#        print f, elem
     #rospy.spin()
+
+

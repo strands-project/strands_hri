@@ -8,6 +8,7 @@ Created on Thu Jan 29 11:07:40 2015
 import os
 import csv
 import copy
+import rospy
 import numpy as np
 from hrsi_representation.input_base_abstractclass import InputBaseAbstractclass
 
@@ -26,18 +27,20 @@ class FileInput(InputBaseAbstractclass):
 
         :param path: the directory which contains the csv files
 
-        :return: the qtc represetation of all the found files
+        :return: the dict represetation of all the found files
         """
 
         ret = []
+        files = []
 
         for f in os.listdir(kwargs["path"]):
             if f.endswith(".csv"):
+                files.append(f)
                 data = copy.deepcopy(self.template)
                 filename = kwargs["path"] + '/' + f
                 with open(filename) as csvfile:
                     reader = csv.DictReader(csvfile)
-                    print "Reading file '%s':" % filename
+                    rospy.loginfo("Reading file: '%s'" % f)
                     for idx,row in enumerate(reader):
                         if data["agent1"]["name"] == "":
                             data["agent1"]["name"] = row['agent1']
@@ -51,4 +54,4 @@ class FileInput(InputBaseAbstractclass):
 
                     ret.append(data)
 
-        return ret
+        return ret, files
