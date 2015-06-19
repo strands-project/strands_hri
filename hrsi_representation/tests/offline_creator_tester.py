@@ -10,11 +10,12 @@ import subprocess
 import json
 import rospkg
 import numpy as np
+from roslib.packages import find_resource
 
 
 class TestOfflineQTC(unittest.TestCase):
     TEST_DIR = rospkg.RosPack().get_path(PKG)+'/tests/data/'
-    EXECUTABLE = 'offline_qtc_creator.py'
+    EXECUTABLE = find_resource(PKG, 'offline_qtc_creator.py')[0]
 
     _correct = {
         "qtcb": [[-1, -1], [-1, 0], [0, 0], [0, 1], [1, 1]],
@@ -35,7 +36,7 @@ class TestOfflineQTC(unittest.TestCase):
 
     def test_offline_creator_qtcb(self):
         rospy.Subscriber("/offline_qtc_creator/qtc_array", QTCArray, callback=self._callback)
-        p = subprocess.Popen("rosrun "+PKG+" "+self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcb", stdin=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcb", stdin=subprocess.PIPE, shell=True)
         while p.poll() == None:
             rospy.sleep(1)
 #        print self.test
@@ -43,7 +44,7 @@ class TestOfflineQTC(unittest.TestCase):
 
     def test_offline_creator_qtcc(self):
         rospy.Subscriber("/offline_qtc_creator/qtc_array", QTCArray, callback=self._callback)
-        p = subprocess.Popen("rosrun "+PKG+" "+self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcc", stdin=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcc", stdin=subprocess.PIPE, shell=True)
         while p.poll() == None:
             rospy.sleep(1)
 #        print self.test
@@ -51,7 +52,7 @@ class TestOfflineQTC(unittest.TestCase):
 
     def test_offline_creator_qtcbc(self):
         rospy.Subscriber("/offline_qtc_creator/qtc_array", QTCArray, callback=self._callback)
-        p = subprocess.Popen("rosrun "+PKG+" "+self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcbc", stdin=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcbc", stdin=subprocess.PIPE, shell=True)
         while p.poll() == None:
             rospy.sleep(1)
 #        print self.test
