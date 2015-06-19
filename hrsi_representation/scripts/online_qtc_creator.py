@@ -59,12 +59,14 @@ class OnlineQTCCreator(object):
         self.request_thread = thread.start_new(self.generate_qtc, ())
 
     def dyn_callback(self, config, level):
-        self.qtc_type            = self._qtc_types[config["qtc_type"]]
-        self.quantisation_factor = config["quantisation_factor"]
-        self.distance_threshold  = config["distance_threshold"]
-        self.validate            = config["validate"]
-        self.no_collapse         = config["no_collapse"]
-        self.smoothing_rate      = config["smoothing_rate"]
+        self.qtc_type = self._qtc_types[config["qtc_type"]]
+        self.parameters = {
+            "quantisation_factor": config["quantisation_factor"],
+            "distance_threshold": config["distance_threshold"],
+            "validate": config["validate"],
+            "no_collapse": config["no_collapse"]
+        }
+        self.smoothing_rate = config["smoothing_rate"]
         return config
 
     def ppl_callback(self, msg):
@@ -175,22 +177,19 @@ class OnlineQTCCreator(object):
                             y2=self._buffer[uuid]["data"][:,3]
                         ),
                         qtc_type=self.qtc_type,
-                        quantisation_factor=self.quantisation_factor,
-                        validate=self.validate,
-                        no_collapse=self.no_collapse,
-                        distance_threshold=self.distance_threshold
+                        parameters=self.parameters
                     )[0]
 
                     # Create new message
                     qtc_msg                     = QTC()
-                    qtc_msg.collapsed           = not self.no_collapse
+                    qtc_msg.collapsed           = not self.parameters["no_collapse"]
                     qtc_msg.qtc_type            = self.qtc_type
                     qtc_msg.k                   = "Robot"
                     qtc_msg.l                   = "Human"
-                    qtc_msg.quantisation_factor = self.quantisation_factor
-                    qtc_msg.distance_threshold  = self.distance_threshold
+                    qtc_msg.quantisation_factor = self.parameters["quantisation_factor"]
+                    qtc_msg.distance_threshold  = self.parameters["distance_threshold"]
                     qtc_msg.smoothing_rate      = self.smoothing_rate
-                    qtc_msg.validated           = self.validate
+                    qtc_msg.validated           = self.parameters["validate"]
                     qtc_msg.uuid                = uuid
                     qtc_msg.qtc_serialised      = json.dumps(qtc.tolist())
 
