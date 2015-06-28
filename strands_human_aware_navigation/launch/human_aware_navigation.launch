@@ -7,6 +7,7 @@
   <arg name="detection_angle" default="45.0" />
   <arg name="gaze_type" default="0" />
   <arg name="with_site_movebase_params" default="false"/>
+  <arg name="site_movebase_params" default=""/>
 
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER)" user="$(arg user)" default="true"/>
   
