@@ -76,6 +76,7 @@ class OnlineQTCCreator(object):
             "robot": self._robot_pose
         }
         self._msg_buffer.append(msgs)
+        self.time = msg.header.stamp.to_sec()
 
     def pose_callback(self, msg):
         self._robot_pose = msg
@@ -92,7 +93,6 @@ class OnlineQTCCreator(object):
             del self._msg_buffer[0]
             # Creating an new message
             out = output.create_qtc_array_msg(
-                header=ppl_msg.header,
                 frame_id=self.target_frame
             )
 
@@ -123,7 +123,7 @@ class OnlineQTCCreator(object):
                                 transformed.pose.position.x,
                                 transformed.pose.position.y
                             ]
-                    ).reshape(-1,4), "last_seen": ppl_msg.header.stamp.to_sec()}
+                    ).reshape(-1,4), "last_seen": ppl_msg.header.stamp}
                 else: # Already in buffer
                     self._smoothing_buffer[uuid]["data"] = np.append(
                         self._smoothing_buffer[uuid]["data"],
@@ -134,6 +134,7 @@ class OnlineQTCCreator(object):
                             transformed.pose.position.y
                         ]
                     ).reshape(-1,4)
+                    self._smoothing_buffer[uuid]["last_seen"] = ppl_msg.header.stamp
 
             # Flush smoothing buffer and create QSR
             # Looping through smoothing buffer
@@ -151,7 +152,7 @@ class OnlineQTCCreator(object):
                             np.mean(data["data"][:,2]),
                             np.mean(data["data"][:,3])
                         ]
-                    ).reshape(-1,4), "last_seen": ppl_msg.header.stamp.to_sec()}
+                    ).reshape(-1,4), "last_seen": data["last_seen"]}
                 else: # Already in buffer, append latest values
                     self._buffer[uuid]["data"] = np.append(
                         self._buffer[uuid]["data"],
@@ -162,7 +163,7 @@ class OnlineQTCCreator(object):
                             np.mean(data["data"][:,3])
                         ]
                     ).reshape(-1,4)
-                self._buffer[uuid]["last_seen"] = ppl_msg.header.stamp.to_sec() # Add time of laast update for decay
+                self._buffer[uuid]["last_seen"] = data["last_seen"] # Add time of last update for decay
 
                 del self._smoothing_buffer[uuid] # Delete element from smoothing buffer
 
@@ -197,6 +198,7 @@ class OnlineQTCCreator(object):
                     )
 
                     out.qtc.append(qtc_msg)
+                    out.header.stamp = self._buffer[uuid]["last_seen"]
 
             # If there is something to publish and it heasn't been published before, publish
             if out.qtc and out.qtc != self.last_msg.qtc:
@@ -207,7 +209,7 @@ class OnlineQTCCreator(object):
 
     def decay(self, last_time):
         for uuid in self._buffer.keys():
-            if self._buffer[uuid]["last_seen"] + self.decay_time < last_time.to_sec():
+            if self._buffer[uuid]["last_seen"].to_sec() + self.decay_time < last_time.to_sec():
                 del self._buffer[uuid]
 
 if __name__ == "__main__":
