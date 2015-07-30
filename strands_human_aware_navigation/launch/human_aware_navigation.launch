@@ -6,6 +6,8 @@
   <arg name="min_dist" default="1.0" />
   <arg name="detection_angle" default="45.0" />
   <arg name="gaze_type" default="0" />
+  <arg name="with_site_movebase_params" default="false"/>
+  <arg name="site_movebase_params" default=""/>
 
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER)" user="$(arg user)" default="true"/>
   
@@ -17,4 +19,7 @@
     <param name="gaze_type" value="$(arg gaze_type)" type="int"/>
   </node>
   <node pkg="strands_human_aware_navigation" type="dwa_dyn_wrapper" name="DWAPlannerROS_dyn_wrapper" output="screen" respawn="true"/>
+  <rosparam file="$(find strands_movebase)/strands_movebase_params/dwa_planner_ros.yaml" command="load" ns="human_aware_navigation"/>
+  <!-- THIS SHOULD STAY LAST, so that sites can override anything. -->
+  <rosparam file="$(arg site_movebase_params)" command="load" if="$(arg with_site_movebase_params)" ns="human_aware_navigation"/>
 </launch>
