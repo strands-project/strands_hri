@@ -27,7 +27,7 @@ class OnlineQTCCreator(object):
         1: "qtcc",
         2: "qtcbc"
     }
-    _robot_pose = None
+    _robot_pose = Pose()
     _buffer = dict()
     _smoothing_buffer = dict()
     _msg_buffer = []
@@ -61,11 +61,17 @@ class OnlineQTCCreator(object):
 
     def dyn_callback(self, config, level):
         self.qtc_type = self._qtc_types[config["qtc_type"]]
+        self.prune_buffer = config["prune_buffer"]
+        # If we prune the buffer, validate and no_callapse will have no effect.
+        # Setting them to false to make that clear
+        if self.prune_buffer:
+            config["validate"]    = False
+            config["no_collapse"] = False
         self.parameters = {
             "quantisation_factor": config["quantisation_factor"],
-            "distance_threshold": config["distance_threshold"],
-            "validate": config["validate"],
-            "no_collapse": config["no_collapse"]
+            "distance_threshold":  config["distance_threshold"],
+            "validate":            config["validate"],
+            "no_collapse":         config["no_collapse"]
         }
         self.smoothing_rate = config["smoothing_rate"]
         return config
@@ -104,11 +110,12 @@ class OnlineQTCCreator(object):
                 person.pose = pose
                 if ppl_msg.header.frame_id != self.target_frame:
                     try:
-                        self.listener.waitForTransform(ppl_msg.header.frame_id, self.target_frame, ppl_msg.header.stamp, rospy.Duration(1.0))
+                        t = self.listener.getLatestCommonTime(self.target_frame, person.header.frame_id)
+                        person.header.stamp = t
                         transformed = self.listener.transformPose(self.target_frame, person)
                     except (tf.Exception, tf.LookupException, tf.ConnectivityException) as ex:
                         rospy.logwarn(ex)
-                        return
+                        continue
                 else:
                     transformed = person
 
@@ -182,6 +189,9 @@ class OnlineQTCCreator(object):
                         parameters=self.parameters
                     )[0]
 
+                    if self.prune_buffer:
+                        self._buffer[uuid]["data"] = self._buffer[uuid]["data"][-1]
+
                     # Create new message
                     qtc_msg = output.create_qtc_msg(
                         collapsed=not self.parameters["no_collapse"],
@@ -198,8 +208,9 @@ class OnlineQTCCreator(object):
 
                     out.qtc.append(qtc_msg)
 
-            # If there is something to publish and it heasn't been published before, publish
-            if out.qtc and out.qtc != self.last_msg.qtc:
+            # If there is something to publish and it hasn't been published before, publish
+            # If prune_buffer == True thewn we always publish
+            if out.qtc and (out.qtc != self.last_msg.qtc or self.prune_buffer):
                 self.pub.publish(out)
                 self.last_msg = out
             self.decay(ppl_msg.header.stamp) # Delete old elements from buffer
