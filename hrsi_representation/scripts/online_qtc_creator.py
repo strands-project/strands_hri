@@ -82,7 +82,6 @@ class OnlineQTCCreator(object):
             "robot": self._robot_pose
         }
         self._msg_buffer.append(msgs)
-        self.time = msg.header.stamp.to_sec()
 
     def pose_callback(self, msg):
         self._robot_pose = msg
