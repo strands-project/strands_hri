@@ -70,7 +70,7 @@ class QTCStatePredictor(object):
                 else:
                     pred = [0,element["qtc"][1]]
 
-        self.cc.publish(element["angle"], pred[0])
+        self.cc.publish(angle=element["angle"], size=np.pi/8, qtc_symbol=pred[0])
 
         print "human-robot distance: %s, current qtc: %s, predicted qtc: %s" % (element["distance"], element["qtc"], pred)
         self.pub.publish(self.qtc_states[0][self.qtc_states[1].index(pred)])

@@ -9,7 +9,6 @@ Created on Thu Jul 30 16:07:34 2015
 import rospy
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import Pose, PoseStamped
-from tf.transformations import quaternion_from_euler
 import numpy as np
 import time
 
@@ -64,7 +63,8 @@ class CostmapCreator(object):
     def resolution(self, resolution):
         self._resolution = resolution
 
-    def _fast_cost(self, angle, qtc_symbol):
+    def _fast_cost(self, angle, qtc_symbol, size=np.pi/2):
+        factor = 8
         start_loop = time.time()
         cost_array = np.empty((self.width,self.height))
         cost_array.fill(self.max_costs)
@@ -73,31 +73,29 @@ class CostmapCreator(object):
         if qtc_symbol == 1:
             angle = angle + np.pi if angle < 0.0 else angle - np.pi
 
-        # The shit way of representing ans sending occupancy maps requires to create
-        # it like this and transpose it in the end.
         cp = self._cartesian_product(
             [
-                np.arange(-self.width/2,self.width/2, step=1),
-                np.arange(-self.height/2,self.height/2, step=1)
+                np.arange(-self.width/2, self.width/2, step=1),
+                np.arange(-self.height/2, self.height/2, step=1)
             ]
         )
         polar = self._cartesian_to_polar(cp[:,0],cp[:,1])
         idx = np.logical_and(
-            polar[0] <= min(self.width/2, self.height/2), #np.logical_or(polar[1] == np.pi/4, polar[1] == 0.0)
+            polar[0] <= min(self.width/2, self.height/2),
             np.logical_and(
                 np.logical_or(
-                    polar[1] >= -np.pi/2 + angle,
-                    polar[1] <= -np.pi + (angle-np.pi/2) # Sign flip
+                    polar[1] >= -(size/2) + angle,
+                    polar[1] <= -(np.pi - ((np.abs(angle)+(size/2))-np.pi)) # Sign flip
                 ),
                 np.logical_or(
-                    polar[1] <= np.pi/2 + angle,
-                    polar[1] >= np.pi + (angle+np.pi/2) # Sign flip
+                    polar[1] <= (size/2) + angle,
+                    polar[1] >= np.pi - ((np.abs(angle)+(size/2))-np.pi) # Sign flip
                 )
             )
         ).reshape(self.width,self.height)
         cost_array[idx] = self.min_costs
         print "elapsed:", time.time() - start_loop
-        return cost_array.T # Transpose due to shit interpretation of the array
+        return cost_array.T # Transpose due to shit interpretation of the array by ROS
 
 
     def _cartesian_product(self, arrays, out=None):
@@ -150,7 +148,7 @@ class CostmapCreator(object):
                 out[j*m:(j+1)*m,1:] = out[0:m,1:]
         return out
 
-    def publish(self, angle, qtc_symbol):
+    def publish(self, angle, qtc_symbol, size):
         o = OccupancyGrid()
         o.header.stamp = rospy.Time.now()
         o.header.frame_id = 'base_link'
@@ -158,19 +156,12 @@ class CostmapCreator(object):
         o.info.height = self._height
         o.info.width = self._width
         o.info.origin = Pose()
-#        o.info.origin.position.x = 13.6
-#        o.info.origin.position.y = -1.3
-#        o.info.origin.orientation.w = 1
-
-#        rot = quaternion_from_euler(0.0, 0.0, -np.pi/2) # Rotate -90 degrees so 0.0 in polar is forward
-#        o.info.origin.orientation.z = rot[2]
-#        o.info.origin.orientation.w = rot[3]
         o.info.origin.position.x -= (o.info.height/2) * o.info.resolution # Translate to be centered under robot
         o.info.origin.position.y -= (o.info.width/2)  * o.info.resolution
         p = PoseStamped(header=o.header, pose=o.info.origin)
         self._origin_pub.publish(p)
 
-        o.data = self._fast_cost(angle, qtc_symbol).flatten(order='C')
+        o.data = self._fast_cost(angle=angle, qtc_symbol=qtc_symbol, size=size).flatten(order='C')
         self._map_pub.publish(o)
 
     def _cartesian_to_polar(self, x, y):
