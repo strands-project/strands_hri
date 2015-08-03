@@ -11,6 +11,7 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import Pose, PoseStamped
 import numpy as np
 import time
+from threading import Lock
 
 
 class CostmapCreator(object):
@@ -20,8 +21,10 @@ class CostmapCreator(object):
         self._max_costs = max_costs
         self._min_costs = min_costs
         self._resolution = resolution
-        self._map_pub = map_pub #rospy.Publisher("~map", OccupancyGrid, queue_size=10, latch=True)
-        self._origin_pub = origin_pub #rospy.Publisher("~origin", PoseStamped, queue_size=10)
+        self._map_pub = map_pub
+        self._origin_pub = origin_pub
+
+        self.lock = Lock()
 
     @property
     def width(self):
@@ -29,7 +32,8 @@ class CostmapCreator(object):
 
     @width.setter
     def width(self, width):
-        self._width = width
+        with self.lock:
+            self._width = width
 
     @property
     def height(self):
@@ -37,7 +41,8 @@ class CostmapCreator(object):
 
     @height.setter
     def height(self, height):
-        self._height = height
+        with self.lock:
+            self._height = height
 
     @property
     def max_costs(self):
@@ -45,7 +50,8 @@ class CostmapCreator(object):
 
     @max_costs.setter
     def max_costs(self, max_costs):
-        self._max_costs = max_costs
+        with self.lock:
+            self._max_costs = max_costs
 
     @property
     def min_costs(self):
@@ -53,7 +59,8 @@ class CostmapCreator(object):
 
     @min_costs.setter
     def min_costs(self, min_costs):
-        self._min_costs = min_costs
+        with self.lock:
+            self._min_costs = min_costs
 
     @property
     def resolution(self):
@@ -61,41 +68,42 @@ class CostmapCreator(object):
 
     @resolution.setter
     def resolution(self, resolution):
-        self._resolution = resolution
+        with self.lock:
+            self._resolution = resolution
 
     def _fast_cost(self, angle, qtc_symbol, size=np.pi/2):
-        factor = 8
-        start_loop = time.time()
-        cost_array = np.empty((self.width,self.height))
-        cost_array.fill(self.max_costs)
-        if qtc_symbol == 0:
-            return cost_array
-        if qtc_symbol == 1:
-            angle = angle + np.pi if angle < 0.0 else angle - np.pi
+        with self.lock: # Making sure no dynamic variable are changed during calculation
+            start_loop = time.time()
+            cost_array = np.empty((self.width,self.height))
+            cost_array.fill(self.max_costs)
+            if qtc_symbol == 0:
+                return cost_array
+            if qtc_symbol == 1:
+                angle = angle + np.pi if angle < 0.0 else angle - np.pi
 
-        cp = self._cartesian_product(
-            [
-                np.arange(-self.width/2, self.width/2, step=1),
-                np.arange(-self.height/2, self.height/2, step=1)
-            ]
-        )
-        polar = self._cartesian_to_polar(cp[:,0],cp[:,1])
-        idx = np.logical_and(
-            polar[0] <= min(self.width/2, self.height/2),
-            np.logical_and(
-                np.logical_or(
-                    polar[1] >= -(size/2) + angle,
-                    polar[1] <= -(np.pi - ((np.abs(angle)+(size/2))-np.pi)) # Sign flip
-                ),
-                np.logical_or(
-                    polar[1] <= (size/2) + angle,
-                    polar[1] >= np.pi - ((np.abs(angle)+(size/2))-np.pi) # Sign flip
-                )
+            cp = self._cartesian_product(
+                [
+                    np.arange(-self.width/2, self.width/2, step=1),
+                    np.arange(-self.height/2, self.height/2, step=1)
+                ]
             )
-        ).reshape(self.width,self.height)
-        cost_array[idx] = self.min_costs
-        print "elapsed:", time.time() - start_loop
-        return cost_array.T # Transpose due to shit interpretation of the array by ROS
+            polar = self._cartesian_to_polar(cp[:,0],cp[:,1])
+            idx = np.logical_and(
+                polar[0] <= min(self.width/2, self.height/2),
+                np.logical_and(
+                    np.logical_or(
+                        polar[1] >= -(size/2) + angle,
+                        polar[1] <= -(np.pi - ((np.abs(angle)+(size/2))-np.pi)) # Sign flip
+                    ),
+                    np.logical_or(
+                        polar[1] <= (size/2) + angle,
+                        polar[1] >= np.pi - ((np.abs(angle)+(size/2))-np.pi) # Sign flip
+                    )
+                )
+            ).reshape(self.width,self.height)
+            cost_array[idx] = self.min_costs
+            print "elapsed:", time.time() - start_loop
+            return cost_array.T # Transpose due to shit interpretation of the array by ROS
 
 
     def _cartesian_product(self, arrays, out=None):
@@ -156,8 +164,8 @@ class CostmapCreator(object):
         o.info.height = self._height
         o.info.width = self._width
         o.info.origin = Pose()
-        o.info.origin.position.x -= (o.info.height/2) * o.info.resolution # Translate to be centered under robot
-        o.info.origin.position.y -= (o.info.width/2)  * o.info.resolution
+        o.info.origin.position.x -= (o.info.width/2) * o.info.resolution # Translate to be centered under robot
+        o.info.origin.position.y -= (o.info.height/2)  * o.info.resolution
         p = PoseStamped(header=o.header, pose=o.info.origin)
         self._origin_pub.publish(p)
 

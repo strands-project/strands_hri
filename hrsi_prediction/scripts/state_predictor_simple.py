@@ -18,6 +18,8 @@ from std_msgs.msg import String
 from hrsi_prediction.costmap_creator import CostmapCreator
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
+from dynamic_reconfigure.server import Server as DynServer
+from hrsi_prediction.cfg import HRSIPredictorConfig
 
 
 class QTCStatePredictor(object):
@@ -25,10 +27,9 @@ class QTCStatePredictor(object):
         rospy.loginfo("Starting %s..." % name)
         self.cc = CostmapCreator(
             rospy.Publisher("~map", OccupancyGrid, queue_size=10, latch=True),
-            rospy.Publisher("~origin", PoseStamped, queue_size=10),
-            100,
-            100
+            rospy.Publisher("~origin", PoseStamped, queue_size=10)
         )
+        self.dyn_srv = DynServer(HRSIPredictorConfig, self.dyn_callback)
         self.cnt = 0
         self.qtc_states = self._create_qtc_states('b')
         print self.qtc_states
@@ -44,6 +45,14 @@ class QTCStatePredictor(object):
         )
         ts.registerCallback(self.callback)
         rospy.loginfo("... all done.")
+
+    def dyn_callback(self, config, level):
+        self.cc.width      = config["costmap_width"]
+        self.cc.height     = config["costmap_height"]
+        self.cc.resolution = config["costmap_resolution"]
+        self.cc.min_costs  = config["min_costs"]
+        self.cc.max_costs  = config["max_costs"]
+        return config
 
     def callback(self, qtc, ppl):
         self.cnt += 1

@@ -5,10 +5,7 @@ project(hrsi_prediction)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  bayes_people_tracker
-  hrsi_representation
-  message_filters
-  rospy
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -64,6 +61,10 @@ catkin_python_setup()
 #   Action1.action
 #   Action2.action
 # )
+
+generate_dynamic_reconfigure_options(
+  cfg/HRSIPredictor.cfg
+)
 
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
