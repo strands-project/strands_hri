@@ -13,8 +13,7 @@ from hrsi_representation.msg import QTCArray
 from bayes_people_tracker.msg import PeopleTracker
 import json
 import numpy as np
-from random import uniform, choice
-from std_msgs.msg import String
+from random import uniform
 from hrsi_prediction.costmap_creator import CostmapCreator
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
@@ -23,6 +22,9 @@ from hrsi_prediction.cfg import HRSIPredictorConfig
 
 
 class QTCStatePredictor(object):
+    _state_chain = [[-1,-1], [0,-1], [0,1], [1,1]]
+    _current_state = 0
+
     def __init__(self, name):
         rospy.loginfo("Starting %s..." % name)
         self.cc = CostmapCreator(
@@ -30,11 +32,9 @@ class QTCStatePredictor(object):
             rospy.Publisher("~origin", PoseStamped, queue_size=10)
         )
         self.dyn_srv = DynServer(HRSIPredictorConfig, self.dyn_callback)
-        self.cnt = 0
         self.qtc_states = self._create_qtc_states('b')
         print self.qtc_states
         self.transdict = self._create_transition_dict(self.qtc_states)
-        self.pub = rospy.Publisher("~prediction", String, queue_size=10)
         subs = [
             Subscriber(rospy.get_param("~qtc_topic", "/online_qtc_creator/qtc_array"), QTCArray),
             Subscriber(rospy.get_param("~ppl_topic", "/people_tracker/positions"), PeopleTracker)
@@ -47,43 +47,48 @@ class QTCStatePredictor(object):
         rospy.loginfo("... all done.")
 
     def dyn_callback(self, config, level):
-        self.cc.width      = config["costmap_width"]
-        self.cc.height     = config["costmap_height"]
+#        self.cc.width      = config["costmap_width"]
+#        self.cc.height     = config["costmap_height"]
         self.cc.resolution = config["costmap_resolution"]
         self.cc.min_costs  = config["min_costs"]
         self.cc.max_costs  = config["max_costs"]
         return config
 
     def callback(self, qtc, ppl):
-        self.cnt += 1
-        data_buffer = {e.uuid: {"qtc": json.loads(e.qtc_serialised)[-1], "distance": ppl.distances[ppl.uuids.index(e.uuid)], "angle": ppl.angles[ppl.uuids.index(e.uuid)]} for e in qtc.qtc}
-#        rospy.loginfo("%s: TIME_MSG: %s, BUFFER: %s" % (str(self.cnt),str(qtc.header.stamp.to_sec()),data_buffer))
-#        for element in data_buffer.values():
+        data_buffer = {
+            e.uuid: {
+                "qtc": json.loads(e.qtc_serialised)[-1],
+                "distance": ppl.distances[ppl.uuids.index(e.uuid)],
+                "angle": ppl.angles[ppl.uuids.index(e.uuid)],
+                "velocity": ppl.velocities[ppl.uuids.index(e.uuid)]
+            } for e in qtc.qtc
+        }
         element = data_buffer.values()[0] # Only taking the first detection into account for now
-        pred = [choice([-1,1]),element["qtc"][1]] if element["qtc"][0] == 0 else element["qtc"] # Always assume the robot moves
-        if element["distance"] <= 5.0:
-            if element["qtc"][0] == -1:
-                x = uniform(0,1)
-                prob = 2.0 / element["distance"]
-                prob = prob if prob <= 1.0 else 1.0
-                print "PROB: %s - %s = %s -> slow down: %s" %(x,prob,x-prob,x-prob<0.0)
-                if x - prob <= 0.0:
-                    pred = [0,element["qtc"][1]]
-                else:
-                    pred = [-1,element["qtc"][1]]
-            elif element["qtc"][0] == 0:
-                if element["qtc"][1] == 1:
-                    pred = [1,element["qtc"][1]]
-                elif element["qtc"][1] == 0 and element["distance"] > 2.0: # No one moves, take initiative
-                    pred = [-1,element["qtc"][1]]
-                else:
-                    pred = [0,element["qtc"][1]]
+        if element["distance"] <= 6.0:
+            print "Current state in chain:", self._state_chain[self._current_state]
+            if np.all(element["qtc"] == self._state_chain[self._current_state]):
+                if element["qtc"][0] == -1:
+                    x = uniform(0,1)
+                    prob = 2.0 / element["distance"]
+                    prob = prob if prob <= 1.0 else 1.0
+                    print "PROB: %s - %s = %s -> slow down: %s" %(x,prob,x-prob,x-prob<0.0)
+                    if x - prob <= 0.0:
+                        self._current_state += 1
+                elif element["qtc"][0] == 0:
+                    x = uniform(0,1)
+                    prob = element["distance"] / 5.0
+                    prob = prob if prob <= 1.0 else 1.0
+                    print "PROB: %s - %s = %s -> speed up: %s" %(x,prob,x-prob,x-prob<0.0)
+                    if x - prob <= 0.0:
+                        self._current_state += 1
+            pred = self._state_chain[self._current_state]
+        else:
+            pred = ['?',element["qtc"][1]] if element["qtc"][0] == 0 else element["qtc"] # Always assume the robot moves
+            self._current_state = 0
 
-        self.cc.publish(angle=element["angle"], size=np.pi/8, qtc_symbol=pred[0])
+        self.cc.publish(angle=element["angle"], qtc_symbol=pred[0])
 
         print "human-robot distance: %s, current qtc: %s, predicted qtc: %s" % (element["distance"], element["qtc"], pred)
-        self.pub.publish(self.qtc_states[0][self.qtc_states[1].index(pred)])
-
 
     def _create_qtc_states(self, qtc_type):
         ret_str = []
