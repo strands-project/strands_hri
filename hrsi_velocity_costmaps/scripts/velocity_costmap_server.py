@@ -9,34 +9,36 @@ Created on Mon Jul 27 16:48:09 2015
 
 import rospy
 from message_filters import Subscriber, TimeSynchronizer
-from hrsi_representation.msg import QTCArray
+from hrsi_state_prediction.msg import QTCPredictionArray
 from bayes_people_tracker.msg import PeopleTracker
 import json
 import numpy as np
-from random import uniform
-from hrsi_prediction.costmap_creator import CostmapCreator
+from hrsi_velocity_costmaps.costmap_creator import CostmapCreator
 from nav_msgs.msg import OccupancyGrid
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Vector3Stamped
 from dynamic_reconfigure.server import Server as DynServer
-from hrsi_prediction.cfg import HRSIPredictorConfig
+from hrsi_velocity_costmaps.cfg import VelocityCostmapsConfig
+from tf import TransformListener
+import time
 
 
-class QTCStatePredictor(object):
+class VelocityCostmapServer(object):
     _state_chain = [[-1,-1], [0,-1], [0,1], [1,1]]
     _current_state = 0
 
     def __init__(self, name):
         rospy.loginfo("Starting %s..." % name)
+        self.tf = TransformListener()
         self.cc = CostmapCreator(
             rospy.Publisher("~map", OccupancyGrid, queue_size=10, latch=True),
             rospy.Publisher("~origin", PoseStamped, queue_size=10)
         )
-        self.dyn_srv = DynServer(HRSIPredictorConfig, self.dyn_callback)
+        self.dyn_srv = DynServer(VelocityCostmapsConfig, self.dyn_callback)
         self.qtc_states = self._create_qtc_states('b')
         print self.qtc_states
         self.transdict = self._create_transition_dict(self.qtc_states)
         subs = [
-            Subscriber(rospy.get_param("~qtc_topic", "/online_qtc_creator/qtc_array"), QTCArray),
+            Subscriber(rospy.get_param("~qtc_topic", "/qtc_state_predictor/prediction_array"), QTCPredictionArray),
             Subscriber(rospy.get_param("~ppl_topic", "/people_tracker/positions"), PeopleTracker)
         ]
         ts = TimeSynchronizer(
@@ -47,48 +49,37 @@ class QTCStatePredictor(object):
         rospy.loginfo("... all done.")
 
     def dyn_callback(self, config, level):
-#        self.cc.width      = config["costmap_width"]
-#        self.cc.height     = config["costmap_height"]
         self.cc.resolution = config["costmap_resolution"]
         self.cc.min_costs  = config["min_costs"]
         self.cc.max_costs  = config["max_costs"]
         return config
 
     def callback(self, qtc, ppl):
+        start = time.time()
+        vels = []
+        try:
+            t = self.tf.getLatestCommonTime("base_link", ppl.header.frame_id)
+            vs = Vector3Stamped(header=ppl.header)
+            vs.header.stamp = t
+            for v in ppl.velocities:
+                vs.vector = v
+                vels.append(self.tf.transformVector3("base_link", vs).vector)
+        except Exception as e:
+            rospy.logwarn(e)
+            return
         data_buffer = {
             e.uuid: {
-                "qtc": json.loads(e.qtc_serialised)[-1],
-                "distance": ppl.distances[ppl.uuids.index(e.uuid)],
+                "qtc": json.loads(e.qtc_serialised),
                 "angle": ppl.angles[ppl.uuids.index(e.uuid)],
-                "velocity": ppl.velocities[ppl.uuids.index(e.uuid)]
+                "velocity": vels[ppl.uuids.index(e.uuid)]
             } for e in qtc.qtc
         }
         element = data_buffer.values()[0] # Only taking the first detection into account for now
-        if element["distance"] <= 6.0:
-            print "Current state in chain:", self._state_chain[self._current_state]
-            if np.all(element["qtc"] == self._state_chain[self._current_state]):
-                if element["qtc"][0] == -1:
-                    x = uniform(0,1)
-                    prob = 2.0 / element["distance"]
-                    prob = prob if prob <= 1.0 else 1.0
-                    print "PROB: %s - %s = %s -> slow down: %s" %(x,prob,x-prob,x-prob<0.0)
-                    if x - prob <= 0.0:
-                        self._current_state += 1
-                elif element["qtc"][0] == 0:
-                    x = uniform(0,1)
-                    prob = element["distance"] / 5.0
-                    prob = prob if prob <= 1.0 else 1.0
-                    print "PROB: %s - %s = %s -> speed up: %s" %(x,prob,x-prob,x-prob<0.0)
-                    if x - prob <= 0.0:
-                        self._current_state += 1
-            pred = self._state_chain[self._current_state]
-        else:
-            pred = ['?',element["qtc"][1]] if element["qtc"][0] == 0 else element["qtc"] # Always assume the robot moves
-            self._current_state = 0
+        self.cc.publish(angle=element["angle"], qtc_symbol=[element["qtc"][0]], velocity=element["velocity"])
+        #self.cc.publish(angle=element["angle"], qtc_symbol=[1,1], velocity=element["velocity"])
 
-        self.cc.publish(angle=element["angle"], qtc_symbol=pred[0])
-
-        print "human-robot distance: %s, current qtc: %s, predicted qtc: %s" % (element["distance"], element["qtc"], pred)
+        print "human-robot predicted qtc: %s" % element["qtc"]
+        print "total elapsed:", time.time() - start
 
     def _create_qtc_states(self, qtc_type):
         ret_str = []
@@ -151,6 +142,6 @@ class QTCStatePredictor(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node("qtc_state_predictor")
-    q = QTCStatePredictor(rospy.get_name())
+    rospy.init_node("velocity_costmap_server")
+    v = VelocityCostmapServer(rospy.get_name())
     rospy.spin()

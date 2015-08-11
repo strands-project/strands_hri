@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hrsi_prediction)
+project(hrsi_state_prediction)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  dynamic_reconfigure
+  hrsi_representation
+  rospy
+  std_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -42,11 +45,11 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  QTCPredictionArray.msg
+  QTCPrediction.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -62,15 +65,11 @@ catkin_python_setup()
 #   Action2.action
 # )
 
-generate_dynamic_reconfigure_options(
-  cfg/HRSIPredictor.cfg
-)
-
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -83,8 +82,8 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES hrsi_predictor
-#  CATKIN_DEPENDS bayes_people_tracker hrsi_representation message_filters rospy
+#  LIBRARIES hrsi_state_prediction
+#  CATKIN_DEPENDS hrsi_representation rospy
 #  DEPENDS system_lib
 )
 
@@ -100,19 +99,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(hrsi_predictor
-#   src/${PROJECT_NAME}/hrsi_predictor.cpp
+# add_library(hrsi_state_prediction
+#   src/${PROJECT_NAME}/hrsi_state_prediction.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(hrsi_predictor_node src/hrsi_predictor_node.cpp)
+# add_executable(hrsi_state_prediction_node src/hrsi_state_prediction_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(hrsi_predictor_node hrsi_predictor_generate_messages_cpp)
+# add_dependencies(hrsi_state_prediction_node hrsi_state_prediction_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hrsi_predictor_node
+# target_link_libraries(hrsi_state_prediction_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -131,7 +130,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS hrsi_predictor hrsi_predictor_node
+# install(TARGETS hrsi_state_prediction hrsi_state_prediction_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -156,7 +155,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_hrsi_predictor.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_hrsi_state_prediction.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

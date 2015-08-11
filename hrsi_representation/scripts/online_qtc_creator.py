@@ -27,6 +27,12 @@ class OnlineQTCCreator(object):
         1: "qtcc",
         2: "qtcbc"
     }
+    _qsr_relations_and_values = {
+        "int": (  (.46-.0)/2  +.0,    (.46-.0)/4),
+        "per": ((1.22-.46)/2 +.46,  (1.22-.46)/4),
+        "soc": ((3.7-1.22)/2+1.22,  (3.7-1.22)/4),
+        "pub": ((10.0-3.7)/2 +3.7,  (10.0-3.7)/4)
+    }
     _robot_pose = Pose()
     _buffer = dict()
     _smoothing_buffer = dict()
@@ -68,10 +74,15 @@ class OnlineQTCCreator(object):
             config["validate"]    = False
             config["no_collapse"] = False
         self.parameters = {
-            "quantisation_factor": config["quantisation_factor"],
-            "distance_threshold":  config["distance_threshold"],
-            "validate":            config["validate"],
-            "no_collapse":         config["no_collapse"]
+            "qtcs": {
+                "quantisation_factor":      config["quantisation_factor"],
+                "distance_threshold":       config["distance_threshold"],
+                "validate":                 config["validate"],
+                "no_collapse":              config["no_collapse"]
+            },
+            "argprobd": {
+                "qsr_relations_and_values": self._qsr_relations_and_values
+            }
         }
         self.smoothing_rate = config["smoothing_rate"]
         return config
@@ -176,7 +187,7 @@ class OnlineQTCCreator(object):
                 # If there are more than 1 entries in the buffer for this person
                 # Create QTC representation
                 if self._buffer[uuid]["data"].shape[0] > 1:
-                    qtc = self.input.convert(
+                    qsrs = self.input.convert(
                         data=self.input.generate_data_from_input(
                             agent1="Robot",
                             agent2="Human",
@@ -194,23 +205,24 @@ class OnlineQTCCreator(object):
 
                     # Create new message
                     qtc_msg = output.create_qtc_msg(
-                        collapsed=not self.parameters["no_collapse"],
+                        collapsed=not self.parameters["qtcs"]["no_collapse"],
                         qtc_type=self.qtc_type,
                         k="Robot",
                         l="Human",
-                        quantisation_factor=self.parameters["quantisation_factor"],
-                        distance_threshold=self.parameters["distance_threshold"],
+                        quantisation_factor=self.parameters["qtcs"]["quantisation_factor"],
+                        distance_threshold=self.parameters["qtcs"]["distance_threshold"],
                         smoothing_rate=self.smoothing_rate,
-                        validated=self.parameters["validate"],
+                        validated=self.parameters["qtcs"]["validate"],
                         uuid=uuid,
-                        qtc_serialised=json.dumps(qtc.tolist())
+                        qtc_serialised=json.dumps(qsrs[0].tolist()),
+                        prob_distance_serialised=json.dumps(qsrs[1])
                     )
 
                     out.qtc.append(qtc_msg)
                     out.header.stamp = self._buffer[uuid]["last_seen"]
 
             # If there is something to publish and it hasn't been published before, publish
-            # If prune_buffer == True thewn we always publish
+            # If prune_buffer == True then we always publish
             if out.qtc and (out.qtc != self.last_msg.qtc or self.prune_buffer):
                 self.pub.publish(out)
                 self.last_msg = out

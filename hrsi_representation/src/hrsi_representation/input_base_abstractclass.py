@@ -35,6 +35,7 @@ class InputBaseAbstractclass(object):
             "qtcc": "qtc_c_simplified",
             "qtcbc": "qtc_bc_simplified"
         }
+        self.argprobd = "arg_prob_relations_distance"
         self.template = {
             "agent1": {
                 "name": "",
@@ -57,25 +58,30 @@ class InputBaseAbstractclass(object):
             input_data=world,
             include_missing_data=include_missing_data,
             qsrs_for=qsrs_for,
-            dynamic_args=parameters
+            dynamic_args=parameters,
+            future=True
         )
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
         out = pickle.loads(res.data)
         rospy.logdebug("Request was made at " + str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
-        ret = np.array([])
+        qtc = np.array([])
+        dis = []
         for t in out.qsrs.get_sorted_timestamps():
-            foo = str(t) + ": "
-            for k, v in zip(out.qsrs.trace[t].qsrs.keys(), out.qsrs.trace[t].qsrs.values()):
-                foo += str(k) + ":" + str(v.qsr) + "; "
-                q = self._to_np_array(v.qsr)
-                if qsr == self.qtc_types["qtcbc"]:
-                    q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
-                ret = np.array([q]) if not ret.size else np.append(ret, [q], axis=0)
-            rospy.logdebug(foo)
+            for k, v in out.qsrs.trace[t].qsrs.items():
+                if len(v.qsr.items()) < 2:
+                    continue # Hacky but we only want dist when qtc is there too.
+                for l, w in v.qsr.items():
+                    if l.startswith("qtc"):
+                        q = self._to_np_array(w)
+                        if qsr == self.qtc_types["qtcbc"]:
+                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
+                        qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
+                    elif l == "argprobd":
+                        dis.append(w)
 
-        return ret
+        return qtc, dis
 
     def _convert_to_world(self, data_dict):
         world = World_Trace()
@@ -126,7 +132,7 @@ class InputBaseAbstractclass(object):
             world = self._convert_to_world(data_dict=elem)
 
             try:
-                qsr = self.qtc_types[qtc_type]
+                qsr = [self.qtc_types[qtc_type], self.argprobd]
             except KeyError:
                 rospy.logfatal("Unknown QTC type: %s" % qtc_type)
                 return
@@ -134,4 +140,5 @@ class InputBaseAbstractclass(object):
         return ret
 
     def _to_np_array(self, string):
+        string = string.values()[0] if isinstance(string, dict) else string
         return np.fromstring(string.replace('-','-1').replace('+','+1'), dtype=int, sep=',')
