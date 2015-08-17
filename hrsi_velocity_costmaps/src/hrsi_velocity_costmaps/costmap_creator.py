@@ -19,7 +19,8 @@ class CostmapCreator(object):
     # for the given qtc state
     _calc_pre_sets_functions = {
         # Undefined state
-        '?': lambda a,v,mi,ma: (a,(mi,ma)),
+        '?':  lambda a,v,mi,ma: (a,(mi,ma)),
+        '??': lambda a,v,mi,ma: (a,(mi,ma)),
         #QTCb
         '-': lambda a,v,mi,ma: (a,(mi,ma)),
         '+': lambda a,v,mi,ma: (a + np.pi if a < 0.0 else a - np.pi,(mi,ma)),
@@ -45,7 +46,8 @@ class CostmapCreator(object):
     # Look-up table for the size of the low cost are
     _size_lookup_table = {
         # Undefined state
-        '?': 2*np.pi,
+        '?':  2*np.pi,
+        '??': 2*np.pi,
         # QTCb
         '-': np.pi,
         '+': np.pi,
@@ -101,7 +103,7 @@ class CostmapCreator(object):
         with self.lock:
             self._resolution = resolution
 
-    def _create_costmap(self, angle=0.0, velocity=Vector3(), qtc_symbol=[0], size=100, min_speed=0, max_speed=50):
+    def _create_costmap(self, angle=0.0, velocity=Vector3(), qtc_symbol=[0], size=100, min_speed=0, max_speed=50, min_cost=0):
         cost_array = None
         try:
             qtc_symbol = map(str, qtc_symbol)
@@ -114,13 +116,14 @@ class CostmapCreator(object):
             pre_sets=self._calc_pre_sets_functions[qtc_symbol](angle, velocity, min_speed, max_speed),
             qtc_symbol=qtc_symbol,
             map_size=size,
+            min_cost=min_cost,
             cost_array=cost_array
         )
 
         # Transpose due to shit interpretation of the array by ROS
         return cost_array.T
 
-    def _fast_costmap_creator(self, pre_sets=(0.0, (np.nan, np.nan)), qtc_symbol="0", map_size=100, cost_array=None):
+    def _fast_costmap_creator(self, pre_sets=(0.0, (np.nan, np.nan)), qtc_symbol="0", map_size=100, min_cost=0, cost_array=None):
         start_loop = time.time()
         # Sign flip
         pre_sets = (np.pi - (np.abs(pre_sets[0])-np.pi), pre_sets[1]) if pre_sets[0] < -np.pi else pre_sets
@@ -139,23 +142,26 @@ class CostmapCreator(object):
                 ]
             )
             polar = self._cartesian_to_polar(cp[:,0],cp[:,1]) # Create polar for every combination of x and y
-            idx = np.logical_and( # Find polar inside specified range
-                np.logical_and( # Min and max speed = min and max distance from robot
-                    polar[0] <= pre_sets[1][1],
-                    polar[0] >= pre_sets[1][0]
-                ),
-                np.logical_and( # Find angles according to desired shape
-                    np.logical_or(
-                        polar[1] >= -(size/2) + pre_sets[0],
-                        polar[1] <= -(np.pi - ((np.abs(pre_sets[0])+(size/2))-np.pi)) # Sign flip in free area
+            min_cost += 15 if not qtc_symbol in ('?','??') else 0
+            for s in reversed(np.arange(size/4,size+0.01,size/4)):
+                idx = np.logical_and( # Find polar inside specified range
+                    np.logical_and( # Min and max speed = min and max distance from robot
+                        polar[0] <= pre_sets[1][1],
+                        polar[0] >= pre_sets[1][0]
                     ),
-                    np.logical_or(
-                        polar[1] <= (size/2) + pre_sets[0],
-                        polar[1] >= np.pi - ((np.abs(pre_sets[0])+(size/2))-np.pi) # Sign flip in free area
+                    np.logical_and( # Find angles according to desired shape
+                        np.logical_or(
+                            polar[1] >= -(s/2) + pre_sets[0],
+                            polar[1] <= -(np.pi - ((np.abs(pre_sets[0])+(s/2))-np.pi)) # Sign flip in free area
+                        ),
+                        np.logical_or(
+                            polar[1] <= (s/2) + pre_sets[0],
+                            polar[1] >= np.pi - ((np.abs(pre_sets[0])+(s/2))-np.pi) # Sign flip in free area
+                        )
                     )
-                )
-            ).reshape(map_size, map_size)
-            cost_array[idx] = self.min_costs
+                ).reshape(map_size, map_size)
+                cost_array[idx] = min_cost
+                min_cost -= 5 if not qtc_symbol in ('?','??') else 0
         cost_array[
             int(np.floor(float(map_size)/2))-1:int(np.ceil(float(map_size)/2))+1,
             int(np.floor(float(map_size)/2))-1:int(np.ceil(float(map_size)/2))+1
@@ -216,6 +222,7 @@ class CostmapCreator(object):
 
     def publish(self, angle, qtc_symbol, velocity):
         with self.lock: # Making sure no dynamic variable is changed during calculation
+            print qtc_symbol
             try:
                 max_speed = int(rospy.get_param(self._max_vel_x_parma_name)*100) # Magic number: 100 =  make int
             except KeyError as e:
@@ -239,7 +246,8 @@ class CostmapCreator(object):
                 qtc_symbol=qtc_symbol,
                 size=size,
                 velocity=velocity,
-                max_speed=max_speed
+                max_speed=max_speed,
+                min_cost=self.min_costs
             ).flatten(order='C')
             self._map_pub.publish(o)
 

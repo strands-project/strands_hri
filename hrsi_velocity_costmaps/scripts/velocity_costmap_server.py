@@ -75,8 +75,13 @@ class VelocityCostmapServer(object):
             } for e in qtc.qtc
         }
         element = data_buffer.values()[0] # Only taking the first detection into account for now
-        self.cc.publish(angle=element["angle"], qtc_symbol=[element["qtc"][0]], velocity=element["velocity"])
-        #self.cc.publish(angle=element["angle"], qtc_symbol=[1,1], velocity=element["velocity"])
+        self.cc.publish(
+            angle=element["angle"],
+            qtc_symbol=[element["qtc"][0]] if len(element["qtc"]) == 2 \
+                else [element["qtc"][0], element["qtc"][2]],
+            velocity=element["velocity"]
+        )
+#        self.cc.publish(angle=element["angle"], qtc_symbol=[-1,-1], velocity=element["velocity"])
 
         print "human-robot predicted qtc: %s" % element["qtc"]
         print "total elapsed:", time.time() - start
