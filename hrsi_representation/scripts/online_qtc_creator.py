@@ -18,21 +18,18 @@ import numpy as np
 import tf
 import json
 import thread
+from collections import OrderedDict
 
 class OnlineQTCCreator(object):
     """Creates QTC state sequences from online input"""
 
-    _qtc_types = {
-        0: "qtcb",
-        1: "qtcc",
-        2: "qtcbc"
-    }
-    _qsr_relations_and_values = {
-        "int": (  (.46-.0)/2  +.0,    (.46-.0)/4),
-        "per": ((1.22-.46)/2 +.46,  (1.22-.46)/4),
-        "soc": ((3.7-1.22)/2+1.22,  (3.7-1.22)/4),
-        "pub": ((10.0-3.7)/2 +3.7,  (10.0-3.7)/4)
-    }
+    _qsr_relations_and_values = OrderedDict([
+        ("int", (  (.46-.0)/2  +.0,    (.46-.0)/4)),
+        ("per", ((1.22-.46)/2 +.46,  (1.22-.46)/4)),
+        ("soc", ((3.7-1.22)/2+1.22,  (3.7-1.22)/4)),
+        ("pub", ((6.0-3.7)/2  +3.7,   (6.0-3.7)/4)),
+        ("und", ((10.0-6.0)/2 +6.0,  (10.0-6.0)/4))
+    ])
     _robot_pose = Pose()
     _buffer = dict()
     _smoothing_buffer = dict()
@@ -66,7 +63,7 @@ class OnlineQTCCreator(object):
         self.request_thread = thread.start_new(self.generate_qtc, ())
 
     def dyn_callback(self, config, level):
-        self.qtc_type = self._qtc_types[config["qtc_type"]]
+        self.qtc_type = self.input.qtc_types.keys()[config["qtc_type"]]
         self.prune_buffer = config["prune_buffer"]
         # If we prune the buffer, validate and no_callapse will have no effect.
         # Setting them to false to make that clear
@@ -74,16 +71,20 @@ class OnlineQTCCreator(object):
             config["validate"]    = False
             config["no_collapse"] = False
         self.parameters = {
-            "qtcs": {
-                "quantisation_factor":      config["quantisation_factor"],
-                "distance_threshold":       config["distance_threshold"],
-                "validate":                 config["validate"],
-                "no_collapse":              config["no_collapse"]
+            self.qtc_type: {
+                "quantisation_factor": config["quantisation_factor"],
+                "distance_threshold":
+                    config["distance_threshold"] if self.qtc_type != "qtcbcs_argprobd" \
+                    else self._qsr_relations_and_values.keys()[config["abstract_distance_threshold"]],
+                "validate": config["validate"],
+                "no_collapse": config["no_collapse"]
             },
             "argprobd": {
-                "qsr_relations_and_values": self._qsr_relations_and_values
+                "qsr_relations_and_values": dict(self._qsr_relations_and_values)
             }
         }
+        if self.qtc_type == "qtcbcs_argprobd":
+            self.parameters[self.qtc_type]["qsr_relations_and_values"] = dict(self._qsr_relations_and_values)
         self.smoothing_rate = config["smoothing_rate"]
         return config
 
@@ -205,14 +206,15 @@ class OnlineQTCCreator(object):
 
                     # Create new message
                     qtc_msg = output.create_qtc_msg(
-                        collapsed=not self.parameters["qtcs"]["no_collapse"],
+                        collapsed=not self.parameters[self.qtc_type]["no_collapse"],
                         qtc_type=self.qtc_type,
                         k="Robot",
                         l="Human",
-                        quantisation_factor=self.parameters["qtcs"]["quantisation_factor"],
-                        distance_threshold=self.parameters["qtcs"]["distance_threshold"],
+                        quantisation_factor=self.parameters[self.qtc_type]["quantisation_factor"],
+                        distance_threshold=self.parameters[self.qtc_type]["distance_threshold"] if isinstance(self.parameters[self.qtc_type]["distance_threshold"], float) else -1.0,
+                        abstract_distance_threshold=self.parameters[self.qtc_type]["distance_threshold"] if isinstance(self.parameters[self.qtc_type]["distance_threshold"], str) else '',
                         smoothing_rate=self.smoothing_rate,
-                        validated=self.parameters["qtcs"]["validate"],
+                        validated=self.parameters[self.qtc_type]["validate"],
                         uuid=uuid,
                         qtc_serialised=json.dumps(qsrs[0].tolist()),
                         prob_distance_serialised=json.dumps(qsrs[1])

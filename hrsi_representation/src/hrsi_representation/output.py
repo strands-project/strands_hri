@@ -26,12 +26,12 @@ def create_qtc_array_msg(header=None, stamp=None, seq=None, frame_id=None, qtc=N
 def create_qtc_msg(
         qtc_type, qtc_serialised, prob_distance_serialised, uuid, smoothing_rate,
         collapsed=True, k='k', l='l',
-        quantisation_factor=0.01, distance_threshold=1.2,
+        quantisation_factor=0.01, distance_threshold=1.2, abstract_distance_threshold='',
         validated=True):
     qtc_msg = QTC(
         collapsed=collapsed, qtc_type=qtc_type,
         k=k, l=l, quantisation_factor=quantisation_factor,
-        distance_threshold=distance_threshold,
+        distance_threshold=distance_threshold, abstract_distance_threshold=abstract_distance_threshold,
         smoothing_rate=smoothing_rate, validated=validated,
         uuid=uuid, qtc_serialised=qtc_serialised,
         prob_distance_serialised=prob_distance_serialised

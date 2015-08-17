@@ -16,12 +16,13 @@ try:
     import cPickle as pickle
 except:
     import pickle
+from collections import OrderedDict
 
 
 class InputBaseAbstractclass(object):
     """Provides functions for:
         - the transformation of raw data into qsr_lib format
-        - converting the data into QTC using qsr_lig
+        - converting the data into QTC using qsr_lib
 
     Will be used as a base class for the training and online data input classes
     """
@@ -30,11 +31,12 @@ class InputBaseAbstractclass(object):
 
     def __init__(self):
         """Creates a new instance of the InputBaseClass"""
-        self.qtc_types = {
-            "qtcb": "qtc_b_simplified",
-            "qtcc": "qtc_c_simplified",
-            "qtcbc": "qtc_bc_simplified"
-        }
+        self.qtc_types = OrderedDict([
+            ("qtcbs", "qtc_b_simplified"),
+            ("qtccs", "qtc_c_simplified"),
+            ("qtcbcs", "qtc_bc_simplified"),
+            ("qtcbcs_argprobd", "qtc_bc_simplified_arg_prob_distance")
+        ])
         self.argprobd = "arg_prob_relations_distance"
         self.template = {
             "agent1": {
@@ -75,7 +77,7 @@ class InputBaseAbstractclass(object):
                 for l, w in v.qsr.items():
                     if l.startswith("qtc"):
                         q = self._to_np_array(w)
-                        if qsr == self.qtc_types["qtcbc"]:
+                        if l.startswith(self.qtc_types["qtcbcs"]):
                             q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
                         qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
                     elif l == "argprobd":
