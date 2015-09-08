@@ -16,7 +16,6 @@ try:
     import cPickle as pickle
 except:
     import pickle
-from collections import OrderedDict
 
 
 class InputBaseAbstractclass(object):
@@ -31,13 +30,14 @@ class InputBaseAbstractclass(object):
 
     def __init__(self):
         """Creates a new instance of the InputBaseClass"""
-        self.qtc_types = OrderedDict([
-            ("qtcbs", "qtc_b_simplified"),
-            ("qtccs", "qtc_c_simplified"),
-            ("qtcbcs", "qtc_bc_simplified"),
-            ("qtcbcs_argprobd", "qtc_bc_simplified_arg_prob_distance")
-        ])
-        self.argprobd = "arg_prob_relations_distance"
+        # The order of this list has to reflect the index of the qtc_type in the dynamic reconfigure file
+        self.qtc_types = [
+            "qtcbs",
+            "qtccs",
+            "qtcbcs",
+            "qtcbcs_argprobd"
+        ]
+        self.argprobd = "argprobd"
         self.template = {
             "agent1": {
                 "name": "",
@@ -52,16 +52,13 @@ class InputBaseAbstractclass(object):
         }
         self.qtc = None
 
-    def _request_qtc(self, qsr, world, parameters, include_missing_data=True, qsrs_for=[]):
+    def _request_qtc(self, qsr, world, parameters):
         """reads all .qtc files from a given directory and resturns them as numpy arrays"""
 
         qrmsg = QSRlib_Request_Message(
             which_qsr=qsr,
             input_data=world,
-            include_missing_data=include_missing_data,
-            qsrs_for=qsrs_for,
-            dynamic_args=parameters,
-            future=True
+            dynamic_args=parameters
         )
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
@@ -77,8 +74,8 @@ class InputBaseAbstractclass(object):
                 for l, w in v.qsr.items():
                     if l.startswith("qtc"):
                         q = self._to_np_array(w)
-                        if l.startswith(self.qtc_types["qtcbcs"]):
-                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
+#                        if l.startswith("qtcbcs"):
+#                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
                         qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
                     elif l == "argprobd":
                         dis.append(w)
@@ -134,11 +131,11 @@ class InputBaseAbstractclass(object):
             world = self._convert_to_world(data_dict=elem)
 
             try:
-                qsr = [self.qtc_types[qtc_type], self.argprobd]
+                qsr = [qtc_type, self.argprobd]
             except KeyError:
                 rospy.logfatal("Unknown QTC type: %s" % qtc_type)
                 return
-            ret.append(self._request_qtc(qsr=qsr, world=world, parameters=parameters, qsrs_for=[(elem["agent1"]["name"],elem["agent2"]["name"])]))
+            ret.append(self._request_qtc(qsr=qsr, world=world, parameters=parameters))
         return ret
 
     def _to_np_array(self, string):

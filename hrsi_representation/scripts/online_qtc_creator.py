@@ -23,6 +23,7 @@ from collections import OrderedDict
 class OnlineQTCCreator(object):
     """Creates QTC state sequences from online input"""
 
+    # The order of this dict has to reflect the index of the qtc_type in the dynamic reconfigure file
     _qsr_relations_and_values = OrderedDict([
         ("int", (  (.46-.0)/2  +.0,    (.46-.0)/4)),
         ("per", ((1.22-.46)/2 +.46,  (1.22-.46)/4)),
@@ -63,7 +64,7 @@ class OnlineQTCCreator(object):
         self.request_thread = thread.start_new(self.generate_qtc, ())
 
     def dyn_callback(self, config, level):
-        self.qtc_type = self.input.qtc_types.keys()[config["qtc_type"]]
+        self.qtc_type = self.input.qtc_types[config["qtc_type"]]
         self.prune_buffer = config["prune_buffer"]
         # If we prune the buffer, validate and no_callapse will have no effect.
         # Setting them to false to make that clear
@@ -81,6 +82,9 @@ class OnlineQTCCreator(object):
             },
             "argprobd": {
                 "qsr_relations_and_values": dict(self._qsr_relations_and_values)
+            },
+            "for_all_qsrs": {
+                "qsrs_for": [("Robot", "Human")]
             }
         }
         if self.qtc_type == "qtcbcs_argprobd":
@@ -108,7 +112,7 @@ class OnlineQTCCreator(object):
             ppl_msg = self._msg_buffer[0]["ppl"]
             robot_msg = self._msg_buffer[0]["robot"]
             del self._msg_buffer[0]
-            # Creating an new message
+            # Creating a new message
             out = output.create_qtc_array_msg(
                 frame_id=self.target_frame
             )
@@ -203,7 +207,6 @@ class OnlineQTCCreator(object):
 
                     if self.prune_buffer:
                         self._buffer[uuid]["data"] = self._buffer[uuid]["data"][-1]
-
                     # Create new message
                     qtc_msg = output.create_qtc_msg(
                         collapsed=not self.parameters[self.qtc_type]["no_collapse"],
