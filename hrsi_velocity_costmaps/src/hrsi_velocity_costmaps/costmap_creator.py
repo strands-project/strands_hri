@@ -143,7 +143,8 @@ class CostmapCreator(object):
             )
             polar = self._cartesian_to_polar(cp[:,0],cp[:,1]) # Create polar for every combination of x and y
             min_cost += 15 if not qtc_symbol in ('?','??') else 0
-            for s in reversed(np.arange(size/4,size+0.01,size/4)):
+            #The loop could maybe vectorised
+            for s in reversed(np.arange(size/4,size+0.01,size/4)) if not qtc_symbol in ('?','??') else [size]:
                 idx = np.logical_and( # Find polar inside specified range
                     np.logical_and( # Min and max speed = min and max distance from robot
                         polar[0] <= pre_sets[1][1],
