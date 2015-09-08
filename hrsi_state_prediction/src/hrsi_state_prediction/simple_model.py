@@ -40,6 +40,21 @@ class QTCBPassBy(SimpleModel):
         self.previous_state = ['?',0]
 
 
+class QTCBPathCrossing(SimpleModel):
+    _state_chain = [
+        lambda x,y: ['?',x[1]] if x[1] ==  0 and y in ("pub", "und") else None,
+        lambda x,y: [ -1,x[1]] if x[1] == -1 and y in ("pub",) else None,
+        lambda x,y: [  0,x[1]] if x[1] == -1 and y in ("soc", "per", "int") else None,
+        lambda x,y: [  0,x[1]] if x[1] ==  0 and y in ("per", "int", "soc") else None,
+        lambda x,y: [  0,x[1]] if x[1] ==  1 and y in ("per", "int", "soc") else None,
+        lambda x,y: ['?',x[1]]
+    ]
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+        self.previous_state = ['?',0]
+
+
 class QTCCPassBy(SimpleModel):
     _state_chain = [
 
