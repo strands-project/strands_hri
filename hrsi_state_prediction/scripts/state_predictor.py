@@ -8,20 +8,26 @@ Created on Tue Aug 11 16:57:54 2015
 
 import rospy
 from hrsi_representation.msg import QTCArray
-from hrsi_state_prediction.simple_model import QTCBPassBy, QTCCPassBy, QTCBCPassBy, QTCBPathCrossing
-from hrsi_state_prediction.particle_filter import ParticleFilter
+from hrsi_state_prediction.simple_model import QTCBPassBy, QTCCPassBy, QTCBCPassBy, QTCBPathCrossing, QTCBCPathCrossing
+from hrsi_state_prediction.particle_filter import ParticleFilterPredictor
 from hrsi_state_prediction.msg import QTCPrediction, QTCPredictionArray
+from dynamic_reconfigure.server import Server as DynServer
+from hrsi_state_prediction.cfg import StatePredictorConfig
 import json
 import time
 
 
 class StatePredictor(object):
+    __interaction_types = ["passby", "pathcrossing"]
+
     def __init__(self, name):
         rospy.loginfo("Starting %s ..." % name)
-        pf = ParticleFilter(
+        self.dyn_srv = DynServer(StatePredictorConfig, self.dyn_callback)
+        self.pf = ParticleFilterPredictor(
             paths=[
-                '/home/cdondrup/PhD/shaping_hrsi/hmms/Bristol/qtcbc.hmm',
-                '/home/cdondrup/PhD/shaping_hrsi/hmms/Bristol/qtcbc_empty.hmm'
+                '/home/cdondrup/PhD/shaping_hrsi/hmms/Bristol/left/qtcbc_4_nc.hmm',
+                '/home/cdondrup/PhD/shaping_hrsi/hmms/Bristol/right/qtcbc_4_nc.hmm',
+                '/home/cdondrup/PhD/shaping_hrsi/hmms/Bristol/qtcbc_empty_uniform.hmm'
             ]
         )
         self.sm = {
@@ -32,13 +38,18 @@ class StatePredictor(object):
                 "qtcbcs_argprobd": QTCBCPassBy()
             },
             "pathcrossing": {
-                "qtcbs": QTCBPathCrossing()
+                "qtcbs": QTCBPathCrossing(),
+                "qtcbcs": QTCBCPathCrossing()
             }
         }
-        self.prior = rospy.get_param("~prediction_prior", "passby")
         self.pub = rospy.Publisher("~prediction_array", QTCPredictionArray, queue_size=10)
-        rospy.Subscriber(rospy.get_param("~qtc_topic", "/online_qtc_creator/qtc_array"), QTCArray, self.callback)
+        rospy.Subscriber(rospy.get_param("~qtc_topic", "/online_qtc_creator/qtc_array"), QTCArray, self.callback, queue_size=1)
         rospy.loginfo("... all done")
+
+    def dyn_callback(self, config, level):
+        self.prior = self.__interaction_types[config["type"]]
+        rospy.loginfo("Interaction type set to %s" % self.prior)
+        return config
 
     def callback(self, msg):
         interaction_type = self.prior # No classification yet
@@ -49,18 +60,22 @@ class StatePredictor(object):
             m = QTCPrediction()
             m.uuid = q.uuid
             try:
+                qtc = json.loads(q.qtc_serialised)
+                dist = json.loads(q.prob_distance_serialised)[-1]
                 prediction = self.sm[interaction_type][q.qtc_type].predict(
-                    json.loads(q.qtc_serialised)[-1],
-                    json.loads(q.prob_distance_serialised)[-1]
+                    qtc[-1],
+                    dist
                 )
+#                prediction = self.pf.predict(m.uuid, qtc, dist)
+#                self.pf.predict(m.uuid, qtc)
             except KeyError:
                 print q.qtc_type + " not defined"
                 return
-            print prediction
+            print "~~~~~~~~~~", prediction
             m.qtc_serialised = json.dumps(prediction)
             out.qtc.append(m)
         self.pub.publish(out)
-        print "elapsed:", time.time() - start
+#        print "elapsed:", time.time() - start
 
 
 if __name__ == "__main__":

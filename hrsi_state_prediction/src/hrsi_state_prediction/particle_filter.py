@@ -5,13 +5,16 @@ Created on Thu Aug 20 11:02:48 2015
 @author: cdondrup
 """
 
+import rospy
 import xmltodict
 import pybayes as pb
 import numpy as np
 #import time
 import math
 import qtc_utils as qu
-import itertools as it
+from copy import deepcopy
+
+DEBUG = False
 
 
 class QtcInitPdf(pb.Pdf):
@@ -58,7 +61,7 @@ class UniIntPdf(pb.UniPdf):
         # Cheating: ensuring that every state in every model has at least one particle
         # if there are enough particles. Otherwise later models will be empty. If there
         # are not enough particles, you have much bigger problems than this anyway.
-        models = [np.repeat(x,self.b[0]+1) for x in np.arange(self.a[1], self.b[1]+1)]
+        models = [np.repeat(x,self.b[0]+1-self.a[0]) for x in np.arange(self.a[1], self.b[1]+1)]
         states = np.arange(self.a[0], self.b[0]+1)
         spam = np.array([])
         for x in models:
@@ -66,7 +69,7 @@ class UniIntPdf(pb.UniPdf):
         spam = spam.reshape(-1,2)
         ret = np.empty((n, self.shape()))
         for i in range(n):
-            ret[i, :] = spam[i, :] if i < spam.shape[0] else self.sample(cond)
+            ret[i, :] = self.sample(cond) #spam[i, :] if i < spam.shape[0] else self.sample(cond)
         return ret
 
 
@@ -131,17 +134,25 @@ class QtcPredictionPdf(pb.CPdf):
 
 
 class QtcObservationPdf(QtcPredictionPdf):
+#    __confusion_matrix = np.array([
+#        [.7, .2, .1, .0],
+#        [.2, .6, .2, .0],
+#        [.1, .2, .7, .0],
+#        [.0, .0, .0, 1.]
+#    ])
     __confusion_matrix = np.array([
-        [.7, .1, .1, .1],
-        [.1, .7, .1, .1],
-        [.1, .1, .7, .1],
-        [.1, .1, .1, .7]
+        [.9, .1, .0, .0],
+        [.1, .8, .1, .0],
+        [.0, .1, .9, .0],
+        [.0, .0, .0, 1.]
     ])
 #    __confusion_matrix = np.array([
-#        [1., .0, .0],
-#        [.0, 1., .0],
-#        [.0, .0, 1.]
+#        [1., .0, .0, .0],
+#        [.0, 1., .0, .0],
+#        [.0, .0, .1, .0],
+#        [.0, .0, .0, 1.]
 #    ])
+
     __states = [-1, 0, 1, np.nan]
 
     def __init__(self, qtc_states, models, rv=None, cond_rv=None):
@@ -168,155 +179,109 @@ class QtcObservationPdf(QtcPredictionPdf):
         self._check_x(x)
         self._set_mean(cond)
         obs = self.qtc_states[int(x[0])]
-        obs_size = 2 if np.any(np.isnan(obs)) else 4
+#        obs_size = 2 if np.any(np.isnan(obs)) else 4
         pred = self.qtc_states[int(self.mean())]
         if isinstance(pred, int):
             return -50.
 #        print "HERE"
-        pred_size = 2 if np.any(np.isnan(pred)) else 4
+#        pred_size = 2 if np.any(np.isnan(pred)) else 4
         length_bias = 0. #if pred_size == obs_size else -15.
         multi = 1. #if pred_size == obs_size else 2.
         size = len(obs) #min(obs_size, pred_size)
 #        try:
         return np.sum(np.append([
             np.log(self.__confusion_matrix[self.__states.index(pred[y])][self.__states.index(obs[y])])*multi \
-                for y in range(size)
+                for y in np.arange(1, size+1, step=2) # Evaluating only on the human behaviour: [ _ ? _ ?]
         ], length_bias))
 #        except TypeError:
 #            print obs, pred, [pred[y] for y in range(size)]
 
 
-class ParticleFilter(object):
+class ParticleFilterPredictor(object):
     __qtc_type_lookup = {9: "qtcbs", 81: "qtccs", 91: "qtcbcs"}
+    __latest_qtc_state = None
+    __no_state__ = qu.NO_STATE
+    __num_particles = 1000
+
+    filter_bank = {}
 
     def __init__(self, paths, qtc_type=None):
         hmm = []
         for p in paths:
             with open(p) as fd:
+                rospy.loginfo("Reading hmm from: %s", p)
                 hmm.append(xmltodict.parse(fd.read()))
-        models, qtc_states = self._create_model(hmm)
+        self.num_models = len(hmm)
+        self.models, self.qtc_states = self._create_model(hmm)
+        self.qtc_states_no_nan = np.array(deepcopy(self.qtc_states[1:-1]))
+        self.qtc_states_no_nan[np.isnan(self.qtc_states_no_nan)] = qu.NO_STATE
 
-#        print "MODEL 0:", models[0][1]
-#        print "MODEL 1:", models[1][1]
+        if DEBUG:
+            x_t = pb.RVComp(2, 'x_t')
+            qpp = QtcPredictionPdf(models=self.models, rv=x_t, cond_rv=pb.RVComp(2, 'x_tp'))
+            qop = QtcObservationPdf(qtc_states=self.qtc_states, models=self.models, rv=pb.RVComp(2, 'y_t'), cond_rv=[x_t])
 
-        x_t = pb.RVComp(2, 'x_t')
-        qpp = QtcPredictionPdf(models=models, rv=x_t, cond_rv=pb.RVComp(2, 'x_tp'))
-        qop = QtcObservationPdf(qtc_states=qtc_states, models=models, rv=pb.RVComp(2, 'y_t'), cond_rv=[x_t])
-#        start = time.time()
-#        x_tp = np.array([5,0])
-#        print [qpp.sample(x_tp) for x in range(100)]
-#        print "sampling elapsed:", time.time()-start
-#        print qpp.eval_log(np.array([ 11., 0.]), np.array([0., 0.]))
-#        print qtc_states[12]
-#        print qop.samples(10, np.array([12., 0.]))
-#        print qtc_states[83], qtc_states[12], qop.eval_log(np.array([83.]), np.array([12.]))
-#        print qtc_states[5]
-#        print qop.samples(10, np.array([5.]))
-#        print qtc_states[8], qtc_states[5], qop.eval_log(np.array([8.]), np.array([5.]))
+            # prepare initial particle density:
+            init_pdf = UniIntPdf((len(self.qtc_states)-1)*len(self.models), np.array([1., 0.]), np.array([90., 2.]))
+            pf = ParticleFilter(500, init_pdf, qpp, qop)
 
-        # prepare initial particle density:
-#        init_pdf = QtcInitPdf(models=[models])
-        init_pdf = UniIntPdf((len(qtc_states)-1)*len(models), np.array([0., 0.]), np.array([90., 1.])) # Has to include 0 otherwise too many particles die because nothing transitions to 1 in passby
-#        print "INIT:", init_pdf.samples(10)
-        pf = MyParticleFilter(500, init_pdf, qpp, qop)
-        print "INIT MEAN:", pf.posterior().mean()
-        p = pf.emp.particles
-#        print p[:,1]
-        print "INIT MODEL 0: %s, 1: %s" % (np.bincount(map(int,p[:,1]))[0], np.bincount(map(int,p[:,1]))[1])
-        print "INIT STATES:", np.bincount(map(int,p[:,0].flatten())), len(np.bincount(map(int,p[:,0].flatten())))
-        print "INIT STATES model 0:", np.bincount(map(int,p[np.where(p[:,1] == 0),0].flatten()))
-        print "INIT STATES model 1:", np.bincount(map(int,p[np.where(p[:,1] == 1),0].flatten()))
-
-        obs_sequence = [1., 18., 27., 36., 63., 90., 9.] #[1., 18., 27., 18., 27., 36.] #[1., 10., 46., 82., 9.]#, 91.]
-        for idx, obs in enumerate(obs_sequence):
-            print "###############################################################"
-            pf.bayes(np.array([obs, np.nan]))
-            print "%s OBS:" % idx, obs
-            print "%s MEAN:" % idx, pf.posterior().mean()
+            print "INIT MEAN:", pf.posterior().mean()
             p = pf.emp.particles
-            try:
-                print "%s MODEL 0: %s, 1: %s" % (idx, np.bincount(map(int,p[:,1]))[0], np.bincount(map(int,p[:,1]))[1])
-            except:
-                pass
-            print "%s STATES:" % idx, np.bincount(map(int,p[:,0].flatten()))
-            try:
-                print "%s STATES model 0:" % idx, np.bincount(map(int,p[np.where(p[:,1] == 0),0].flatten()))
-            except:
-                pass
-            try:
-                print "%s STATES model 1:" % idx, np.bincount(map(int,p[np.where(p[:,1] == 1),0].flatten()))
-            except:
-                pass
-            print "%s MEDIAN: %s, STATE: %s, TRANS: %s" % (idx, np.bincount(map(int,p[:,0].flatten())).argmax(), qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())], [[int(x[0]), float(x[1])] for x in models[0][int(np.bincount(map(int,p[:,0].flatten())).argmax())]])
+            print "INIT MODEL 0: %s, 1: %s" % (np.bincount(map(int,p[:,1]))[0], np.bincount(map(int,p[:,1]))[1])
+            print "INIT STATES:", np.bincount(map(int,p[:,0].flatten())), len(np.bincount(map(int,p[:,0].flatten())))
+            print "INIT STATES model 0:", np.bincount(map(int,p[np.where(p[:,1] == 0),0].flatten()))
+            print "INIT STATES model 1:", np.bincount(map(int,p[np.where(p[:,1] == 1),0].flatten()))
 
+            obs_sequence = [1., 18., 27., 36., 63., 90., 9.] #[1., 18., 27., 18., 27., 36.] #[1., 10., 46., 82., 9.]#, 91.]
+            for idx, obs in enumerate(obs_sequence):
+                print "###############################################################"
+                pf.bayes(np.array([obs, np.nan]))
+                print "%s OBS:" % idx, obs
+                print "%s MEAN:" % idx, pf.posterior().mean()
+                p = pf.emp.particles
+                try:
+                    print "%s MODEL 0: %s, 1: %s" % (idx, np.bincount(map(int,p[:,1]))[0], np.bincount(map(int,p[:,1]))[1])
+                except:
+                    pass
+                print "%s STATES:" % idx, np.bincount(map(int,p[:,0].flatten()))
+                try:
+                    print "%s STATES model 0:" % idx, np.bincount(map(int,p[np.where(p[:,1] == 0),0].flatten()))
+                except:
+                    pass
+                try:
+                    print "%s STATES model 1:" % idx, np.bincount(map(int,p[np.where(p[:,1] == 1),0].flatten()))
+                except:
+                    pass
+                print "%s MEDIAN: %s, STATE: %s, TRANS: %s" % (idx, np.bincount(map(int,p[:,0].flatten())).argmax(), self.qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())], [[int(x[0]), float(x[1])] for x in self.models[0][int(np.bincount(map(int,p[:,0].flatten())).argmax())]])
 
-#        print "INIT MEAN:", pf.posterior().mean()
-#        p = pf.emp.particles
-#        print "Model 0: %s, model 1: %s" % (len(p[:,1])-np.sum(p[:,1]), np.sum(p[:,1]))
-#        print "INIT PARTICLES:", p
-#        print "###############################################################"
-#        obs = np.array([1., np.nan])
-#        pf.bayes(obs)
-#        print "OBS:", obs #, "EVIDENCE:", pf.evidence_log(obs)
-#        print "FIRST MEAN:", pf.posterior().mean()
-#        p = pf.emp.particles
-#        w = pf.emp.weights
-#        print "FIRST PARTICLES:", p
-#        print "Model 0: %s, model 1: %s" % (len(p[:,1])-np.sum(p[:,1]), np.sum(p[:,1]))
-#        print "WEIGHTS:", w
-#        print "FIRST MEDIAN: %s, STATE: %s" % (np.bincount(map(int,p[:,0].flatten())).argmax(), qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())])
-#        print int(np.round(pf.posterior().mean()[0])), qtc_states[int(np.round(pf.posterior().mean()[0]))]
-#        print 1, qtc_states[1]
-#        print "TRANS:", [[int(x[0]), float(x[1])] for x in models[1]]
-#        print "###############################################################"
-#        obs = np.array([18., np.nan])
-#        pf.bayes(obs)
-#        print "OBS:", obs #, "EVIDENCE:", pf.evidence_log(obs)
-#        print "SECOND MEAN:", pf.posterior().mean()
-#        p = pf.emp.particles
-#        w = pf.emp.weights
-#        print "SECOND PARTICLES:", p
-#        print "Model 0: %s, model 1: %s" % (len(p[:,1])-np.sum(p[:,1]), np.sum(p[:,1]))
-#        print "WEIGHTS:", w
-#        print "SECOND MEDIAN: %s, STATE: %s" % (np.bincount(map(int,p[:,0].flatten())).argmax(), qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())])
-#        print int(np.round(pf.posterior().mean()[0])), qtc_states[int(np.round(pf.posterior().mean()[0]))]
-#        print "TRANS 18:", [[int(x[0]), float(x[1])] for x in models[18]]
-#        print "TRANS %s:" % int(np.round(pf.posterior().mean()[0])), [[int(x[0]), float(x[1])] for x in models[int(np.round(pf.posterior().mean()[0]))]]
-#        print "###############################################################"
-#        obs = np.array([45., np.nan])
-#        pf.bayes(obs)
-#        print "OBS:", obs #, "EVIDENCE:", pf.evidence_log(obs)
-#        print "THIRD MEAN:", pf.posterior().mean()
-#        p = pf.emp.particles
-#        w = pf.emp.weights
-#        print "THIRD PARTICLES:", p
-#        print "Model 0: %s, model 1: %s" % (len(p[:,1])-np.sum(p[:,1]), np.sum(p[:,1]))
-#        print "WEIGHTS:", w
-#        print "THIRD MEDIAN: %s, STATE: %s" % (np.bincount(map(int,p[:,0].flatten())).argmax(), qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())])
-#        print "TRANS 45:", [[int(x[0]), float(x[1])] for x in models[45]]
-#        print "###############################################################"
-#        obs = np.array([72., np.nan])
-#        pf.bayes(obs)
-#        print "OBS:", obs #, "EVIDENCE:", pf.evidence_log(obs)
-#        print "FOURTH MEAN:", pf.posterior().mean()
-#        p = pf.emp.particles
-#        w = pf.emp.weights
-#        print "FOURTH PARTICLES:", p
-#        print "Model 0: %s, model 1: %s" % (len(p[:,1])-np.sum(p[:,1]), np.sum(p[:,1]))
-#        print "WEIGHTS:", w
-#        print "FOURTH MEDIAN: %s, STATE: %s" % (np.bincount(map(int,p[:,0].flatten())).argmax(), qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())])
+    def create_new_filter(self, uuid):
+        if not uuid in self.filter_bank.keys():
+            # Prepare pdfs:
+            x_t = pb.RVComp(2, 'x_t')
+            qpp = QtcPredictionPdf(models=self.models, rv=x_t, cond_rv=pb.RVComp(2, 'x_tp'))
+            qop = QtcObservationPdf(qtc_states=self.qtc_states, models=self.models, rv=pb.RVComp(2, 'y_t'), cond_rv=[x_t])
 
-
+            # prepare initial particle density:
+            init_pdf = UniIntPdf((len(self.qtc_states)-1)*len(self.models), np.array([1., 0.]), np.array([float(len(self.qtc_states)-1), float(self.num_models-1)])) # Has to include 0 otherwise too many particles die because nothing transitions to 1 in passby
+            self.filter_bank[uuid] = {
+                "filter": ParticleFilter(self.__num_particles, init_pdf, qpp, qop),
+                "last_prediction": ['?',0],
+                "model_weights": np.array([0.]*self.num_models)
+            }
+            p = self.filter_bank[uuid]["filter"].emp.particles
+            print "INIT MODEL SIZES:", np.bincount(map(int,p[:,1].flatten()), minlength=self.num_models)
+            return True
+        else:
+            return False
 
     def _create_model(self, hmm):
         num_symbols = max([int(x['#text']) for x in hmm[0]['mixture']['HMM']['alphabet']['symbol']])
         qtc_states = [0]
         qtc_states.extend([x for x in qu.create_states(self.__qtc_type_lookup[num_symbols])])
         qtc_states.append(num_symbols)
-#        for i,q in enumerate(qtc_states):
-#            print i,q
         models = []
-        for h in hmm:
+        for i, h in enumerate(hmm):
+            rospy.loginfo("Loading model %s/%s" % (i+1, len(hmm)))
             model = {}
             for i in range(0,num_symbols+1):
                 model[i] = np.array([np.array(map(float,[x["@target"], x['probability']])) for x in h['mixture']['HMM']['transition'] if int(x['@source']) == i and float(x['probability']) > 0.])
@@ -324,8 +289,89 @@ class ParticleFilter(object):
             models.append(model)
         return models, qtc_states
 
+    def predict(self, uuid, qtc, dist):
+#        print qtc
+#        if dist == 'und':
+#            self.__latest_qtc_state = qtc[-1]
+#            return ['?',0]
+#        print self.__latest_qtc_state
 
-class MyParticleFilter(pb.Filter):
+        self.create_new_filter(uuid)
+        qtc = np.array(qtc)
+#        print qtc
+        qtc[np.isnan(qtc)] = self.__no_state__
+        try:
+            if self.__latest_qtc_state != None:
+                new_states = qtc[np.where(np.all(qtc==self.__latest_qtc_state, axis=1))[0][-1]+1:]
+            else:
+                new_states = qtc
+        except IndexError:
+            print "Something went horribly wrong. Discarding new states."
+            self.__latest_qtc_state = qtc[-1]
+            new_states = []
+
+#        if len(new_states) == 0:
+#            new_states = [qtc[-1]]
+
+#        print "NEW STATES:", new_states
+        for state in new_states:
+            state = np.array(state)
+#            if len(state[state!=qu.NO_STATE]) < 4:
+#                continue
+            obs = np.where(np.all(self.qtc_states_no_nan==state, axis=1))[0][-1]+1
+            self.filter_bank[uuid]["filter"].bayes(np.array([obs, np.nan]))
+            print "###############################################################"
+            print "OBS:", obs, self.qtc_states[obs]
+#            print "MEAN:", self.filter_bank[uuid].posterior().mean()
+            p = self.filter_bank[uuid]["filter"].emp.particles
+            try:
+                print "MODEL SIZES:", np.bincount(map(int,p[:,1].flatten()), minlength=self.num_models)
+            except:
+                pass
+#            print "STATES:", np.bincount(map(int,p[:,0].flatten()))
+#            try:
+#                print "STATES model 0:", np.bincount(map(int,p[np.where(p[:,1] == 0),0].flatten()))
+#            except:
+#                pass
+#            try:
+#                print "STATES model 1:", np.bincount(map(int,p[np.where(p[:,1] == 1),0].flatten()))
+#            except:
+#                pass
+            self.filter_bank[uuid]["model_weights"][int(np.bincount(map(int,p[:,1].flatten())).argmax())] += 1.
+            model_weights = self.filter_bank[uuid]["model_weights"]/np.sum(self.filter_bank[uuid]["model_weights"])
+            best_model = np.random.choice(np.arange(self.num_models), p=model_weights, size=100)
+            best_model = np.append(best_model, np.floor(np.random.uniform(size=int(len(best_model)*.1))*3))
+            model_bins = np.bincount(map(int,best_model), minlength=self.num_models)
+            print "MODEL BINS", model_bins
+            best_model = model_bins.argmax()
+            print "MODEL WEIGHTS:", model_weights
+            print "CHOSEN MODEL:", best_model
+            self.filter_bank[uuid]["last_prediction"] = np.array(self.qtc_states[int(np.bincount(map(int,p[:,0][p[:,1]==best_model].flatten())).argmax())])
+            print "MEDIAN: %s, STATE: %s" % (np.bincount(map(int,p[:,0].flatten())).argmax(), self.filter_bank[uuid]["last_prediction"])
+            for i in range(self.num_models):
+                print "MODEL %s BIN COUNT:" % i, np.bincount(map(int,p[:,0][p[:,1]==i].flatten()), minlength=len(self.qtc_states))
+#            prediction = np.array([])
+#            for particle in p:
+#                par = self.filter_bank[uuid]["filter"].p_xt_xtp.sample(particle)
+#                prediction = np.append(prediction, par).reshape(-1,2)
+##            print prediction
+#            try:
+#                print "+++ PREDICTED: MEDIAN: %s, STATE: %s" % (np.bincount(map(int,prediction[:,0].flatten())).argmax(), self.qtc_states[int(np.bincount(map(int,prediction[:,0].flatten())).argmax())])#, [[int(x[0]), float(x[1])] for x in self.models[0][int(np.bincount(map(int,p[:,0].flatten())).argmax())]])
+#                print "BIN COUNT:", np.bincount(map(int,prediction[:,0].flatten()))
+#                s = np.array(self.qtc_states[int(np.bincount(map(int,prediction[:,0].flatten())).argmax())])
+#                model_count = np.array(map(float,np.bincount(map(int,p[:,1]))))
+##            print model_count
+##            print model_count/self.__num_particles, np.max(model_count/self.__num_particles)
+#                if np.max(model_count/self.__num_particles) > .6:
+#                    self.filter_bank[uuid]["last_prediction"] = map(int,s[~np.isnan(s)].tolist())
+#            except IndexError:
+#                print "ERROR:", prediction
+
+        self.__latest_qtc_state = qtc[-1]
+        return map(int,self.filter_bank[uuid]["last_prediction"][~np.isnan(self.filter_bank[uuid]["last_prediction"])].tolist())
+
+
+class ParticleFilter(pb.Filter):
     r"""Standard particle filter implementation with resampling.
 
     Specifying proposal density is currently unsupported, but planned; speak up if you want it!
@@ -347,6 +393,8 @@ class MyParticleFilter(pb.Filter):
         :param p_yt_xt: :math:`p(y_t|x_t)` cpdf of observation in *t* given state in *t*
         :type p_yt_xt: :class:`~pybayes.pdfs.CPdf`
         """
+        self.__initial_sample = True
+
         if not isinstance(n, int) or n < 1:
             raise TypeError("n must be a positive integer")
         if not isinstance(init_pdf, pb.Pdf):
@@ -354,6 +402,7 @@ class MyParticleFilter(pb.Filter):
         if not isinstance(p_xt_xtp, pb.CPdf) or not isinstance(p_yt_xt, pb.CPdf):
             raise TypeError("both p_xt_xtp and p_yt_xt must be instances of the CPdf class")
 
+        self.init_pdf = init_pdf
         dim = init_pdf.shape()  # dimension of state
         if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() < dim:
             raise ValueError("Expected shape() and cond_shape() of p_xt_xtp will "
@@ -365,10 +414,10 @@ class MyParticleFilter(pb.Filter):
                 .format(dim, p_yt_xt.cond_shape()))
         self.p_yt_xt = p_yt_xt
 
-        if isinstance(init_pdf, pb.EmpPdf):
+        if isinstance(init_pdf, EmpPdf):
             self.emp = init_pdf  # use directly
         else:
-            self.emp = pb.EmpPdf(init_pdf.samples(n))
+            self.emp = EmpPdf(init_pdf.samples(n))
 
     def bayes(self, yt, cond = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`; *cond* is ignored.
@@ -388,30 +437,90 @@ class MyParticleFilter(pb.Filter):
         bla = []
         bla0 = []
         bla1 = []
+        loglike = []
         for i in range(self.emp.particles.shape[0]):
             # generate new ith particle:
-            self.emp.particles[i] = self.p_xt_xtp.sample(self.emp.particles[i])
+            if not self.__initial_sample: # Only sample if not the first round
+                self.emp.particles[i] = self.p_xt_xtp.sample(self.emp.particles[i])
 
             # recompute ith weight:
             self.emp.weights[i] *= math.exp(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))
+            loglike.append(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))
 
-            bla.append(np.append(self.emp.particles[i], self.emp.weights[i]))
-            if self.emp.particles[i][1] == 0: bla0.append(self.emp.particles[i][0])
-            else: bla1.append(self.emp.particles[i][0])
+            if DEBUG:
+                bla.append(np.append(self.emp.particles[i], self.emp.weights[i]))
+                if self.emp.particles[i][1] == 0: bla0.append(self.emp.particles[i][0])
+                else: bla1.append(self.emp.particles[i][0])
 
-        bla = np.array(bla)
-        b = np.ascontiguousarray(bla).view(np.dtype((np.void, bla.dtype.itemsize * bla.shape[1])))
-        _, idx = np.unique(b, return_index=True)
+        print "LIKELIHOODS:", max(loglike), min(loglike), np.mean(loglike)
+        if DEBUG:
+            bla = np.array(bla)
+            b = np.ascontiguousarray(bla).view(np.dtype((np.void, bla.dtype.itemsize * bla.shape[1])))
+            _, idx = np.unique(b, return_index=True)
 
-        print np.array([[int(x[0]), int(x[1]), int(x[2]*1000000.)] for x in bla[idx]], dtype=int)
-        print "PARTICLE 0", np.bincount(bla0)
-        print "PARTICLE 1", np.bincount(bla1)
+            print np.array([[int(x[0]), int(x[1]), int(x[2]*1000000.)] for x in bla[idx]], dtype=int)
+            print "PARTICLE 0", np.bincount(bla0)
+            print "PARTICLE 1", np.bincount(bla1)
 
         # assure that weights are normalised
         self.emp.normalise_weights()
         # resample
-        self.emp.resample()
+        self.emp.resample(self.init_pdf)
+
+        self.__initial_sample = False
         return True
 
     def posterior(self):
         return self.emp
+
+
+class EmpPdf(pb.EmpPdf):
+    r"""An abstraction of empirical probability density functions that provides common methods such
+    as weight normalisation. Extends :class:`Pdf`.
+
+    :var numpy.ndarray weights: 1D array of particle weights
+       :math:`\omega_i >= 0 \forall i; \quad \sum \omega_i = 1`
+    """
+
+    __starvation_factor = 0.9
+
+    def get_resample_indices(self):
+        r"""Calculate first step of resampling process (dropping low-weight particles and
+        replacing them with more weighted ones.
+
+        :return: integer array of length n: :math:`(a_1, a_2 \dots a_n)` where
+            :math:`a_i` means that particle at ith place should be replaced with particle
+            number :math:`a_i`
+        :rtype: :class:`numpy.ndarray` of ints
+
+        *This method doesnt modify underlying pdf in any way - it merely calculates how
+        particles should be replaced.*
+        """
+        n = self.weights.shape[0]
+        cum_weights = np.cumsum(self.weights)
+
+        m = int(np.round(float(n)*self.__starvation_factor))
+        u = np.empty(m)
+        fuzz = np.random.uniform()
+        for i in range(m):
+            u[i] = (i + fuzz) / m
+
+        # calculate number of babies for each particle
+        baby_indices = np.empty(n, dtype=int)  # index array: a[i] contains index of
+        # original particle that should be at i-th place in new particle array
+        j = 0
+        for i in range(m):
+            while u[i] > cum_weights[j]:
+                j += 1
+            baby_indices[i] = j
+
+        for i in np.arange(m, n):
+            baby_indices[i] = -1
+        return baby_indices
+
+    def resample(self, init_pdf):
+        super(EmpPdf, self).resample()
+        n = self.weights.shape[0]
+        m = int(np.round(float(n)*self.__starvation_factor))
+        for i in np.arange(m, n):
+            self.particles[i] = init_pdf.sample()

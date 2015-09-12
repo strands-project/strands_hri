@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   hrsi_representation
   rospy
   std_msgs
+  dynamic_reconfigure
   message_generation
 )
 
@@ -64,6 +65,10 @@ add_message_files(
 #   Action1.action
 #   Action2.action
 # )
+
+generate_dynamic_reconfigure_options(
+  cfg/StatePredictor.cfg
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

@@ -9,6 +9,8 @@ import numpy as np
 import rospy
 
 
+NO_STATE = 9.
+
 def create_states(qtc_type):
     try:
         if qtc_type == "":
@@ -36,8 +38,8 @@ def create_states(qtc_type):
         rospy.logfatal("QTC type: %s not found" % qtc_type)
 
 def to_symbol(qtc_data):
-    for idx, element in enumerate(qtc_data):
-        element = np.array(element)
-        d = element.shape[0]
-        mult = 3**np.arange(d-1, -1, -1)
-        yield ((element + 1)*mult).sum() + 1
+    print "TO SYMBOLISE", qtc_data
+    qtc_data = np.array(qtc_data)
+    d = len(qtc_data)
+    mult = 3**np.arange(d-1, -1, -1)
+    return ((qtc_data + 1)*mult).sum() + 1

@@ -6,6 +6,7 @@ Created on Tue Aug 11 17:09:06 2015
 """
 
 from abc import ABCMeta
+import numpy as np
 
 
 class SimpleModel(object):
@@ -17,8 +18,9 @@ class SimpleModel(object):
         self.previous_state = None
 
     def predict(self, current_state, distance):
-        print current_state, distance
-        for f in self._state_chain:
+        current_state = np.array(current_state)
+        current_state = map(int,current_state[np.where(~np.isnan(current_state))])
+        for i, f in enumerate(self._state_chain):
             s = f(current_state, distance)
             if s:
                 self.previous_state = s
@@ -54,6 +56,20 @@ class QTCBPathCrossing(SimpleModel):
         super(self.__class__, self).__init__()
         self.previous_state = ['?',0]
 
+class QTCBCPathCrossing(SimpleModel):
+    _state_chain = [
+        lambda x,y: [ -1,x[1]] if x[1] == -1 and len(x) == 2 else None,
+        lambda x,y: [  0,x[1],  0,x[3]] if len(x) == 4 and x[1] in (-1,0) else None,
+        lambda x,y: [ -1, x[1], 1, x[3]] if len(x) == 4 and x[1] in (1,) and x[3] in (1,) else None,
+        lambda x,y: [  0, x[1], 1, x[3]] if len(x) == 4 and x[1] == 1 and x[3] == 0 else None,
+        lambda x,y: [  1, x[1], 1, x[3]] if len(x) == 4 and x[1] == 1 and x[3] == -1 else None,
+        lambda x,y: ['?',x[1]] if x[1] in (1,0) and len(x) == 2 else None
+    ]
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+        self.previous_state = ['?',0]
+
 
 class QTCCPassBy(SimpleModel):
     _state_chain = [
@@ -71,14 +87,30 @@ class QTCCPassBy(SimpleModel):
         self.previous_state = ['?',0,'?',0]
 
 
+#class QTCBCPassBy(SimpleModel):
+#    _state_chain = [
+#        lambda x,y: ['?',x[1]] if x[1] ==  0 and y in ("pub", "soc", "und") else None,
+#        lambda x,y: [ -1,x[1]] if x[1] == -1 and len(x) == 2 else None,
+#        lambda x,y: [ -1,x[1], -1,x[3]] if len(x) == 4 and x[1] == -1 else None,
+#        lambda x,y: [  0,x[1], -1,x[3]] if len(x) == 4 and x[1] == 0 else None,
+#        lambda x,y: [  1,x[1],  -1,x[3]] if len(x) == 4 and x[1] == 1 else None,
+#        lambda x,y: [  1,x[1]] if x[1] ==  1 and len(x) == 2 else None
+#    ]
+#
+#    def __init__(self):
+#        super(self.__class__, self).__init__()
+#        self.previous_state = ['?',0]
+
 class QTCBCPassBy(SimpleModel):
     _state_chain = [
-        lambda x,y: ['?',x[1]] if x[1] ==  0 and y in ("pub", "soc", "und") else None,
-        lambda x,y: [ -1,x[1]] if x[1] == -1 and len(x) == 2 else None,
-        lambda x,y: [ -1,x[1], -1,x[3]] if len(x) == 4 and x[1] == -1 else None,
-        lambda x,y: [  0,x[1], -1,x[3]] if len(x) == 4 and x[1] == 0 else None,
-        lambda x,y: [  1,x[1],  -1,x[3]] if len(x) == 4 and x[1] == 1 else None,
-        lambda x,y: [  1,x[1]] if x[1] ==  1 and len(x) == 2 else None
+        lambda x,y: ['?', x[1]] if len(x) < 4 and x[1] in (0,1) else None,
+        lambda x,y: [ -1, x[1]] if len(x) < 4 and x[1] in (-1,) else None,
+        lambda x,y: [  0, x[1], 1, x[3]] if len(x) == 4 and x[1] == 0 and x[3] == 1 else None,
+        lambda x,y: [ -1, x[1], 1, x[3]] if len(x) == 4 and x[1] in (-1,) and x[3] in (0,) else None,
+        lambda x,y: [ -1, x[1], x[2], x[3]] if len(x) == 4 and x[1] in (-1,) and x[3] in (0,) and x[2] in (-1,1) else None,
+        lambda x,y: [ -1, x[1], x[3], x[3]] if len(x) == 4 and x[1] == -1 and x[3] in (1,) else None,
+        lambda x,y: [ -1, x[1], -1 if x[3] == -1 else 1, x[3]] if len(x) == 4 and x[1] in (0,) and x[3] in (-1,1) else None,
+        lambda x,y: [x[1], x[1], 1, x[3]] if len(x) == 4 and x[1] == 1 else None
     ]
 
     def __init__(self):
