@@ -20,16 +20,20 @@ class OfflineQTCCreator(object):
         """Creates a new instance of the class
         """
         rospy.loginfo("Starting %s", name)
-        self.parameters = {
+
+        self.input = rospy.get_param("~input", "")
+        self.outpath = rospy.get_param("~outpath", "")
+        self.qsr = rospy.get_param("~qsr", "qtccs")
+
+        self.parameters = {"qtcs": {
             "quantisation_factor": rospy.get_param("~quantisation_factor", 0.01),
             "validate":            rospy.get_param("~validate", True),
             "no_collapse":         rospy.get_param("~no_collapse", False),
             "distance_threshold":  rospy.get_param("~distance_threshold", 1.2)
-        }
-
-        self.input = rospy.get_param("~input", "")
-        self.outpath = rospy.get_param("~outpath", "")
-        self.qsr = rospy.get_param("~qsr", "qtcc")
+        },
+            "for_all_qsrs": {
+                "qsrs_for": [("robot", "human")]
+        }}
 
         self.pub = rospy.Publisher("~qtc_array", QTCArray, queue_size=10)
 
@@ -45,7 +49,8 @@ class OfflineQTCCreator(object):
         qtc = self.file_input.convert(
             data=data,
             qtc_type=self.qsr,
-            parameters=self.parameters
+            parameters=self.parameters,
+            argprobd=False
         )
         return qtc, files, data
 
@@ -55,16 +60,17 @@ class OfflineQTCCreator(object):
         )
         for q, d, f in zip(qtc, data, files):
             m = output.create_qtc_msg(
-                collapsed=not self.parameters["no_collapse"],
+                collapsed=not self.parameters["qtcs"]["no_collapse"],
                 qtc_type=self.qsr,
                 k=d["agent1"]["name"],
                 l=d["agent2"]["name"],
-                quantisation_factor=self.parameters["quantisation_factor"],
-                distance_threshold=self.parameters["distance_threshold"],
+                quantisation_factor=self.parameters["qtcs"]["quantisation_factor"],
+                distance_threshold=self.parameters["qtcs"]["distance_threshold"],
                 smoothing_rate=0.0,
-                validated=self.parameters["validate"],
+                validated=self.parameters["qtcs"]["validate"],
                 uuid=f,
-                qtc_serialised=json.dumps(q.tolist())
+                qtc_serialised=json.dumps(q[0].tolist()),
+                prob_distance_serialised=[]
             )
             out.qtc.append(m)
 
