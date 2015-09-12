@@ -43,7 +43,7 @@ class VelocityCostmapServer(object):
         ]
         ts = TimeSynchronizer(
             fs=subs,
-            queue_size=30
+            queue_size=60
         )
         ts.registerCallback(self.callback)
         rospy.loginfo("... all done.")
