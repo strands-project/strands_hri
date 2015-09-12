@@ -25,16 +25,17 @@ class OnlineQTCCreator(object):
 
     # The order of this dict has to reflect the index of the qtc_type in the dynamic reconfigure file
     _qsr_relations_and_values = OrderedDict([
-        ("int", (  (.46-.0)/2  +.0,    (.46-.0)/4)),
-        ("per", ((1.22-.46)/2 +.46,  (1.22-.46)/4)),
-        ("soc", ((3.7-1.22)/2+1.22,  (3.7-1.22)/4)),
-        ("pub", ((6.0-3.7)/2  +3.7,   (6.0-3.7)/4)),
-        ("und", ((10.0-6.0)/2 +6.0,  (10.0-6.0)/4))
+        ("int", (  (.46-.0)/2  +.0,    (.46-.0)/10)),
+        ("per", ((1.22-.46)/2 +.46,  (1.22-.46)/10)),
+        ("soc", ((3.7-1.22)/2+1.22,  (3.7-1.22)/10)),
+        ("pub", ((6.0-3.7)/2  +3.7,   (6.0-3.7)/10)),
+        ("und", ((10.0-6.0)/2 +6.0,  (10.0-6.0)/10))
     ])
-    _robot_pose = Pose()
+    _robot_pose = None
     _buffer = dict()
     _smoothing_buffer = dict()
     _msg_buffer = []
+    __detection_angle = 360.
 
     def __init__(self, name):
         rospy.loginfo("Starting %s" % name)
@@ -66,6 +67,7 @@ class OnlineQTCCreator(object):
     def dyn_callback(self, config, level):
         self.qtc_type = self.input.qtc_types[config["qtc_type"]]
         self.prune_buffer = config["prune_buffer"]
+        self.max_buffer_size = config["max_buffer_size"]
         # If we prune the buffer, validate and no_callapse will have no effect.
         # Setting them to false to make that clear
         if self.prune_buffer:
@@ -93,6 +95,8 @@ class OnlineQTCCreator(object):
         return config
 
     def ppl_callback(self, msg):
+        if self._robot_pose == None:
+            return
         msgs = {
             "ppl": msg,
             "robot": self._robot_pose
@@ -118,7 +122,10 @@ class OnlineQTCCreator(object):
             )
 
             # Looping through detected humans
-            for (uuid, pose) in zip(ppl_msg.uuids, ppl_msg.poses):
+            for (uuid, pose, angle) in zip(ppl_msg.uuids, ppl_msg.poses, ppl_msg.angles):
+                # TODO: remove hard coded blackout are
+                if np.abs(angle) > np.abs(self.__detection_angle * (np.pi / 180.0)):
+                    continue
                 # Transforming pose into target_frame if necessary
                 person = PoseStamped()
                 person.header = ppl_msg.header
@@ -165,27 +172,30 @@ class OnlineQTCCreator(object):
                 if not data["start_time"] + self.smoothing_rate <= ppl_msg.header.stamp.to_sec():
                     continue
 
+                latest = np.array([ # Mean over the coordinates to smooth them
+                    np.mean(data["data"][:,0]),
+                    np.mean(data["data"][:,1]),
+                    np.mean(data["data"][:,2]),
+                    np.mean(data["data"][:,3])
+                ])
+
                 # Put smoothed values in buffer
                 if not uuid in self._buffer.keys(): # No entry yet, create a new one
-                    self._buffer[uuid] = {"data": np.array(
-                        [
-                            np.mean(data["data"][:,0]), # Mean over the coordinates to smooth them
-                            np.mean(data["data"][:,1]),
-                            np.mean(data["data"][:,2]),
-                            np.mean(data["data"][:,3])
-                        ]
-                    ).reshape(-1,4), "last_seen": data["last_seen"]}
+                    self._buffer[uuid] = {
+                        "data": latest.reshape(-1,4),
+                        "last_seen": data["last_seen"]
+                    }
                 else: # Already in buffer, append latest values
-                    self._buffer[uuid]["data"] = np.append(
-                        self._buffer[uuid]["data"],
-                        [
-                            np.mean(data["data"][:,0]),
-                            np.mean(data["data"][:,1]),
-                            np.mean(data["data"][:,2]),
-                            np.mean(data["data"][:,3])
-                        ]
-                    ).reshape(-1,4)
+                    if not np.allclose(self._buffer[uuid]["data"][-1], latest):
+                        self._buffer[uuid]["data"] = np.append(
+                            self._buffer[uuid]["data"],
+                            latest
+                        ).reshape(-1,4)
+                    # restrict buffer length to max_buffer_size
+                    self._buffer[uuid]["data"] = self._buffer[uuid]["data"][-self.max_buffer_size:]
                 self._buffer[uuid]["last_seen"] = data["last_seen"] # Add time of last update for decay
+
+#                print self._buffer[uuid], len(self._buffer[uuid]["data"]), len(self._msg_buffer)
 
                 del self._smoothing_buffer[uuid] # Delete element from smoothing buffer
 
@@ -220,7 +230,7 @@ class OnlineQTCCreator(object):
                         validated=self.parameters[self.qtc_type]["validate"],
                         uuid=uuid,
                         qtc_serialised=json.dumps(qsrs[0].tolist()),
-                        prob_distance_serialised=json.dumps(qsrs[1])
+                        prob_distance_serialised=json.dumps(qsrs[1][-len(qsrs[0]):]) # Only add as amany distances as qtc states
                     )
 
                     out.qtc.append(qtc_msg)
@@ -228,15 +238,17 @@ class OnlineQTCCreator(object):
 
             # If there is something to publish and it hasn't been published before, publish
             # If prune_buffer == True then we always publish
-            if out.qtc and (out.qtc != self.last_msg.qtc or self.prune_buffer):
+#            if out.qtc and (out.qtc != self.last_msg.qtc or self.prune_buffer):
+            if out.qtc:
                 self.pub.publish(out)
-                self.last_msg = out
+#                self.last_msg = out
             self.decay(ppl_msg.header.stamp) # Delete old elements from buffer
             rate.sleep()
 
     def decay(self, last_time):
         for uuid in self._buffer.keys():
             if self._buffer[uuid]["last_seen"].to_sec() + self.decay_time < last_time.to_sec():
+                rospy.loginfo("Deleted %s, last seen at %s" % (uuid, str(self._buffer[uuid]["last_seen"].to_sec())))
                 del self._buffer[uuid]
 
 if __name__ == "__main__":
