@@ -53,8 +53,6 @@ class InputBaseAbstractclass(object):
         self.qtc = None
 
     def _request_qtc(self, qsr, world, parameters):
-        """reads all .qtc files from a given directory and resturns them as numpy arrays"""
-
         qrmsg = QSRlib_Request_Message(
             which_qsr=qsr,
             input_data=world,
@@ -69,13 +67,14 @@ class InputBaseAbstractclass(object):
         dis = []
         for t in out.qsrs.get_sorted_timestamps():
             for k, v in out.qsrs.trace[t].qsrs.items():
-                if len(v.qsr.items()) < 2:
-                    continue # Hacky but we only want dist when qtc is there too.
+#                print v.qsr.items()
+#                if len(v.qsr.items()) < 2:
+#                    continue # Hacky but we only want dist when qtc is there too.
                 for l, w in v.qsr.items():
                     if l.startswith("qtc"):
                         q = self._to_np_array(w)
-#                        if l.startswith("qtcbcs"):
-#                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
+                        if l.startswith("qtcbcs"):
+                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
                         qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
                     elif l == "argprobd":
                         dis.append(w)
@@ -120,7 +119,7 @@ class InputBaseAbstractclass(object):
         """Input data into the conversion process"""
         pass
 
-    def convert(self, data, qtc_type, parameters):
+    def convert(self, data, qtc_type, parameters, argprobd=True):
         """Convert data inserted via put() into QTC
 
         :param qtc_type: qtcb|qtcc|qtcbc
@@ -129,12 +128,10 @@ class InputBaseAbstractclass(object):
         ret = []
         for elem in np.array(data):
             world = self._convert_to_world(data_dict=elem)
-
-            try:
+            if argprobd:
                 qsr = [qtc_type, self.argprobd]
-            except KeyError:
-                rospy.logfatal("Unknown QTC type: %s" % qtc_type)
-                return
+            else:
+                qsr = qtc_type
             ret.append(self._request_qtc(qsr=qsr, world=world, parameters=parameters))
         return ret
 

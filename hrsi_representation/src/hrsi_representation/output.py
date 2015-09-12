@@ -6,12 +6,12 @@ from std_msgs.msg import Header
 from hrsi_representation.msg import QTCArray, QTC
 
 def write_files(qtc, filenames, path):
-        for q,f in zip(qtc,filenames):
-            write_file(q, path+'/'+f.replace('csv','qtc'))
+    for q,f in zip(qtc,filenames):
+        write_file(q, path+'/'+f.replace('csv','qsr'))
 
 def write_file(qtc, filename):
     with open(filename, 'w') as outfile:
-        outfile.write(json.dumps(np.array(qtc).tolist(), separators=(',', ':')).replace('],', '],\n'))
+        outfile.write(json.dumps(np.array(qtc[0]).tolist(), separators=(',', ':')).replace('],', '],\n'))
 
 def create_qtc_array_msg(header=None, stamp=None, seq=None, frame_id=None, qtc=None):
     if not header:

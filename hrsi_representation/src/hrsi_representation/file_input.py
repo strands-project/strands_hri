@@ -46,6 +46,7 @@ class FileInput(InputBaseAbstractclass):
                             data["agent1"]["name"] = row['agent1']
                         if data["agent2"]["name"] == "":
                             data["agent2"]["name"] = row['agent2']
+
                         data["agent1"]["x"] = np.append(data["agent1"]["x"], float(row['x1']))
                         data["agent1"]["y"] = np.append(data["agent1"]["y"], float(row['y1']))
 
