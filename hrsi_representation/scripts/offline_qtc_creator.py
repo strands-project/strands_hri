@@ -70,7 +70,7 @@ class OfflineQTCCreator(object):
                 validated=self.parameters["qtcs"]["validate"],
                 uuid=f,
                 qtc_serialised=json.dumps(q[0].tolist()),
-                prob_distance_serialised=[]
+                prob_distance_serialised=""
             )
             out.qtc.append(m)
 

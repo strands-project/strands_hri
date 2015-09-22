@@ -123,9 +123,6 @@ class OnlineQTCCreator(object):
 
             # Looping through detected humans
             for (uuid, pose, angle) in zip(ppl_msg.uuids, ppl_msg.poses, ppl_msg.angles):
-                # TODO: remove hard coded blackout are
-                if np.abs(angle) > np.abs(self.__detection_angle * (np.pi / 180.0)):
-                    continue
                 # Transforming pose into target_frame if necessary
                 person = PoseStamped()
                 person.header = ppl_msg.header

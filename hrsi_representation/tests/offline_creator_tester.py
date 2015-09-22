@@ -18,9 +18,9 @@ class TestOfflineQTC(unittest.TestCase):
     EXECUTABLE = find_resource(PKG, 'offline_qtc_creator.py')[0]
 
     _correct = {
-        "qtcb": [[-1, -1], [-1, 0], [0, 0], [0, 1], [1, 1]],
-        "qtcc": [[-1, -1, 0, 0], [-1, -1, 1, 0], [-1, 0, 1, 0], [-1, 0, 1, 1], [0, 0, 1, 1], [0, 0, 1, 0], [0, 1, 1, 0], [1, 1, 1, 0], [1, 1, 0, 0]],
-        "qtcbc": [[-1.0, -1.0, np.NaN, np.NaN], [-1.0, 0.0, np.NaN, np.NaN], [-1.0, 0.0, 1.0, 0.0], [-1.0, 0.0, 1.0, 1.0], [0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 1.0, 0.0], [0.0, 1.0, 1.0, 0.0], [1.0, 1.0, 1.0, 0.0], [1.0, 1.0, np.NaN, np.NaN]]
+        "qtcbs": [[-1, -1], [0, -1], [0, 0], [1, 0], [1, 1]],
+        "qtccs": [[-1, -1, 0, 0], [-1, -1, 0, 1], [0, -1, 0, 1], [0, -1, 1, 1], [0, 0, 1, 1], [0, 0, 0, 1], [1, 0, 0, 1], [1, 1, 0, 1], [1, 1, 0, 0]],
+        "qtcbcs": [[-1.0, -1.0, np.NaN, np.NaN], [0.0, -1.0, np.NaN, np.NaN], [0.0, -1.0, 0.0, 1.0], [0.0, -1.0, 1.0, 1.0], [0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0], [1.0, 0.0, 0.0, 1.0], [1.0, 1.0, 0.0, 1.0], [1.0, 1.0, np.NaN, np.NaN]]
     }
 
     def __init__(self, *args):
@@ -36,27 +36,27 @@ class TestOfflineQTC(unittest.TestCase):
 
     def test_offline_creator_qtcb(self):
         rospy.Subscriber("/offline_qtc_creator/qtc_array", QTCArray, callback=self._callback)
-        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcb", stdin=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcbs", stdin=subprocess.PIPE, shell=True)
         while p.poll() == None:
             rospy.sleep(1)
 #        print self.test
-        self.assertEqual(self.test, self._correct["qtcb"])
+        self.assertEqual(self.test, self._correct["qtcbs"])
 
     def test_offline_creator_qtcc(self):
         rospy.Subscriber("/offline_qtc_creator/qtc_array", QTCArray, callback=self._callback)
-        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcc", stdin=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtccs", stdin=subprocess.PIPE, shell=True)
         while p.poll() == None:
             rospy.sleep(1)
 #        print self.test
-        self.assertEqual(self.test, self._correct["qtcc"])
+        self.assertEqual(self.test, self._correct["qtccs"])
 
     def test_offline_creator_qtcbc(self):
         rospy.Subscriber("/offline_qtc_creator/qtc_array", QTCArray, callback=self._callback)
-        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcbc", stdin=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(self.EXECUTABLE+" _input:="+self.TEST_DIR+" _qsr:=qtcbcs", stdin=subprocess.PIPE, shell=True)
         while p.poll() == None:
             rospy.sleep(1)
 #        print self.test
-        np.testing.assert_equal(self.test, self._correct["qtcbc"])
+        np.testing.assert_equal(self.test, self._correct["qtcbcs"])
 
 
 if __name__ == '__main__':

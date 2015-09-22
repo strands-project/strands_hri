@@ -62,7 +62,6 @@ class InputBaseAbstractclass(object):
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
         out = pickle.loads(res.data)
-        rospy.logdebug("Request was made at " + str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
         qtc = np.array([])
         dis = []
         for t in out.qsrs.get_sorted_timestamps():
