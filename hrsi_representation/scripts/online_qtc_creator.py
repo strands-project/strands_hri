@@ -158,8 +158,8 @@ class OnlineQTCCreator(object):
                 person.header = ppl_msg.header
                 person.pose = pose
                 transformed_person = self._transform(person, self.target_frame)
-                transformed_goal = self._transform(goal_msg, self.target_frame)
-                if transformed_person == None or transformed_goal == None:
+#                transformed_goal = self._transform(goal_msg, self.target_frame)
+                if transformed_person == None:
                     continue
 
                 if not uuid in self._smoothing_buffer.keys(): # No entry yet
@@ -171,8 +171,8 @@ class OnlineQTCCreator(object):
                                 robot_msg.position.y,
                                 transformed_person.pose.position.x,
                                 transformed_person.pose.position.y,
-                                transformed_goal.pose.position.x,
-                                transformed_goal.pose.position.y
+                                goal_msg.pose.position.x,
+                                goal_msg.pose.position.y
                             ]
                     ).reshape(-1,6), "last_seen": ppl_msg.header.stamp}
                 else: # Already in buffer
@@ -183,8 +183,8 @@ class OnlineQTCCreator(object):
                             robot_msg.position.y,
                             transformed_person.pose.position.x,
                             transformed_person.pose.position.y,
-                            transformed_goal.pose.position.x,
-                            transformed_goal.pose.position.y
+                            goal_msg.pose.position.x,
+                            goal_msg.pose.position.y
                         ]
                     ).reshape(-1,6)
                     self._smoothing_buffer[uuid]["last_seen"] = ppl_msg.header.stamp
