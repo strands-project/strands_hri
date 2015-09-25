@@ -390,10 +390,10 @@ class ParticleFilterPredictor(object):
 #            prediction = np.random.choice(states, p=probs)
             prediction = states[probs.index(max(probs))]
             prediction = map(int,prediction.split(','))
-            print "prediction", prediction
+#            print "prediction", prediction
             prediction = [prediction[0], int(pred[2]), prediction[1], int(pred[3])] \
                 if prediction[1] != 9 else [prediction[0], int(pred[2])]
-            print "prediction", prediction
+#            print "prediction", prediction
 
         self.__latest_qtc_state = qtc[-1]
 #        return map(int,self.filter_bank[uuid]["last_prediction"][~np.isnan(self.filter_bank[uuid]["last_prediction"])].tolist())
