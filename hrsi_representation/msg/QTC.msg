@@ -6,7 +6,7 @@ float64 distance_threshold         # Distance threshold for QTC_BC
 string abstract_distance_threshold # Distance threshold for QTC_BC_ARGPROBD
 bool validated                     # State chain has been validated
 bool collapsed                     # Similar adjacent states have been collapsed
-string k                           # Agent 1 name
-string l                           # Agent 2 name
-string qtc_serialised              # QTC representation of type qtc_type, serialised using json
-string prob_distance_serialised    # arg_prob_distance relations, serialised using json
+string qtc_robot_human             # QTC representation of type qtc_type, serialised using json
+string prob_distance_robot_human   # arg_prob_distance relations, serialised using json
+string qtc_goal_human              # QTC representation of type qtc_type, serialised using json
+string prob_distance_goal_human    # arg_prob_distance relations, serialised using json

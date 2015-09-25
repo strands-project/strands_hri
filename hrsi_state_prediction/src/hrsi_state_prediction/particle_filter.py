@@ -13,6 +13,8 @@ import numpy as np
 import math
 import qtc_utils as qu
 from copy import deepcopy
+import os
+import json
 
 DEBUG = False
 
@@ -191,27 +193,39 @@ class QtcObservationPdf(QtcPredictionPdf):
 #        try:
         return np.sum(np.append([
             np.log(self.__confusion_matrix[self.__states.index(pred[y])][self.__states.index(obs[y])])*multi \
-                for y in np.arange(1, size+1, step=2) # Evaluating only on the human behaviour: [ _ ? _ ?]
+                for y in np.arange(0, size) #(1, size+1, step=2) # Evaluating only on the human behaviour: [ _ ? _ ?]
         ], length_bias))
 #        except TypeError:
 #            print obs, pred, [pred[y] for y in range(size)]
 
 
 class ParticleFilterPredictor(object):
-    __qtc_type_lookup = {9: "qtcbs", 81: "qtccs", 91: "qtcbcs"}
+    __qtc_type_lookup = {9: "qtcbs", 81: "qtccs", 91: "qtcbcs", 109: "qtch"}
     __latest_qtc_state = None
     __no_state__ = qu.NO_STATE
     __num_particles = 1000
 
     filter_bank = {}
 
-    def __init__(self, paths, qtc_type=None):
+    def __init__(self, path, qtc_type=None):
         hmm = []
-        for p in paths:
-            with open(p) as fd:
-                rospy.loginfo("Reading hmm from: %s", p)
-                hmm.append(xmltodict.parse(fd.read()))
+        self.rules = []
+        self.rule_mapping = {}
+        self.model_mapping = {}
+        for f in os.listdir(path):
+            filename = path + '/' + f
+            if f.endswith(".hmm"):
+                with open(filename) as fd:
+                    rospy.loginfo("Reading hmm from: %s", filename)
+                    hmm.append(xmltodict.parse(fd.read()))
+                    self.model_mapping[len(hmm)-1] = f.split('.')[0]
+            elif f.endswith(".rules"):
+                with open(filename) as fd:
+                    rospy.loginfo("Reading rules from: %s", filename)
+                    self.rules.append(json.load(fd))
+                    self.rule_mapping[f.split('.')[0]] = len(self.rules)-1
         self.num_models = len(hmm)
+        print self.model_mapping, self.rule_mapping
         self.models, self.qtc_states = self._create_model(hmm)
         self.qtc_states_no_nan = np.array(deepcopy(self.qtc_states[1:-1]))
         self.qtc_states_no_nan[np.isnan(self.qtc_states_no_nan)] = qu.NO_STATE
@@ -298,7 +312,7 @@ class ParticleFilterPredictor(object):
 
         self.create_new_filter(uuid)
         qtc = np.array(qtc)
-#        print qtc
+        print qtc
         qtc[np.isnan(qtc)] = self.__no_state__
         try:
             if self.__latest_qtc_state != None:
@@ -310,8 +324,8 @@ class ParticleFilterPredictor(object):
             self.__latest_qtc_state = qtc[-1]
             new_states = []
 
-#        if len(new_states) == 0:
-#            new_states = [qtc[-1]]
+        if len(new_states) == 0:
+            new_states = [qtc[-1]]
 
 #        print "NEW STATES:", new_states
         for state in new_states:
@@ -325,6 +339,7 @@ class ParticleFilterPredictor(object):
 #            print "MEAN:", self.filter_bank[uuid].posterior().mean()
             p = self.filter_bank[uuid]["filter"].emp.particles
             try:
+                print "MODELS:", self.model_mapping.values()
                 print "MODEL SIZES:", np.bincount(map(int,p[:,1].flatten()), minlength=self.num_models)
             except:
                 pass
@@ -337,19 +352,19 @@ class ParticleFilterPredictor(object):
 #                print "STATES model 1:", np.bincount(map(int,p[np.where(p[:,1] == 1),0].flatten()))
 #            except:
 #                pass
-            self.filter_bank[uuid]["model_weights"][int(np.bincount(map(int,p[:,1].flatten())).argmax())] += 1.
-            model_weights = self.filter_bank[uuid]["model_weights"]/np.sum(self.filter_bank[uuid]["model_weights"])
-            best_model = np.random.choice(np.arange(self.num_models), p=model_weights, size=100)
-            best_model = np.append(best_model, np.floor(np.random.uniform(size=int(len(best_model)*.1))*3))
-            model_bins = np.bincount(map(int,best_model), minlength=self.num_models)
-            print "MODEL BINS", model_bins
-            best_model = model_bins.argmax()
-            print "MODEL WEIGHTS:", model_weights
-            print "CHOSEN MODEL:", best_model
-            self.filter_bank[uuid]["last_prediction"] = np.array(self.qtc_states[int(np.bincount(map(int,p[:,0][p[:,1]==best_model].flatten())).argmax())])
+#            self.filter_bank[uuid]["model_weights"][int(np.bincount(map(int,p[:,1].flatten())).argmax())] += 1.
+#            model_weights = self.filter_bank[uuid]["model_weights"]/np.sum(self.filter_bank[uuid]["model_weights"])
+#            best_model = np.random.choice(np.arange(self.num_models), p=model_weights, size=100)
+#            best_model = np.append(best_model, np.floor(np.random.uniform(size=int(len(best_model)*.1))*3))
+#            model_bins = np.bincount(map(int,best_model), minlength=self.num_models)
+#            print "MODEL BINS", model_bins
+#            best_model = model_bins.argmax()
+#            print "MODEL WEIGHTS:", model_weights
+#            print "CHOSEN MODEL:", best_model
+            self.filter_bank[uuid]["last_prediction"] = np.array(self.qtc_states[np.bincount(map(int,p[:,0].flatten())).argmax()])
             print "MEDIAN: %s, STATE: %s" % (np.bincount(map(int,p[:,0].flatten())).argmax(), self.filter_bank[uuid]["last_prediction"])
-            for i in range(self.num_models):
-                print "MODEL %s BIN COUNT:" % i, np.bincount(map(int,p[:,0][p[:,1]==i].flatten()), minlength=len(self.qtc_states))
+#            for i in range(self.num_models):
+#                print "MODEL %s BIN COUNT:" % i, np.bincount(map(int,p[:,0][p[:,1]==i].flatten()), minlength=len(self.qtc_states))
 #            prediction = np.array([])
 #            for particle in p:
 #                par = self.filter_bank[uuid]["filter"].p_xt_xtp.sample(particle)
@@ -367,8 +382,22 @@ class ParticleFilterPredictor(object):
 #            except IndexError:
 #                print "ERROR:", prediction
 
+            pred = qu.nan_to_no_state(self.filter_bank[uuid]["last_prediction"])
+            qtc_str = ','.join(map(str,map(int, pred)))
+            rule_idx = self.rule_mapping[self.model_mapping[np.bincount(map(int,p[:,1].flatten())).argmax()]]
+            states = self.rules[rule_idx][qtc_str].keys()
+            probs = self.rules[rule_idx][qtc_str].values() # Both lists are always in a corresponding order
+#            prediction = np.random.choice(states, p=probs)
+            prediction = states[probs.index(max(probs))]
+            prediction = map(int,prediction.split(','))
+            print "prediction", prediction
+            prediction = [prediction[0], int(pred[2]), prediction[1], int(pred[3])] \
+                if prediction[1] != 9 else [prediction[0], int(pred[2])]
+            print "prediction", prediction
+
         self.__latest_qtc_state = qtc[-1]
-        return map(int,self.filter_bank[uuid]["last_prediction"][~np.isnan(self.filter_bank[uuid]["last_prediction"])].tolist())
+#        return map(int,self.filter_bank[uuid]["last_prediction"][~np.isnan(self.filter_bank[uuid]["last_prediction"])].tolist())
+        return prediction
 
 
 class ParticleFilter(pb.Filter):
@@ -452,7 +481,7 @@ class ParticleFilter(pb.Filter):
                 if self.emp.particles[i][1] == 0: bla0.append(self.emp.particles[i][0])
                 else: bla1.append(self.emp.particles[i][0])
 
-        print "LIKELIHOODS:", max(loglike), min(loglike), np.mean(loglike)
+#        print "LIKELIHOODS:", max(loglike), min(loglike), np.mean(loglike)
         if DEBUG:
             bla = np.array(bla)
             b = np.ascontiguousarray(bla).view(np.dtype((np.void, bla.dtype.itemsize * bla.shape[1])))

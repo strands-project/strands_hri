@@ -110,7 +110,7 @@ class CostmapCreator(object):
         except TypeError:
             qtc_symbol = map(str, [qtc_symbol])
         qtc_symbol = ''.join(qtc_symbol).replace('-1','-').replace('1','+')
-        print qtc_symbol
+#        print qtc_symbol
 
         cost_array = self._fast_costmap_creator(
             pre_sets=self._calc_pre_sets_functions[qtc_symbol](angle, velocity, min_speed, max_speed),
@@ -124,7 +124,7 @@ class CostmapCreator(object):
         return cost_array.T
 
     def _fast_costmap_creator(self, pre_sets=(0.0, (np.nan, np.nan)), qtc_symbol="0", map_size=100, min_cost=0, cost_array=None):
-        start_loop = time.time()
+#        start_loop = time.time()
         # Sign flip
         pre_sets = (np.pi - (np.abs(pre_sets[0])-np.pi), pre_sets[1]) if pre_sets[0] < -np.pi else pre_sets
         pre_sets = (-np.pi + (np.abs(pre_sets[0])-np.pi), pre_sets[1]) if pre_sets[0] > np.pi else pre_sets
@@ -167,7 +167,7 @@ class CostmapCreator(object):
             int(np.floor(float(map_size)/2))-1:int(np.ceil(float(map_size)/2))+1,
             int(np.floor(float(map_size)/2))-1:int(np.ceil(float(map_size)/2))+1
         ] = self.min_costs # (0,0) should never have costs
-        print "elapsed:", time.time() - start_loop
+#        print "elapsed:", time.time() - start_loop
         return cost_array
 
 

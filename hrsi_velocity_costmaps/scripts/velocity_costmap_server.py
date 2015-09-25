@@ -55,7 +55,7 @@ class VelocityCostmapServer(object):
         return config
 
     def callback(self, qtc, ppl):
-        start = time.time()
+#        start = time.time()
         vels = []
         try:
             t = self.tf.getLatestCommonTime("base_link", ppl.header.frame_id)
@@ -83,8 +83,8 @@ class VelocityCostmapServer(object):
         )
 #        self.cc.publish(angle=element["angle"], qtc_symbol=[-1,-1], velocity=element["velocity"])
 
-        print "human-robot predicted qtc: %s" % element["qtc"]
-        print "total elapsed:", time.time() - start
+#        print "human-robot predicted qtc: %s" % element["qtc"]
+#        print "total elapsed:", time.time() - start
 
     def _create_qtc_states(self, qtc_type):
         ret_str = []
