@@ -27,21 +27,21 @@ class StatePredictor(object):
         rospy.loginfo("Starting %s ..." % name)
         self.dyn_srv = DynServer(StatePredictorConfig, self.dyn_callback)
         self.pf = ParticleFilterPredictor(
-            path='/home/cdondrup/tmp/hri/models/'
+            path=rospy.get_param("~model_dir")
         )
-        self.sm = {
-            "passby": {
-                "qtcbs": QTCBPassBy(),
-                "qtccs": QTCCPassBy(),
-                "qtcbcs": QTCBCPassBy(),
-                "qtcbcs_argprobd": QTCBCPassBy()
-            },
-            "pathcrossing": {
-                "qtcbs": QTCBPathCrossing(),
-                "qtccs": QTCCPathCrossing(),
-                "qtcbcs": QTCBCPathCrossing()
-            }
-        }
+#        self.sm = {
+#            "passby": {
+#                "qtcbs": QTCBPassBy(),
+#                "qtccs": QTCCPassBy(),
+#                "qtcbcs": QTCBCPassBy(),
+#                "qtcbcs_argprobd": QTCBCPassBy()
+#            },
+#            "pathcrossing": {
+#                "qtcbs": QTCBPathCrossing(),
+#                "qtccs": QTCCPathCrossing(),
+#                "qtcbcs": QTCBCPathCrossing()
+#            }
+#        }
         self.mapping = StateMapping()
         self.pub = rospy.Publisher("~prediction_array", QTCPredictionArray, queue_size=10)
         rospy.Service("~load_model", LoadModel, self.srv_cb)
@@ -58,7 +58,7 @@ class StatePredictor(object):
         return config
 
     def callback(self, msg):
-        interaction_type = self.prior # No classification yet
+#        interaction_type = self.prior # No classification yet
 #        start = time.time()
         out = QTCPredictionArray()
         out.header = msg.header
