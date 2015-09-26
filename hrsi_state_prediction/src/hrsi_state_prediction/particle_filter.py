@@ -15,6 +15,7 @@ import qtc_utils as qu
 from copy import deepcopy
 import os
 import json
+from std_srvs.srv import Empty, EmptyResponse
 
 DEBUG = False
 
@@ -208,6 +209,7 @@ class ParticleFilterPredictor(object):
     filter_bank = {}
 
     def __init__(self, path, qtc_type=None):
+        self.srv = rospy.Service("~particle_filter/reset", Empty, self.reset_cb)
         hmm = []
         self.rules = []
         self.rule_mapping = {}
@@ -267,6 +269,10 @@ class ParticleFilterPredictor(object):
                 except:
                     pass
                 print "%s MEDIAN: %s, STATE: %s, TRANS: %s" % (idx, np.bincount(map(int,p[:,0].flatten())).argmax(), self.qtc_states[int(np.bincount(map(int,p[:,0].flatten())).argmax())], [[int(x[0]), float(x[1])] for x in self.models[0][int(np.bincount(map(int,p[:,0].flatten())).argmax())]])
+
+    def reset_cb(self, req):
+        self.filter_bank = {}
+        return EmptyResponse()
 
     def create_new_filter(self, uuid):
         if not uuid in self.filter_bank.keys():
