@@ -28,7 +28,7 @@ def create_model(data, pseudo):
     for entry in data:
         qsr = deepcopy(entry[:,:4])
         qsr[qsr==qu.NO_STATE] = np.nan
-        qsr_seq.append(qsr)
+        qsr_seq.append(qsr.tolist())
         for e in entry:
             key = ','.join(map(str,map(int,e[:4])))
             if not key in ret:
@@ -60,7 +60,7 @@ def create_hmm(qsr_seq, filename):
     r = ROSClient()
     q, d = r.call_service(
         HMMRepRequestCreate(
-            qsr_seq=qsr_seq.tolist(),
+            qsr_seq=qsr_seq,
             qsr_type="qtch"
         )
     )

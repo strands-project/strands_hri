@@ -16,6 +16,7 @@ from copy import deepcopy
 import os
 import json
 from std_srvs.srv import Empty, EmptyResponse
+from std_msgs.msg import String
 
 DEBUG = False
 
@@ -210,6 +211,7 @@ class ParticleFilterPredictor(object):
 
     def __init__(self, path, qtc_type=None):
         self.srv = rospy.Service("~particle_filter/reset", Empty, self.reset_cb)
+        self.pub = rospy.Publisher("~particle_filter/result", String, queue_size=1)
         hmm = []
         self.rules = []
         self.rule_mapping = {}
@@ -390,7 +392,9 @@ class ParticleFilterPredictor(object):
 
             pred = qu.nan_to_no_state(self.filter_bank[uuid]["last_prediction"])
             qtc_str = ','.join(map(str,map(int, pred)))
-            rule_idx = self.rule_mapping[self.model_mapping[np.bincount(map(int,p[:,1].flatten())).argmax()]]
+            model = self.model_mapping[np.bincount(map(int,p[:,1].flatten())).argmax()]
+            self.pub.publish(model)
+            rule_idx = self.rule_mapping[model]
             states = self.rules[rule_idx][qtc_str].keys()
             probs = self.rules[rule_idx][qtc_str].values() # Both lists are always in a corresponding order
 #            prediction = np.random.choice(states, p=probs)
