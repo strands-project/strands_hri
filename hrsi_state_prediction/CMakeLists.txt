@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   hrsi_representation
   rospy
   std_msgs
-  dynamic_reconfigure
   message_generation
 )
 
@@ -53,10 +52,11 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  LoadModel.srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -64,10 +64,6 @@ add_service_files(
 #   Action1.action
 #   Action2.action
 # )
-
-generate_dynamic_reconfigure_options(
-  cfg/StatePredictor.cfg
-)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -98,9 +94,9 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
+#include_directories(
+  #${catkin_INCLUDE_DIRS}
+#)
 
 ## Declare a cpp library
 # add_library(hrsi_state_prediction
@@ -128,10 +124,11 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(PROGRAMS
+   scripts/state_predictor.py
+   scripts/create_model.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS hrsi_state_prediction hrsi_state_prediction_node
