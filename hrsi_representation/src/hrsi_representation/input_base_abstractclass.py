@@ -62,7 +62,7 @@ class InputBaseAbstractclass(object):
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
         out = pickle.loads(res.data)
-        qtc = np.array([])
+        qtc = []
         dis = []
         for t in out.qsrs.get_sorted_timestamps():
             for k, v in out.qsrs.trace[t].qsrs.items():
@@ -71,10 +71,11 @@ class InputBaseAbstractclass(object):
 #                    continue # Hacky but we only want dist when qtc is there too.
                 for l, w in v.qsr.items():
                     if l.startswith("qtc"):
-                        q = self._to_np_array(w)
-                        if l.startswith("qtcbcs"):
-                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
-                        qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
+#                        q = self._to_np_array(w)
+#                        if l.startswith("qtcbcs"):
+#                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
+#                        qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
+                        qtc.append(w)
                     elif l == "argprobd":
                         dis.append(w)
 

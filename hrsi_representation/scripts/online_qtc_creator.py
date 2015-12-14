@@ -244,10 +244,10 @@ class OnlineQTCCreator(object):
                         smoothing_rate=self.smoothing_rate,
                         validated=self.parameters[self.qtc_type]["validate"],
                         uuid=uuid,
-                        qtc_robot_human=json.dumps(qsrs_robot[0].tolist()),
-                        prob_distance_robot_human=json.dumps(qsrs_robot[1][-len(qsrs_robot[0]):]), # Only add as amany distances as qtc states
-                        qtc_goal_human=json.dumps(qsrs_goal[0].tolist()),
-                        prob_distance_goal_human=json.dumps(qsrs_goal[1][-len(qsrs_goal[0]):]) # Only add as amany distances as qtc states
+                        qtc_robot_human=json.dumps(qsrs_robot[0]),
+                        prob_distance_robot_human=json.dumps(qsrs_robot[1][-len(qsrs_robot[0]):]), # Only add as many distances as qtc states
+                        qtc_goal_human=json.dumps(qsrs_goal[0]),
+                        prob_distance_goal_human=json.dumps(qsrs_goal[1][-len(qsrs_goal[0]):]) # Only add as many distances as qtc states
                     )
 
                     out.qtc.append(qtc_msg)

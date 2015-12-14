@@ -13,6 +13,19 @@ def write_file(qtc, filename):
     with open(filename, 'w') as outfile:
         outfile.write(json.dumps(np.array(qtc[0]).tolist(), separators=(',', ':')).replace('],', '],\n'))
 
+def create_numpy_files(qtc_rh, qtc_gh, filenames, path):
+    for qrh, qgh, f in zip(qtc_rh, qtc_gh, filenames):
+        qrh[0][np.isnan(qrh[0])] = 9.
+        qgh[0][np.isnan(qgh[0])] = 9.
+        res = np.append(np.append(qgh[0][:,[1,3]], qrh[0][:,[1,3]], axis=1), qrh[0][:,[0,2]], axis=1)
+        name = path+'/'+f.replace('csv','txt')
+        with open(name, 'w') as fd:
+            print("Writing %s" % name)
+            try:
+                np.savetxt(fd, res, fmt='%.0f')
+            except Exception as e:
+                print(e)
+
 def create_qtc_array_msg(header=None, stamp=None, seq=None, frame_id=None, qtc=None):
     if not header:
         header = Header()

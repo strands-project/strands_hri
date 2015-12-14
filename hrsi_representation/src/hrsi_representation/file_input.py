@@ -42,16 +42,17 @@ class FileInput(InputBaseAbstractclass):
                     reader = csv.DictReader(csvfile)
                     rospy.loginfo("Reading file: '%s'" % f)
                     for idx,row in enumerate(reader):
-                        if data["agent1"]["name"] == "":
-                            data["agent1"]["name"] = row['agent1']
-                        if data["agent2"]["name"] == "":
-                            data["agent2"]["name"] = row['agent2']
+                        if idx % 3 == 0:
+                            if data["agent1"]["name"] == "":
+                                data["agent1"]["name"] = row[kwargs["k"]]
+                            if data["agent2"]["name"] == "":
+                                data["agent2"]["name"] = row[kwargs["l"]]
 
-                        data["agent1"]["x"] = np.append(data["agent1"]["x"], float(row['x1']))
-                        data["agent1"]["y"] = np.append(data["agent1"]["y"], float(row['y1']))
+                            data["agent1"]["x"] = np.append(data["agent1"]["x"], float(row[kwargs["k_x"]]))
+                            data["agent1"]["y"] = np.append(data["agent1"]["y"], float(row[kwargs["k_y"]]))
 
-                        data["agent2"]["x"] = np.append(data["agent2"]["x"], float(row['x2']))
-                        data["agent2"]["y"] = np.append(data["agent2"]["y"], float(row['y2']))
+                            data["agent2"]["x"] = np.append(data["agent2"]["x"], float(row[kwargs["l_x"]]))
+                            data["agent2"]["y"] = np.append(data["agent2"]["y"], float(row[kwargs["l_y"]]))
 
                     ret.append(data)
 
