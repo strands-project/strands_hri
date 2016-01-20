@@ -21,7 +21,7 @@ except:
 class InputBaseAbstractclass(object):
     """Provides functions for:
         - the transformation of raw data into qsr_lib format
-        - converting the data into QTC using qsr_lig
+        - converting the data into QTC using qsr_lib
 
     Will be used as a base class for the training and online data input classes
     """
@@ -30,11 +30,14 @@ class InputBaseAbstractclass(object):
 
     def __init__(self):
         """Creates a new instance of the InputBaseClass"""
-        self.qtc_types = {
-            "qtcb": "qtc_b_simplified",
-            "qtcc": "qtc_c_simplified",
-            "qtcbc": "qtc_bc_simplified"
-        }
+        # The order of this list has to reflect the index of the qtc_type in the dynamic reconfigure file
+        self.qtc_types = [
+            "qtcbs",
+            "qtccs",
+            "qtcbcs",
+            "qtcbcs_argprobd"
+        ]
+        self.argprobd = "argprobd"
         self.template = {
             "agent1": {
                 "name": "",
@@ -49,33 +52,34 @@ class InputBaseAbstractclass(object):
         }
         self.qtc = None
 
-    def _request_qtc(self, qsr, world, parameters, include_missing_data=True, qsrs_for=[]):
-        """reads all .qtc files from a given directory and resturns them as numpy arrays"""
-
+    def _request_qtc(self, qsr, world, parameters):
         qrmsg = QSRlib_Request_Message(
             which_qsr=qsr,
             input_data=world,
-            include_missing_data=include_missing_data,
-            qsrs_for=qsrs_for,
             dynamic_args=parameters
         )
         cln = QSRlib_ROS_Client()
         req = cln.make_ros_request_message(qrmsg)
         res = cln.request_qsrs(req)
         out = pickle.loads(res.data)
-        rospy.logdebug("Request was made at " + str(out.timestamp_request_made) + " and received at " + str(out.timestamp_request_received) + " and computed at " + str(out.timestamp_qsrs_computed) )
-        ret = np.array([])
+        qtc = []
+        dis = []
         for t in out.qsrs.get_sorted_timestamps():
-            foo = str(t) + ": "
-            for k, v in zip(out.qsrs.trace[t].qsrs.keys(), out.qsrs.trace[t].qsrs.values()):
-                foo += str(k) + ":" + str(v.qsr) + "; "
-                q = self._to_np_array(v.qsr)
-                if qsr == self.qtc_types["qtcbc"]:
-                    q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
-                ret = np.array([q]) if not ret.size else np.append(ret, [q], axis=0)
-            rospy.logdebug(foo)
+            for k, v in out.qsrs.trace[t].qsrs.items():
+#                print v.qsr.items()
+#                if len(v.qsr.items()) < 2:
+#                    continue # Hacky but we only want dist when qtc is there too.
+                for l, w in v.qsr.items():
+                    if l.startswith("qtc"):
+#                        q = self._to_np_array(w)
+#                        if l.startswith("qtcbcs"):
+#                            q = q if len(q) == 4 else np.append(q, [np.nan, np.nan])
+#                        qtc = np.array([q]) if not qtc.size else np.append(qtc, [q], axis=0)
+                        qtc.append(w)
+                    elif l == "argprobd":
+                        dis.append(w)
 
-        return ret
+        return qtc, dis
 
     def _convert_to_world(self, data_dict):
         world = World_Trace()
@@ -115,7 +119,7 @@ class InputBaseAbstractclass(object):
         """Input data into the conversion process"""
         pass
 
-    def convert(self, data, qtc_type, parameters):
+    def convert(self, data, qtc_type, parameters, argprobd=True):
         """Convert data inserted via put() into QTC
 
         :param qtc_type: qtcb|qtcc|qtcbc
@@ -124,14 +128,13 @@ class InputBaseAbstractclass(object):
         ret = []
         for elem in np.array(data):
             world = self._convert_to_world(data_dict=elem)
-
-            try:
-                qsr = self.qtc_types[qtc_type]
-            except KeyError:
-                rospy.logfatal("Unknown QTC type: %s" % qtc_type)
-                return
-            ret.append(self._request_qtc(qsr=qsr, world=world, parameters=parameters, qsrs_for=[(elem["agent1"]["name"],elem["agent2"]["name"])]))
+            if argprobd:
+                qsr = [qtc_type, self.argprobd]
+            else:
+                qsr = qtc_type
+            ret.append(self._request_qtc(qsr=qsr, world=world, parameters=parameters))
         return ret
 
     def _to_np_array(self, string):
+        string = string.values()[0] if isinstance(string, dict) else string
         return np.fromstring(string.replace('-','-1').replace('+','+1'), dtype=int, sep=',')

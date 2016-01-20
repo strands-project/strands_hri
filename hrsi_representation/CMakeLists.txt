@@ -53,11 +53,12 @@ catkin_package()
 install(PROGRAMS
   scripts/offline_qtc_creator.py
   scripts/online_qtc_creator.py
+  scripts/goal_pose_republisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-if (CATKIN_ENABLE_TESTING)
-  find_package(catkin REQUIRED COMPONENTS rostest)
-  add_rostest(tests/online_creator_tester.test)
-  add_rostest(tests/offline_creator_tester.test)
-endif()
+# if (CATKIN_ENABLE_TESTING)
+#   find_package(catkin REQUIRED COMPONENTS rostest)
+#   add_rostest(tests/online_creator_tester.test)
+#   add_rostest(tests/offline_creator_tester.test)
+# endif()
