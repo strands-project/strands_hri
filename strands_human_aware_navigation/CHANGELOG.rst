@@ -2,6 +2,14 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Moving loaded parameters to correct namespace
+* Adding site param file param
+* Adding the custom dynamic reconfigure parameters to human_aware wrapper.
+  @lucasb-eyer to test
+* Contributors: Christian Dondrup
+
 0.0.13 (2015-05-17)
 -------------------
 * Exposing human_aware_navigation params via launch file.

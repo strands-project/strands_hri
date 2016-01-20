@@ -2,6 +2,16 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [bellbot] adding voice_output to install targets
+* Removed a print
+* Adding ability to incorporate text published on topics.
+* Adding voice_output to launch file, removing a print.
+* [bellbot_action_server] Adding voice output
+  Listening to state publisher and saying sentence definded in config file. Text can be said at start or end of the state. See config file for examples.
+* Contributors: Christian Dondrup
+
 0.0.13 (2015-05-17)
 -------------------
 * more stable transitions, minor GUI fix
