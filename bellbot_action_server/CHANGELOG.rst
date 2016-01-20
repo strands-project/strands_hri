@@ -2,8 +2,8 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2016-01-20)
+------------------
 * [bellbot] adding voice_output to install targets
 * Removed a print
 * Adding ability to incorporate text published on topics.

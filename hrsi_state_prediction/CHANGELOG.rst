@@ -2,8 +2,8 @@
 Changelog for package hrsi_state_prediction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2016-01-20)
+------------------
 * state_predictor now uses new particle filter in qsr_prob_rep instead of own implementation.
 * Removing unnecessary dynamic reconfigure and service options to load models.
 * Removing hacky particle filter

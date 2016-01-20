@@ -2,8 +2,8 @@
 Changelog for package hrsi_velocity_costmaps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2016-01-20)
+------------------
 * velocity costmap server publishes to `/velocity_costmap` now and takes the qsr_lib style qtc strings as input.
   Also updating cmake and package file.
 * Creating qtc relations between robot-human and robot_goal-human in online creator. Using this to learn mappings from observations to robot behaviour and for finally working particle filtering.

@@ -2,8 +2,8 @@
 Changelog for package hrsi_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2016-01-20)
+------------------
 * Creating hrsi_launch package that start everything necessary to run the velocity costmaps approach using the particle filter classification.
 * Contributors: Christian Dondrup
 

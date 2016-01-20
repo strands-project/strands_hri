@@ -2,8 +2,8 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2016-01-20)
+------------------
 * Merge pull request `#128 <https://github.com/strands-project/strands_hri/issues/128>`_ from strands-project/json
   now uses json instead of simplejson
 * publish human-readable destination on /bellbot_gui/destination
