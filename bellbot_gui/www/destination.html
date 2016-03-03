@@ -10,15 +10,23 @@ $var jsfiles: webtools/roslibjs/include/EventEmitter2/eventemitter2.js webtools/
                 <div class="panel-heading">
                     <h3 class="panel-title">Zielauswahl</h3>
                 </div>
+
                 <div class="panel-body">
-                    <div class="col-md-3">
-                        <form action="SetGoal">
-                            <input type="text" name="destination" id="destination" class="typeahead col-md-8" placeholder="Ziel eingeben"/>
-                            <button type="submit" class="btn btn-success col-md-12">Los gehen</button>
-                        </form>
-                    </div>
-                    <div class="col-md-9">
-                      <div id="keyboard-container" />
+						        <div class="row">
+						          <div class="panel">
+						          Henry kann Sie zu einem Ziel im Hause führen. Geben Sie dazu einfach ein paar Anfangsbuchstaben des Namens der Person, die sie besuchen möchten, oder des Raumes, den Sie suchen ein, und wählen Sie dann das Ziel aus der Liste aus. 
+						          </div>
+										</div>
+						        <div class="row">
+	                    <div class="col-md-3">
+	                        <form action="SetGoal">
+	                            <input type="text" name="destination" id="destination" class="typeahead col-md-8" placeholder="Ziel eingeben"/>
+	                            <button type="submit" class="btn btn-success col-md-12">Los gehen</button>
+	                        </form>
+	                    </div>
+	                    <div class="col-md-9">
+	                      <div id="keyboard-container" />
+	                    </div>
                     </div>
                     
                 </div>
