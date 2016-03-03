@@ -118,7 +118,7 @@ class DestinationPage(object):
             for c in self.categories:
                 # print "Getting", c
                 map_name = rospy.get_param("/topological_map_name","aaf_predep")
-                res = proxy(NodeMetadataRequest("aaf_winter", map_name, c)) # 'office' | 'Meeting Rooms'
+                res = proxy(NodeMetadataRequest(map_name, c)) # 'office' | 'Meeting Rooms'
                 print res
                 for i in range(0, len(res.name)):
                     foo = res.name[i].decode('utf-8')
