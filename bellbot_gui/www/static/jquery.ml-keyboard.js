@@ -89,7 +89,7 @@ Key.prototype.isActive = function() {
   Key.call(this, arguments);
 
   this.id = "mlkeyboard-backspace";
-  this.default_value = 'delete';
+  this.default_value = '';
 }
 
 KeyDelete.prototype = new Key();
@@ -102,7 +102,7 @@ KeyDelete.prototype.defaultClickAction = function() {
   Key.call(this, arguments);
 
   this.id = "mlkeyboard-tab";
-  this.default_value = 'tab';
+  this.default_value = '';
 }
 
 KeyTab.prototype = new Key();
@@ -116,7 +116,7 @@ KeyTab.prototype.defaultClickAction = function() {
   Key.call(this, arguments);
 
   this.id = "mlkeyboard-capslock";
-  this.default_value = 'caps lock';
+  this.default_value = '';
 }
 
 KeyCapsLock.prototype = new Key();
@@ -133,7 +133,7 @@ KeyCapsLock.prototype.defaultClickAction = function() {
   Key.call(this, arguments);
 
   this.id = "mlkeyboard-return";
-  this.default_value = 'return';
+  this.default_value = '';
 }
 
 KeyReturn.prototype = new Key();
@@ -150,7 +150,7 @@ KeyReturn.prototype.defaultClickAction = function() {
   Key.call(this, arguments);
 
   this.id = "mlkeyboard-"+arguments[1]+"-shift";
-  this.default_value = 'shift';
+  this.default_value = '';
 }
 
 KeyShift.prototype = new Key();
