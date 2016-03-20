@@ -41,18 +41,20 @@ class Manager(object):
         if self.last_state in self.config.keys():
             try:
                 text = self.substitude(self.config[self.last_state][self.END])
+            except KeyError:
+                rospy.loginfo("No entry %s for %s in speech database." % (self.END,self.last_state))
+            else:
                 rospy.loginfo("saying: " + text)
                 self.mary_client.send_goal_and_wait(maryttsGoal(text=text))
-            except KeyError:
-                pass # No end message given
 
         if msg.name in self.config.keys():
             try:
-                text = self.substitude(self.config[self.last_state][self.START])
+                text = self.substitude(self.config[msg.name][self.START])
+            except KeyError:
+                rospy.loginfo("No entry %s for %s in speech database." % (self.START,msg.name))
+            else:
                 rospy.loginfo("saying: " + text)
                 self.mary_client.send_goal_and_wait(maryttsGoal(text=text))
-            except KeyError:
-                pass # No start message given
 
         self.last_state = msg.name
 
