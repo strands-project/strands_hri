@@ -71,10 +71,19 @@ class CostmapCreator(object):
         self._map_pub = map_pub
         self._origin_pub = origin_pub
 
-        local_planner_name = rospy.get_param("/move_base/base_local_planner").split('/')[1]
+        local_planner_name = self.get_local_planner_name()
         self._max_vel_x_parma_name = "/move_base/" + local_planner_name + "/max_vel_x"
 
         self.lock = Lock()
+        
+    def get_local_planner_name(self):
+        try:
+            return rospy.get_param("/move_base/base_local_planner").split('/')[1]
+        except KeyError as e:
+            rospy.logerr("Unable to get parameter: " + str(e))
+            rospy.logerr("Is move_base running? Will retry in 5 second.")
+            rospy.sleep(5.)
+            if not rospy.is_shutdown(): return self.get_local_planner_name()
 
     @property
     def max_costs(self):
