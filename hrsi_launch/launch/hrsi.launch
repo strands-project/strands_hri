@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="model_dir"/>
+  <arg name="model_dir" default="$(find hrsi_state_prediction)/models"/>
 
   <node name="qsr_lib" pkg="qsr_lib" type="qsrlib_ros_server.py" output="screen" respawn="true"/>
   <node name="goal_pose_republisher" pkg="hrsi_representation" type="goal_pose_republisher.py" output="screen" respawn="true"/>
