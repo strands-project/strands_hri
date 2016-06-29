@@ -8,6 +8,7 @@
   <arg name="gaze_type" default="0" />
   <arg name="with_site_movebase_params" default="false"/>
   <arg name="site_movebase_params" default=""/>
+  <arg name="people_positions" default="/people_tracker_filter/positions"/>
 
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER)" user="$(arg user)" default="true"/>
   
@@ -17,6 +18,7 @@
     <param name="min_dist" value="$(arg min_dist)" type="double"/>
     <param name="detection_angle" value="$(arg detection_angle)" type="double"/>
     <param name="gaze_type" value="$(arg gaze_type)" type="int"/>
+    <param name="people_positions" value="$(arg people_positions)" type="string"/>
   </node>
   <node pkg="strands_human_aware_navigation" type="dwa_dyn_wrapper" name="DWAPlannerROS_dyn_wrapper" output="screen" respawn="true"/>
   <rosparam file="$(find strands_movebase)/strands_movebase_params/dwa_planner_ros.yaml" command="load" ns="human_aware_navigation"/>
