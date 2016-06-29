@@ -55,7 +55,14 @@ class StatePredictor(object):
 
         self.model = m.get()
 
-        self.visualisation_colors = rospy.get_param("~visualisation/models")
+        visualisation = rospy.get_param("~visualisation")
+        self.visualisation_colors = visualisation['models']
+        self.default_color = ColorRGBA(
+            a=1.0,
+            r=visualisation['default']['r']/255.,
+            g=visualisation['default']['g']/255.,
+            b=visualisation['default']['b']/255.
+        )
 
         self.pub = rospy.Publisher("~prediction_array", QTCPredictionArray, queue_size=10)
         self.markpub = rospy.Publisher("~marker_array", MarkerArray, queue_size=10)
@@ -90,7 +97,7 @@ class StatePredictor(object):
                     )
                 )
             self.__filters[q.uuid] = msg.header.stamp.to_sec()
-            
+
             qtc_robot = json.loads(q.qtc_robot_human)[-1].split(',')
             qtc_goal = json.loads(q.qtc_goal_human)[-1].split(',')
 
@@ -142,7 +149,7 @@ class StatePredictor(object):
                 rospy.loginfo("Deleting particle filter: %s last seen %f" % (k, filters[k]))
                 self.client.call_service(PfRepRequestRemove(uuid=k))
                 del filters[k]
-                
+
     def people_callback(self, msg):
         people = [[],[]]
         for uuid, pose in zip(msg.uuids, msg.poses):
@@ -150,19 +157,19 @@ class StatePredictor(object):
             try:
                 people[1].append(
                     ColorRGBA(
-                        a=1.0, 
-                        r=self.visualisation_colors[self.__classification_results[uuid]]['color']['r'], 
-                        g=self.visualisation_colors[self.__classification_results[uuid]]['color']['g'], 
-                        b=self.visualisation_colors[self.__classification_results[uuid]]['color']['b']
+                        a=1.0,
+                        r=self.visualisation_colors[self.__classification_results[uuid]]['color']['r']/255.,
+                        g=self.visualisation_colors[self.__classification_results[uuid]]['color']['g']/255.,
+                        b=self.visualisation_colors[self.__classification_results[uuid]]['color']['b']/255.
                     )
                 )
             except KeyError:
-                people[1].append(None)
-                
+                people[1].append(self.default_color)
+
         self.markpub.publish(
             mc.marker_array_from_people_tracker_msg(
-                poses=people[0], 
-                target_frame=msg.header.frame_id, 
+                poses=people[0],
+                target_frame=msg.header.frame_id,
                 color=people[1]
             )
         )

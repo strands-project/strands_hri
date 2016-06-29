@@ -1,4 +1,8 @@
 visualisation:
+    default:
+        r: 60.0
+        g: 60.0
+        b: 60.0
     models:
         crossing:
             color:
