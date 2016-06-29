@@ -35,12 +35,12 @@ class StatePredictor(object):
         obs = qmc.create_observation_model(qtc_type=qmc.qtc_types.qtch, start_end=True)
         self.lookup = qmc.create_states(qtc_type=qmc.qtc_types.qtch, start_end=True)
         hmc = HMMModelCreation()
+        m = PfModel()
         for f in os.listdir(rospy.get_param("~model_dir")):
             filename = rospy.get_param("~model_dir") + '/' + f
             if f.endswith(".hmm"):
                 rospy.loginfo("Creating prediction model from: %s", filename)
                 pred = hmc.create_prediction_model(input=filename)
-                m = PfModel()
                 m.add_model(f.split('.')[0], pred, obs)
             elif f.endswith(".rules"):
                 with open(filename) as fd:
@@ -99,7 +99,7 @@ class StatePredictor(object):
             )
 #            print "+++ elapsed", time.time()-start
 
-            rospy.logdebug("Current state according to filter: %s" % qtc_state)
+            rospy.loginfo("Current state according to filter: %s" % qtc_state)
             try:
                 states = self.rules[qtc_state[2]][qtc_state[0]].keys()
                 probs = self.rules[qtc_state[2]][qtc_state[0]].values() # Both lists are always in a corresponding order
