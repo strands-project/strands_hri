@@ -1,8 +1,11 @@
 <launch>
 
-  <arg name="model_dir"/>
+  <arg name="model_dir" default="$(find hrsi_state_prediction)/models"/>
+  <arg name="predictor_visualisation_file" default="$(find hrsi_state_prediction)/conf/visualisation.yaml"/>
+  <arg name="with_qsr_lib" default="false"/>
+  <arg name="with_qsr_prob_rep" default="true"/>
 
-  <node name="qsr_lib" pkg="qsr_lib" type="qsrlib_ros_server.py" output="screen" respawn="true"/>
+  <node name="qsr_lib" pkg="qsr_lib" type="qsrlib_ros_server.py" output="screen" respawn="true" if="$(arg with_qsr_lib)"/>
   <node name="goal_pose_republisher" pkg="hrsi_representation" type="goal_pose_republisher.py" output="screen" respawn="true"/>
   <node pkg="hrsi_representation" type="online_qtc_creator.py" name="online_qtc_creator" output="screen" respawn="true">
     <param name="ppl_topic" type="string" value="/people_tracker/positions"/>
@@ -18,10 +21,11 @@
     <param name="validate" type="bool" value="true"/>
     <param name="goal_topic" type="string" value="/move_base/current_goal"/>
   </node>
-  <node pkg="qsr_prob_rep" type="qsr_prob_rep_ros_server.py" name="prob_rep_ros_server" output="screen" respawn="true"/>
-  <node pkg="hrsi_state_prediction" type="state_predictor.py" name="qtc_state_predictor" output="screen" respawn="true">
-    <param name="model_dir" type="string" value="$(arg model_dir)"/>
-  </node>
+  <node pkg="qsr_prob_rep" type="qsr_prob_rep_ros_server.py" name="prob_rep_ros_server" output="screen" respawn="true" if="$(arg with_qsr_prob_rep)"/>
+  <include file="$(find hrsi_state_prediction)/launch/state_predictor.launch">
+    <arg name="visualisation_file" value="$(arg predictor_visualisation_file)" />    
+    <arg name="model_dir" value="$(arg model_dir)"/>
+  </include>
   <node pkg="hrsi_velocity_costmaps" type="velocity_costmap_server.py" name="velocity_costmap_server" output="screen" respawn="true"/>
 
 </launch>

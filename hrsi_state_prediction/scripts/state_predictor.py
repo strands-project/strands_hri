@@ -18,12 +18,17 @@ from qsrrep_lib.rep_io_pf import PfRepRequestUpdate, PfRepRequestCreate, PfRepRe
 from qsrrep_utils.qtc_model_creation import QTCModelCreation
 from qsrrep_utils.hmm_model_creation import HMMModelCreation
 from qsrrep_pf.pf_model import PfModel
+from bayes_people_tracker.msg import PeopleTracker
+from visualization_msgs.msg import MarkerArray
+import people_tracker_emulator.msg_creator as mc
+from std_msgs.msg import ColorRGBA
 import os
 
 
 class StatePredictor(object):
     __interaction_types = ["passby", "pathcrossing"]
     __filters = {}
+    __classification_results = {}
 
     model = None
     rules = {}
@@ -35,12 +40,12 @@ class StatePredictor(object):
         obs = qmc.create_observation_model(qtc_type=qmc.qtc_types.qtch, start_end=True)
         self.lookup = qmc.create_states(qtc_type=qmc.qtc_types.qtch, start_end=True)
         hmc = HMMModelCreation()
+        m = PfModel()
         for f in os.listdir(rospy.get_param("~model_dir")):
             filename = rospy.get_param("~model_dir") + '/' + f
             if f.endswith(".hmm"):
                 rospy.loginfo("Creating prediction model from: %s", filename)
                 pred = hmc.create_prediction_model(input=filename)
-                m = PfModel()
                 m.add_model(f.split('.')[0], pred, obs)
             elif f.endswith(".rules"):
                 with open(filename) as fd:
@@ -50,8 +55,12 @@ class StatePredictor(object):
 
         self.model = m.get()
 
+        self.visualisation_colors = rospy.get_param("~visualisation/models")
+
         self.pub = rospy.Publisher("~prediction_array", QTCPredictionArray, queue_size=10)
+        self.markpub = rospy.Publisher("~marker_array", MarkerArray, queue_size=10)
         rospy.Subscriber(rospy.get_param("~qtc_topic", "/online_qtc_creator/qtc_array"), QTCArray, self.callback, queue_size=1)
+        rospy.Subscriber(rospy.get_param("~ppl_topic", "/people_tracker/positions"), PeopleTracker, self.people_callback, queue_size=1)
         rospy.loginfo("... all done")
 
     def _create_proper_qtc_keys(self, dictionary):
@@ -81,7 +90,7 @@ class StatePredictor(object):
                     )
                 )
             self.__filters[q.uuid] = msg.header.stamp.to_sec()
-
+            
             qtc_robot = json.loads(q.qtc_robot_human)[-1].split(',')
             qtc_goal = json.loads(q.qtc_goal_human)[-1].split(',')
 
@@ -99,7 +108,8 @@ class StatePredictor(object):
             )
 #            print "+++ elapsed", time.time()-start
 
-            rospy.logdebug("Current state according to filter: %s" % qtc_state)
+            rospy.loginfo("Current state according to filter: %s" % qtc_state)
+            self.__classification_results[q.uuid] = qtc_state[2]
             try:
                 states = self.rules[qtc_state[2]][qtc_state[0]].keys()
                 probs = self.rules[qtc_state[2]][qtc_state[0]].values() # Both lists are always in a corresponding order
@@ -132,6 +142,30 @@ class StatePredictor(object):
                 rospy.loginfo("Deleting particle filter: %s last seen %f" % (k, filters[k]))
                 self.client.call_service(PfRepRequestRemove(uuid=k))
                 del filters[k]
+                
+    def people_callback(self, msg):
+        people = [[],[]]
+        for uuid, pose in zip(msg.uuids, msg.poses):
+            people[0].append(pose)
+            try:
+                people[1].append(
+                    ColorRGBA(
+                        a=1.0, 
+                        r=self.visualisation_colors[self.__classification_results[uuid]]['color']['r'], 
+                        g=self.visualisation_colors[self.__classification_results[uuid]]['color']['g'], 
+                        b=self.visualisation_colors[self.__classification_results[uuid]]['color']['b']
+                    )
+                )
+            except KeyError:
+                people[1].append(None)
+                
+        self.markpub.publish(
+            mc.marker_array_from_people_tracker_msg(
+                poses=people[0], 
+                target_frame=msg.header.frame_id, 
+                color=people[1]
+            )
+        )
 
 
 if __name__ == "__main__":

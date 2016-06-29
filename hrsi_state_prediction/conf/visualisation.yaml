@@ -1,0 +1,12 @@
+visualisation:
+    models:
+        crossing:
+            color:
+                r: 0.0
+                g: 204.0
+                b: 0.0
+        passby:
+            color:
+                r: 204.0
+                g: 0.0
+                b: 204.0
