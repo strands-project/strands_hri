@@ -17,12 +17,14 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped, Vector3Stamped
 from dynamic_reconfigure.server import Server as DynServer
 from hrsi_velocity_costmaps.cfg import VelocityCostmapsConfig
+from visualization_msgs.msg import Marker
 from tf import TransformListener
 
 
 class VelocityCostmapServer(object):
     def __init__(self, name):
         rospy.loginfo("Starting %s..." % name)
+        self.vis_pub = rospy.Publisher("~visualization_marker", Marker, queue_size=1)
         self.tf = TransformListener()
         self.cc = CostmapCreator(
             rospy.Publisher("/velocity_costmap", OccupancyGrid, queue_size=10, latch=True),
@@ -66,12 +68,34 @@ class VelocityCostmapServer(object):
             } for e in qtc.qtc
         }
         element = data_buffer[ppl.uuids[ppl.distances.index(ppl.min_distance)]] # Only taking the closest person for now
+        self.publish_closest_person_marker(ppl.poses[ppl.distances.index(ppl.min_distance)], ppl.header.frame_id)
         qtc = element["qtc"].split(',')
         self.cc.publish(
             angle=element["angle"],
             qtc_symbol=','.join([qtc[0]] if len(qtc) == 2 else [qtc[0], qtc[2]]),
             velocity=element["velocity"]
         )
+
+    def publish_closest_person_marker(self, pose, frame_id):
+        if self.vis_pub.get_num_connections() > 0:
+            m = Marker()
+            m.header.stamp = rospy.Time.now()
+            m.header.frame_id = frame_id
+            m.ns = "velocity_costmaps"
+            m.id = 0
+            m.type = m.SPHERE
+            m.action = m.MODIFY
+            m.pose = pose
+            m.pose.position.z = 2.0
+            m.scale.x = .25
+            m.scale.y = .25
+            m.scale.z = .25
+            m.color.a = 1.0
+            m.color.r = 0.0
+            m.color.g = 1.0
+            m.color.b = 0.0
+            m.lifetime = rospy.Duration(1.)
+            self.vis_pub.publish(m)
 
 if __name__ == "__main__":
     rospy.init_node("velocity_costmap_server")
