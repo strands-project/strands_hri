@@ -68,7 +68,7 @@ class VelocityCostmapServer(object):
             } for e in qtc.qtc
         }
         element = data_buffer[ppl.uuids[ppl.distances.index(ppl.min_distance)]] # Only taking the closest person for now
-        self.publish_closest_person_marker(ppl.poses[ppl.distances.index(ppl.min_distance)])
+        self.publish_closest_person_marker(ppl.poses[ppl.distances.index(ppl.min_distance)], ppl.header.frame_id)
         qtc = element["qtc"].split(',')
         self.cc.publish(
             angle=element["angle"],
@@ -76,11 +76,11 @@ class VelocityCostmapServer(object):
             velocity=element["velocity"]
         )
 
-    def publish_closest_person_marker(self, pose):
+    def publish_closest_person_marker(self, pose, frame_id):
         if self.vis_pub.get_num_connections() > 0:
             m = Marker()
             m.header.stamp = rospy.Time.now()
-            m.header.frame_id = "/map"
+            m.header.frame_id = frame_id
             m.ns = "velocity_costmaps"
             m.id = 0
             m.type = m.SPHERE
