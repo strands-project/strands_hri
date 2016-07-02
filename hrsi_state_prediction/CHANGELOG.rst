@@ -2,8 +2,8 @@
 Changelog for package hrsi_state_prediction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2016-07-02)
+------------------
 * Adding a default colour and using the right colour values. (`#144 <https://github.com/strands-project/strands_hri/issues/144>`_)
 * Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
   * Adding models for passby and crossing

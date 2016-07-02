@@ -2,8 +2,8 @@
 Changelog for package hrsi_velocity_costmaps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2016-07-02)
+------------------
 * Adding a marker showing for whom the velocity costmap is created. (`#145 <https://github.com/strands-project/strands_hri/issues/145>`_)
   * Adding a marker showing for whom the velocity costmap is created.
   * Using same frame as people tracker message.

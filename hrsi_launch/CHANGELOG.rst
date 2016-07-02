@@ -2,8 +2,8 @@
 Changelog for package hrsi_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2016-07-02)
+------------------
 * Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
   * Adding models for passby and crossing
   * Fixed an error where the models were overridden every time a new one was created.
