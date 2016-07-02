@@ -2,6 +2,17 @@
 Changelog for package bellbot_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixed form focus
+* fixed `#293 <https://github.com/strands-project/strands_hri/issues/293>`_
+* improved the interface as discussed
+  in https://github.com/strands-project/aaf_deployment/issues/293
+* use the new NodeMetadata
+  as merged in https://github.com/strands-project/strands_navigation/pull/296
+* just some more instructional text
+* Contributors: Christian Dondrup, Marc Hanheide
+
 0.1.0 (2016-01-20)
 ------------------
 * Merge pull request `#128 <https://github.com/strands-project/strands_hri/issues/128>`_ from strands-project/json

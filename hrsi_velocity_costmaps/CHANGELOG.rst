@@ -2,6 +2,22 @@
 Changelog for package hrsi_velocity_costmaps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding a marker showing for whom the velocity costmap is created. (`#145 <https://github.com/strands-project/strands_hri/issues/145>`_)
+  * Adding a marker showing for whom the velocity costmap is created.
+  * Using same frame as people tracker message.
+* Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
+  * Adding models for passby and crossing
+  * Fixed an error where the models were overridden every time a new one was created.
+  * If move_base is not running, the velocity_costmap_creator will now retry to get the parameter instead of dying.
+  * Adding config file to specify colours for classification results to visualise the output.
+  * Adding dedicated launch file for state_prediction.
+  * Using state_prediction launch file in hrsi_launch
+  * Adding install targets for new directories.
+  * Adding visualisation markers for classification results.
+* Contributors: Christian Dondrup
+
 0.1.0 (2016-01-20)
 ------------------
 * velocity costmap server publishes to `/velocity_costmap` now and takes the qsr_lib style qtc strings as input.

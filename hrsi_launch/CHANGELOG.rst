@@ -2,6 +2,19 @@
 Changelog for package hrsi_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
+  * Adding models for passby and crossing
+  * Fixed an error where the models were overridden every time a new one was created.
+  * If move_base is not running, the velocity_costmap_creator will now retry to get the parameter instead of dying.
+  * Adding config file to specify colours for classification results to visualise the output.
+  * Adding dedicated launch file for state_prediction.
+  * Using state_prediction launch file in hrsi_launch
+  * Adding install targets for new directories.
+  * Adding visualisation markers for classification results.
+* Contributors: Christian Dondrup
+
 0.1.0 (2016-01-20)
 ------------------
 * Creating hrsi_launch package that start everything necessary to run the velocity costmaps approach using the particle filter classification.

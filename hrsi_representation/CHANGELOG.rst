@@ -2,6 +2,9 @@
 Changelog for package hrsi_representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.0 (2016-01-20)
 ------------------
 * Updating install targets for hrsi_representation and removing test due to completely changed output and message type, the rosbag used for the test does not contain the right data. Will have to record new test data.

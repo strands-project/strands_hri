@@ -2,6 +2,20 @@
 Changelog for package hrsi_state_prediction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding a default colour and using the right colour values. (`#144 <https://github.com/strands-project/strands_hri/issues/144>`_)
+* Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
+  * Adding models for passby and crossing
+  * Fixed an error where the models were overridden every time a new one was created.
+  * If move_base is not running, the velocity_costmap_creator will now retry to get the parameter instead of dying.
+  * Adding config file to specify colours for classification results to visualise the output.
+  * Adding dedicated launch file for state_prediction.
+  * Using state_prediction launch file in hrsi_launch
+  * Adding install targets for new directories.
+  * Adding visualisation markers for classification results.
+* Contributors: Christian Dondrup
+
 0.1.0 (2016-01-20)
 ------------------
 * state_predictor now uses new particle filter in qsr_prob_rep instead of own implementation.

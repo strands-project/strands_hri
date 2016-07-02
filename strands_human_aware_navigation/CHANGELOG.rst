@@ -2,6 +2,12 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [human_aware_navigation] Exposing peopl_tracker topic via launch file
+  Default has been set to used the filtered topic.
+* Contributors: Christian Dondrup
+
 0.1.0 (2016-01-20)
 ------------------
 * Moving loaded parameters to correct namespace
