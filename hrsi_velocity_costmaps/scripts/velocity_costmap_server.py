@@ -67,8 +67,11 @@ class VelocityCostmapServer(object):
                 "velocity": vels[ppl.uuids.index(e.uuid)]
             } for e in qtc.qtc
         }
-        element = data_buffer[ppl.uuids[ppl.distances.index(ppl.min_distance)]] # Only taking the closest person for now
-        self.publish_closest_person_marker(ppl.poses[ppl.distances.index(ppl.min_distance)], ppl.header.frame_id)
+        try:
+            element = data_buffer[ppl.uuids[ppl.distances.index(ppl.min_distance)]] # Only taking the closest person for now
+            self.publish_closest_person_marker(ppl.poses[ppl.distances.index(ppl.min_distance)], ppl.header.frame_id)
+        except KeyError:
+            return
         qtc = element["qtc"].split(',')
         self.cc.publish(
             angle=element["angle"],
