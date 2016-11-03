@@ -2,8 +2,8 @@
 Changelog for package hrsi_state_prediction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2016-11-03)
+------------------
 * Annotation tool for people trajectories (`#147 <https://github.com/strands-project/strands_hri/issues/147>`_)
   * Adding first experimental version of annotation tool
   * The annotation tool.

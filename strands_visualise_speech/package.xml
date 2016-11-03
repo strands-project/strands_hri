@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>strands_visualise_speech</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>The strands_visualise_speech package</description>
 
   <maintainer email="cdondrup@lincoln.ac.uk">Christian Dondrup</maintainer>
