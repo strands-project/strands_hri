@@ -2,6 +2,18 @@
 Changelog for package hrsi_state_prediction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Annotation tool for people trajectories (`#147 <https://github.com/strands-project/strands_hri/issues/147>`_)
+  * Adding first experimental version of annotation tool
+  * The annotation tool.
+  * Quicker painting
+  * Adding script to create csv files from database annotations to feed into offline qtc creator.
+  * Fixing help messages
+  * Creating a filter scripts that creates a new collection with only applicable entries.
+  * Removed all the filtering from the annotation tool. Now done prior in the filtering script.
+* Contributors: Christian Dondrup
+
 0.1.1 (2016-07-02)
 ------------------
 * Adding a default colour and using the right colour values. (`#144 <https://github.com/strands-project/strands_hri/issues/144>`_)

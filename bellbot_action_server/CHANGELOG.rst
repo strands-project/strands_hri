@@ -2,6 +2,9 @@
 Changelog for package bellbot_action_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.1 (2016-07-02)
 ------------------
 * Fixing copy and paste error in bellbot voice output. Improving structure, increasing verbosity a little.

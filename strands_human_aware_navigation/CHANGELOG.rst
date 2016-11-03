@@ -2,6 +2,9 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.1 (2016-07-02)
 ------------------
 * [human_aware_navigation] Exposing peopl_tracker topic via launch file

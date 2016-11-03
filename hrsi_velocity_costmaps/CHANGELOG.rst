@@ -2,6 +2,12 @@
 Changelog for package hrsi_velocity_costmaps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Velocity Costmaps] Catching identity change during interaction
+  If a person changes their tracking id while the best model is classified and the belief generated, the UUID for costmap generation is not the same as in the current list of tracked people any more. If this is the case, the velo map is just not created.
+* Contributors: Christian Dondrup
+
 0.1.1 (2016-07-02)
 ------------------
 * Adding a marker showing for whom the velocity costmap is created. (`#145 <https://github.com/strands-project/strands_hri/issues/145>`_)
