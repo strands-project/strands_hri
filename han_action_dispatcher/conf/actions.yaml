@@ -1,0 +1,7 @@
+han_actions:
+    han_adapt_speed:
+        action: human_aware_navigation
+    han_vc_corridor:
+        action: None
+    han_vc_junction:
+        action: None

@@ -1,0 +1,28 @@
+<launch>
+  <arg name="machine" default="localhost" />
+  <arg name="user" default="" />
+  <arg name="use_default" default="true" />
+  <arg name="default_action" default="human_aware_navigation" />
+  <arg name="with_site_movebase_params" default="false"/>
+  <arg name="site_movebase_params" default=""/>
+
+  <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER)" user="$(arg user)" default="true"/>
+  
+  <node pkg="han_action_dispatcher" type="action_dispatcher.py" name="han_action_dispatcher" output="screen" respawn="true">
+    <param name="use_default" value="$(arg use_default)" type="bool"/>
+    <param name="default_action" value="$(arg default_action)" type="string"/>
+    <rosparam file="$(find han_action_dispatcher)/conf/actions.yaml" command="load"/>
+  </node>
+  <node pkg="han_action_dispatcher" type="had_dwa_dyn_wrapper" name="DWAPlannerROS_dyn_wrapper_action_dispatcher" output="screen" respawn="true">
+    <param name="default_action" value="$(arg default_action)" type="string"/>
+  </node>
+  <node pkg="han_action_dispatcher" type="dwa_param_loader.py" name="dwa_param_loader_default" output="screen">
+    <param name="param_file" value="$(find strands_movebase)/strands_movebase_params/dwa_planner_ros.yaml" type="string"/>
+  </node>
+  <!-- THIS SHOULD STAY LAST, so that sites can override anything. -->
+  <group if="$(arg with_site_movebase_params)">
+    <node pkg="han_action_dispatcher" type="dwa_param_loader.py" name="dwa_param_loader_site_params" output="screen">
+      <param name="param_file" value="$(arg site_movebase_params)" type="string"/>
+    </node>
+  </group>
+</launch>
