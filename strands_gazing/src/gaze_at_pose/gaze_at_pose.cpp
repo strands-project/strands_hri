@@ -117,6 +117,7 @@ void GazeAtPose::transform() {
                 }
                 catch(tf::TransformException ex) {
                     ROS_WARN("Failed transform: %s", ex.what());
+                    r.sleep();
                     continue;
                 }
 
