@@ -2,8 +2,8 @@
 Changelog for package strands_gazing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2017-09-07)
+------------------
 * changelogs
 * Adding a sleep in case the transform fails
   This should fix `#149 <https://github.com/strands-project/strands_hri/issues/149>`_ and `#150 <https://github.com/strands-project/strands_hri/issues/150>`_

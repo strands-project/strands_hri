@@ -2,8 +2,8 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2017-09-07)
+------------------
 * changelogs
 * Contributors: Marc Hanheide
 

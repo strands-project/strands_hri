@@ -2,8 +2,8 @@
 Changelog for package hrsi_state_prediction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2017-09-07)
+------------------
 * changelogs
 * Contributors: Marc Hanheide
 
