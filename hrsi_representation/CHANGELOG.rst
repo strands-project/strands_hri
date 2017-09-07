@@ -2,6 +2,12 @@
 Changelog for package hrsi_representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removed `'` as they are not allowed anymore (`#153 <https://github.com/strands-project/strands_hri/issues/153>`_)
+  see https://lcas.lincoln.ac.uk/buildfarm/job/Kdev__strands_hri__ubuntu_xenial_amd64/3/console
+* Contributors: Marc Hanheide
+
 0.1.2 (2016-11-03)
 ------------------
 

@@ -2,6 +2,9 @@
 Changelog for package hrsi_velocity_costmaps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.2 (2016-11-03)
 ------------------
 * [Velocity Costmaps] Catching identity change during interaction
