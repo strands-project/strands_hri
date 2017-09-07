@@ -4,6 +4,8 @@ Changelog for package strands_interaction_behaviours
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------

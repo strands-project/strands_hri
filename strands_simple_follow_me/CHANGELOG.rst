@@ -4,6 +4,8 @@ Changelog for package strands_simple_follow_me
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------
