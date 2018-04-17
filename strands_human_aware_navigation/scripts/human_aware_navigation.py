@@ -6,6 +6,9 @@ from dynamic_reconfigure.server import Server as DynServer
 from dynamic_reconfigure.client import Client as DynClient
 from bayes_people_tracker.msg import PeopleTracker
 from strands_human_aware_navigation.cfg import HumanAwareNavigationConfig
+from geometry_msgs.msg import PoseStamped
+
+
 import move_base_msgs.msg
 import numpy as np
 import actionlib_msgs.msg
@@ -19,27 +22,55 @@ class DynamicVelocityReconfigure():
 
     def __init__(self, name):
         rospy.loginfo("Starting %s", name)
+        
+        self.dynServer_name = rospy.get_param(
+            "~DWAPlannerROS_srv",
+            '/move_base/DWAPlannerROS'
+        )
+
+        self.moveBase_ac_name = rospy.get_param(
+            "~moveBase_ac",
+            'move_base'
+        )
+
+        self.simpleGoalTopic = rospy.get_param(
+            "~simple_goal_topic",
+            '/move_base_simple/goal'
+        )
+
+        self.cancel_topic = rospy.get_name() + '/cancel'
+        
+
+        self.useGaze = rospy.get_param(
+            "~useGaze",
+            True
+        )
+
         self._action_name = name
         self.fast = True
         self.gaze_type = DynamicVelocityReconfigure.GAZE
-        rospy.loginfo("Creating dynamic reconfigure client")
+        rospy.loginfo("Creating dynamic reconfigure client to server: "+self.dynServer_name)
         self.client = DynClient(
-            "/move_base/DWAPlannerROS"
+            self.dynServer_name
         )
         rospy.loginfo(" ...done")
-        rospy.loginfo("Creating base movement client.")
+
+        rospy.loginfo("Creating base movement client to server: "+self.moveBase_ac_name)
         self.baseClient = actionlib.SimpleActionClient(
-            'move_base',
+            self.moveBase_ac_name,
             move_base_msgs.msg.MoveBaseAction
         )
         self.baseClient.wait_for_server()
-        rospy.loginfo("Creating gaze client.")
-        self.gazeClient = actionlib.SimpleActionClient(
-            'gaze_at_pose',
-            strands_gazing.msg.GazeAtPoseAction
-        )
-        self.gazeClient.wait_for_server()
-        rospy.loginfo("...done")
+        rospy.loginfo(" ...done")
+
+        if self.useGaze:
+            rospy.loginfo("Creating gaze client.")
+            self.gazeClient = actionlib.SimpleActionClient(
+                'gaze_at_pose',
+                strands_gazing.msg.GazeAtPoseAction
+            )
+            self.gazeClient.wait_for_server()
+            rospy.loginfo("...done")
 
         # Magic numbers overwritten in dyn_callback
         self.threshold = 4.0
@@ -51,7 +82,7 @@ class DynamicVelocityReconfigure():
 
         current_time = rospy.get_time()
         self.timeout = current_time + self.threshold
-        rospy.loginfo("Creating action server.")
+        rospy.loginfo("Creating Human Aware Goal Action Server.")
         self._as = actionlib.SimpleActionServer(
             self._action_name,
             move_base_msgs.msg.MoveBaseAction,
@@ -59,9 +90,10 @@ class DynamicVelocityReconfigure():
             auto_start=False
         )
 
-        rospy.loginfo(" ...starting")
+        rospy.loginfo(" ...starting Human Aware Goal Action Server")
         self._as.start()
-        rospy.loginfo(" ...done")
+        rospy.loginfo(" Human Aware Goal Action Server active")
+
         self.sub_topic = rospy.get_param(
             "~people_positions",
             '/people_tracker/positions'
@@ -69,11 +101,42 @@ class DynamicVelocityReconfigure():
         self.ppl_sub = None
 
         self.last_cancel_time = rospy.Time(0)
+
+        rospy.loginfo(" Subscribing to GoalCancel messages at: "+self.cancel_topic)
         rospy.Subscriber(
-            "/human_aware_navigation/cancel",
+            self.cancel_topic,
             actionlib_msgs.msg.GoalID,
             self.cancel_time_checker_cb
         )
+
+
+
+
+
+        rospy.loginfo(" Creating simpleGoal interface at : " + self.simpleGoalTopic)
+        self.ppl_sub = rospy.Subscriber(
+            self.simpleGoalTopic,
+            PoseStamped,
+            self.simpleGoalCallback,
+            None,
+            1
+        )
+        # yes, a client to myself...
+        self._as_client = actionlib.SimpleActionClient(self._action_name,move_base_msgs.msg.MoveBaseAction)
+        self._as_client.wait_for_server()
+
+
+        rospy.loginfo(" Finished Start-up")
+
+    def simpleGoalCallback(self, poseSt):
+        goal = move_base_msgs.msg.MoveBaseGoal()
+        goal.target_pose = poseSt
+        
+        self._as_client.send_goal(goal)
+        wait = self._as_client.wait_for_result()
+        if not wait:
+            rospy.logerr("Action server not available!")
+        
 
     def dyn_callback(self, config, level):
         if config["gaze_type"] == DynamicVelocityReconfigure.NO_GAZE:
@@ -154,7 +217,9 @@ class DynamicVelocityReconfigure():
             rot_speed = round(rot_speed, 2)
             rospy.logdebug("Calculated rotaional speed: %s", rot_speed)
             if not trans_speed == self.fast_param['max_vel_x']:  # and not rot_speed == self.fast_param['max_rot_vel']:
-                self.send_gaze_goal("/upper_body_detector/closest_bounding_box_centre")
+                if self.useGaze:
+                    self.send_gaze_goal("/upper_body_detector/closest_bounding_box_centre")
+    
                 self.slow_param = {
                     'max_vel_x': trans_speed,
                     'max_trans_vel': trans_speed,
@@ -171,7 +236,8 @@ class DynamicVelocityReconfigure():
         elif rospy.get_time() > self.timeout:
             rospy.logdebug("Not found any pedestrians:")
             if not self.fast:
-                self.send_gaze_goal("/pose_extractor/pose")
+                if self.useGaze:
+                    self.send_gaze_goal("/pose_extractor/pose")
                 self.resetSpeed()
                 self.fast = True
             else:
@@ -186,7 +252,8 @@ class DynamicVelocityReconfigure():
             1
         )
         self._goal = goal
-        self.send_gaze_goal("/pose_extractor/pose")
+        if self.useGaze:
+            self.send_gaze_goal("/pose_extractor/pose")
         rospy.logdebug("Received goal:\n%s", self._goal)
         self.resetSpeed()
 
@@ -203,7 +270,8 @@ class DynamicVelocityReconfigure():
     def moveBaseThread(self, goal):
         ret = self.moveBase(goal)
         self.resetSpeed()
-        self.cancel_gaze_goal()
+        if self.useGaze:
+            self.cancel_gaze_goal()
         if not self._as.is_preempt_requested() and ret:
             self._as.set_succeeded(self.result)
         elif not self._as.is_preempt_requested() and not ret:
@@ -212,11 +280,15 @@ class DynamicVelocityReconfigure():
     def moveBase(self, goal):
         rospy.logdebug('Moving robot to goal: %s', goal)
         self.baseClient.send_goal(goal, feedback_cb=self.moveBaseFeedbackCallback)
+        rospy.logdebug('Goal sent!')
+
         status = self.baseClient.get_state()
+
         while status == actionlib_msgs.msg.GoalStatus.PENDING or status == actionlib_msgs.msg.GoalStatus.ACTIVE:
             status = self.baseClient.get_state()
             self.baseClient.wait_for_result(rospy.Duration(0.2))
             self.result = self.baseClient.get_result()
+
             if self._as.is_preempt_requested():
                 self.preemptCallback()
                 break
@@ -232,6 +304,6 @@ class DynamicVelocityReconfigure():
         self._as.publish_feedback(fb)
 
 if __name__ == '__main__':
-    rospy.init_node("human_aware_navigation")
+    rospy.init_node("human_aware_navigation")#, log_level=rospy.DEBUG)
     dvr = DynamicVelocityReconfigure(rospy.get_name())
     rospy.spin()

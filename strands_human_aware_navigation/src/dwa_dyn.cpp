@@ -4,10 +4,29 @@
 #include <dynamic_reconfigure/Reconfigure.h>
 #include <dynamic_reconfigure/Config.h>
 #include <dwa_local_planner/DWAPlannerConfig.h>
+#include <string>
 
 bool setup_ = false;
 dwa_local_planner::DWAPlannerConfig default_config_;
+std::string dwa_han_srv_name;
+std::string dwa_ros_srv_name;
 
+
+
+std::string retrieveValue(std::string paramName, std::vector<dynamic_reconfigure::DoubleParameter> doubles ) {
+    std::string val("None");
+    dynamic_reconfigure::DoubleParameter param_i;
+    std::ostringstream oss;
+    
+    for(int i =0; i< doubles.size(); i++ ) {
+        param_i = doubles[i];
+        if (param_i.name == paramName){
+            oss << param_i.value;
+            val = oss.str();
+        }
+    }
+    return val;
+}
 
 void callback(dwa_local_planner::DWAPlannerConfig &config, uint32_t level) {
     if (setup_ && config.restore_defaults) {
@@ -18,6 +37,9 @@ void callback(dwa_local_planner::DWAPlannerConfig &config, uint32_t level) {
         default_config_ = config;
         setup_ = true;
     }
+
+    //ROS_INFO("Received reconfigure request");
+
 
     dynamic_reconfigure::ReconfigureRequest srv_req;
     dynamic_reconfigure::ReconfigureResponse srv_resp;
@@ -65,15 +87,35 @@ void callback(dwa_local_planner::DWAPlannerConfig &config, uint32_t level) {
     double_param.name = "yaw_goal_tolerance";      double_param.value = config.yaw_goal_tolerance;      conf.doubles.push_back(double_param);
 
     srv_req.config = conf;
-    ros::service::call("/move_base/DWAPlannerROS/set_parameters", srv_req, srv_resp);
+
+    ros::service::call(dwa_ros_srv_name + "/set_parameters", srv_req, srv_resp);
+    
     srv_req.config = human_conf;
-    ros::service::call("/human_aware_navigation/set_parameters", srv_req, srv_resp);
+
+    // any better way to check comms?
+    ROS_DEBUG("Sending to HAN DWA");
+    ROS_DEBUG("Requested max_rot_vel was: %s" ,  retrieveValue("max_rot_vel",srv_req.config.doubles).c_str());    
+    
+    ros::service::call(dwa_han_srv_name + "/set_parameters", srv_req, srv_resp);
+
+    ROS_DEBUG("Response max_rot_vel is: %s" ,  retrieveValue("max_rot_vel",srv_resp.config.doubles).c_str());    
+
 }
+
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "DWAPlannerROS_dyn_wrapper");
 
-    dynamic_reconfigure::Server<dwa_local_planner::DWAPlannerConfig> server(ros::NodeHandle("/human_aware_navigation/DWAPlannerROS"));
+    ros::NodeHandle n("~/human_aware_navigation/DWAPlannerROS");
+
+    // for some reason getting relative names does not work ...
+    n.param<std::string>("DWAPlannerROS_srv", dwa_ros_srv_name, "/move_base/DWAPlannerROS");
+
+    n.param<std::string>("DWAPlannerROS_han_srv", dwa_han_srv_name, "/human_aware_navigation/DWAPlannerROS");
+
+    ROS_INFO("Mirroring dynamic configuration between %s and %s", dwa_han_srv_name.c_str(),dwa_ros_srv_name.c_str());
+
+    dynamic_reconfigure::Server<dwa_local_planner::DWAPlannerConfig> server(n);
     dynamic_reconfigure::Server<dwa_local_planner::DWAPlannerConfig>::CallbackType f;
 
     f = boost::bind(&callback, _1, _2);

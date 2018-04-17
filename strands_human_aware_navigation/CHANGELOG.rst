@@ -2,6 +2,12 @@
 Changelog for package strands_human_aware_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+0.2.01 (2018-04-10)
+------------------
+* MFC: parametrized several topics/frame_ids to allow scalation
+* MFC: added simplegoal interface
+
 0.2.0 (2017-09-07)
 ------------------
 * changelogs
