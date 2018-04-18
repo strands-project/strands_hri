@@ -49,7 +49,7 @@ class OnlineQTCCreator(object):
         robotSt_topic        = rospy.get_param("~robotST_topic", "/robotST_pose")
 
         goal_topic           = rospy.get_param("~goal_topic", "/move_base/current_goal")
-        qtc_arr_topic        = rospy.get_param("~qtc_arr_topic", "~qtc_array")
+        qtc_arr_topic        = rospy.get_param("~qtc_arr_topic", "qtc_array")
         self.target_frame    = rospy.get_param("~target_frame", "/map")
         self.processing_rate = rospy.get_param("~processing_rate", 30)
         self.dyn_srv         = DynServer(OnlineQTCCreatorConfig, self.dyn_callback)

@@ -27,7 +27,7 @@ class VelocityCostmapServer(object):
 
         self.vis_marker_topic = rospy.get_param("~vis_marker_topic","~visualization_marker")
         self.vel_costmap_topic = rospy.get_param("~vel_costmap_topic","/velocity_costmap")
-        self.origin_topic = rospy.get_param("~origin_topic","~origin")
+        self.origin_topic = rospy.get_param("~origin_topic","origin")
         self.base_link_tf = rospy.get_param("~base_link_tf","base_link")
 
         self.vis_pub = rospy.Publisher(self.vis_marker_topic, Marker, queue_size=1)
