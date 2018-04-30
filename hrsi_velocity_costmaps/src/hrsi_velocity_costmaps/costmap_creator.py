@@ -71,16 +71,22 @@ class CostmapCreator(object):
         self._map_pub = map_pub
         self._origin_pub = origin_pub
 
+        try:
+            self.move_base_topic = rospy.get_param("~move_base_topic")
+            self.base_link_tf = rospy.get_param("~base_link_tf")
+        except KeyError as e:
+            rospy.logerr("[" + rospy.get_name()+"] " + "Unable to get parameter: " + str(e))
+
         local_planner_name = self.get_local_planner_name()
-        self._max_vel_x_parma_name = "/move_base/" + local_planner_name + "/max_vel_x"
+        self._max_vel_x_parma_name = self.move_base_topic + "/" + local_planner_name + "/max_vel_x"
 
         self.lock = Lock()
         
     def get_local_planner_name(self):
         try:
-            return rospy.get_param("/move_base/base_local_planner").split('/')[1]
+            return rospy.get_param(self.move_base_topic + "/" + "base_local_planner").split('/')[1]
         except KeyError as e:
-            rospy.logerr("Unable to get parameter: " + str(e))
+            rospy.logerr("[" + rospy.get_name()+"] " + "Unable to get parameter: " + str(e))
             rospy.logerr("Is move_base running? Will retry in 5 second.")
             rospy.sleep(5.)
             if not rospy.is_shutdown(): return self.get_local_planner_name()
@@ -235,7 +241,7 @@ class CostmapCreator(object):
             size = max_speed*2 # Magic number: 2 = double the size to have max_vel_x in all directions
             o = OccupancyGrid()
             o.header.stamp = rospy.Time.now()
-            o.header.frame_id = 'base_link'
+            o.header.frame_id = self.base_link_tf
             o.info.resolution = self.resolution
             o.info.height = size
             o.info.width = size
