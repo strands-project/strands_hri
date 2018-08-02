@@ -2,6 +2,14 @@
 Changelog for package hrsi_velocity_costmaps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Namespaces and topics specified as parameters. (`#154 <https://github.com/strands-project/strands_hri/issues/154>`_)
+  * Namespaces and topic parametrized. Minor changes
+  * Removed typos in default topic names
+  * Missing file
+* Contributors: Manuel Fernandez-Carmona
+
 0.2.0 (2017-09-07)
 ------------------
 * changelogs

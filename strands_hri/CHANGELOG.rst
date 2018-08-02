@@ -2,6 +2,9 @@
 Changelog for package strands_hri
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.0 (2017-09-07)
 ------------------
 * changelogs
