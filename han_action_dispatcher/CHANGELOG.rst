@@ -2,8 +2,8 @@
 Changelog for package han_action_dispatcher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2018-08-02)
+------------------
 * changelogs
 * Contributors: Marc Hanheide
 

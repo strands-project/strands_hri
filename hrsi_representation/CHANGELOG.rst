@@ -2,8 +2,8 @@
 Changelog for package hrsi_representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2018-08-02)
+------------------
 * changelogs
 * Contributors: Marc Hanheide
 
