@@ -2,6 +2,9 @@
 Changelog for package strands_human_following
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.1 (2018-08-02)
 ------------------
 

@@ -8,6 +8,9 @@ Changelog for package strands_human_aware_navigation
 * MFC: parametrized several topics/frame_ids to allow scalation
 * MFC: added simplegoal interface
 
+Forthcoming
+-----------
+
 0.2.1 (2018-08-02)
 ------------------
 * Namespaces and topics specified as parameters. (`#154 <https://github.com/strands-project/strands_hri/issues/154>`_)
