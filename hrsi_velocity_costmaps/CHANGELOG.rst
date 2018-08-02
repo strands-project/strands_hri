@@ -4,28 +4,34 @@ Changelog for package hrsi_velocity_costmaps
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.2.1 (2018-08-02)
 ------------------
+* updated changelogs
 * Namespaces and topics specified as parameters. (`#154 <https://github.com/strands-project/strands_hri/issues/154>`_)
   * Namespaces and topic parametrized. Minor changes
   * Removed typos in default topic names
   * Missing file
-* Contributors: Manuel Fernandez-Carmona
+* Contributors: LCAS build farm, Manuel Fernandez-Carmona
 
 0.2.0 (2017-09-07)
 ------------------
+* changelogs
 * changelogs
 * Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------
+* updated changelogs
 * [Velocity Costmaps] Catching identity change during interaction
   If a person changes their tracking id while the best model is classified and the belief generated, the UUID for costmap generation is not the same as in the current list of tracked people any more. If this is the case, the velo map is just not created.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.1.1 (2016-07-02)
 ------------------
+* updated changelogs
 * Adding a marker showing for whom the velocity costmap is created. (`#145 <https://github.com/strands-project/strands_hri/issues/145>`_)
   * Adding a marker showing for whom the velocity costmap is created.
   * Using same frame as people tracker message.
@@ -38,10 +44,11 @@ Forthcoming
   * Using state_prediction launch file in hrsi_launch
   * Adding install targets for new directories.
   * Adding visualisation markers for classification results.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.1.0 (2016-01-20)
 ------------------
+* updated changelogs
 * velocity costmap server publishes to `/velocity_costmap` now and takes the qsr_lib style qtc strings as input.
   Also updating cmake and package file.
 * Creating qtc relations between robot-human and robot_goal-human in online creator. Using this to learn mappings from observations to robot behaviour and for finally working particle filtering.
@@ -57,24 +64,7 @@ Forthcoming
   * soc: social space
   * pub: public space
   * Creating hrsi_state_prediction package that currently only uses a very simple model as a proof of concept.
-* Contributors: Christian Dondrup
-
-* velocity costmap server publishes to `/velocity_costmap` now and takes the qsr_lib style qtc strings as input.
-  Also updating cmake and package file.
-* Creating qtc relations between robot-human and robot_goal-human in online creator. Using this to learn mappings from observations to robot behaviour and for finally working particle filtering.
-* Minor changes: no more gradual costs in qtcb
-* Running velocity costmap creation loop only if not '?' given.
-* Adding gradual costs to velocity costmaps. This way not all of the free area has 0 costs but forces the robot to stay in the middle of the area if possible given the other costs.
-* * Renaming hrsi_prediction package to hrsi_velocity_costmaps
-  * Including QTCc states
-  * Removed prediction part
-  * Online qtc creator now also uses argprobd to publish distance values:
-  * int: intimate space
-  * per: personal space
-  * soc: social space
-  * pub: public space
-  * Creating hrsi_state_prediction package that currently only uses a very simple model as a proof of concept.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.0.13 (2015-05-17)
 -------------------

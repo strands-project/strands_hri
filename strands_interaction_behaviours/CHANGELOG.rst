@@ -4,59 +4,96 @@ Changelog for package strands_interaction_behaviours
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.2.1 (2018-08-02)
 ------------------
+* updated changelogs
+* Contributors: LCAS build farm
 
 0.2.0 (2017-09-07)
 ------------------
+* changelogs
 * changelogs
 * Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.1.1 (2016-07-02)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.1.0 (2016-01-20)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.0.13 (2015-05-17)
 -------------------
+* updated changelogs
 * 0.0.12
 * updated changelogs
 * Contributors: Jenkins
 
 0.0.12 (2015-05-10)
 -------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.0.11 (2015-04-17)
 -------------------
+* updated changelogs
+* Contributors: Jenkins
 
-0.0.10 (2015-04-10)
--------------------
+0.0.10 (2015-04-10 11:06)
+-------------------------
+* updated changelogs
+* Contributors: Jenkins
 
-0.0.9 (2015-04-10)
+0.0.9 (2015-04-10 10:21)
+------------------------
+* updated changelogs
+* Contributors: Jenkins
+
+0.0.8 (2015-04-02)
 ------------------
 
 0.0.7 (2014-12-01)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.0.6 (2014-11-21)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
-0.0.5 (2014-11-11)
-------------------
+0.0.5 (2014-11-11 14:00)
+------------------------
+* updated changelogs
+* Contributors: Jenkins
+
+0.0.4 (2014-11-11 12:20)
+------------------------
 
 0.0.3 (2014-11-06)
 ------------------
+* Updated changelogs
+* Contributors: Christian Dondrup
 
-0.0.2 (2014-10-31)
-------------------
+0.0.2 (2014-10-31 18:55)
+------------------------
+* Updated changelogs
+* Contributors: Christian Dondrup
 
-0.0.1 (2014-10-31)
-------------------
+0.0.1 (2014-10-31 17:17)
+------------------------
+* Created changelogs
 * Removed calls to strands_head_orientation as those won't work in a release version.
 * Merge branch 'hydro-devel' into release
   Conflicts:
@@ -72,7 +109,7 @@ Forthcoming
 * strands_perception_people_msgs has been removed
 * Renamed ros_datacentre to mongodb_store
   This simply bulk replaces all ros_datacentre strings to mongodb_store strings inside files and also in file names.
-  Needs strands-project/ros_datacentre#76 to be merged first.
+  Needs `strands-project/ros_datacentre#76 <https://github.com/strands-project/ros_datacentre/issues/76>`_ to be merged first.
 * running head orientation while human_aware_navigation is running. Only if present. Changed default timeout of engaged server.
 * Changing ques size and starting review action server in idle launch file
 * Merge branch 'hydro-devel' of https://github.com/cdondrup/strands_hri into hydro-devel

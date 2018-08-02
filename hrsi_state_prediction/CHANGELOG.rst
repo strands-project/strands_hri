@@ -4,22 +4,27 @@ Changelog for package hrsi_state_prediction
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.2.1 (2018-08-02)
 ------------------
+* updated changelogs
 * Namespaces and topics specified as parameters. (`#154 <https://github.com/strands-project/strands_hri/issues/154>`_)
   * Namespaces and topic parametrized. Minor changes
   * Removed typos in default topic names
   * Missing file
-* Contributors: Manuel Fernandez-Carmona
+* Contributors: LCAS build farm, Manuel Fernandez-Carmona
 
 0.2.0 (2017-09-07)
 ------------------
+* changelogs
 * changelogs
 * Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------
+* updated changelogs
 * Annotation tool for people trajectories (`#147 <https://github.com/strands-project/strands_hri/issues/147>`_)
   * Adding first experimental version of annotation tool
   * The annotation tool.
@@ -28,10 +33,11 @@ Forthcoming
   * Fixing help messages
   * Creating a filter scripts that creates a new collection with only applicable entries.
   * Removed all the filtering from the annotation tool. Now done prior in the filtering script.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.1.1 (2016-07-02)
 ------------------
+* updated changelogs
 * Adding a default colour and using the right colour values. (`#144 <https://github.com/strands-project/strands_hri/issues/144>`_)
 * Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
   * Adding models for passby and crossing
@@ -42,10 +48,11 @@ Forthcoming
   * Using state_prediction launch file in hrsi_launch
   * Adding install targets for new directories.
   * Adding visualisation markers for classification results.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.1.0 (2016-01-20)
 ------------------
+* updated changelogs
 * state_predictor now uses new particle filter in qsr_prob_rep instead of own implementation.
 * Removing unnecessary dynamic reconfigure and service options to load models.
 * Removing hacky particle filter
@@ -66,29 +73,7 @@ Forthcoming
   * soc: social space
   * pub: public space
   * Creating hrsi_state_prediction package that currently only uses a very simple model as a proof of concept.
-* Contributors: Christian Dondrup
-
-* state_predictor now uses new particle filter in qsr_prob_rep instead of own implementation.
-* Removing unnecessary dynamic reconfigure and service options to load models.
-* Removing hacky particle filter
-* Publishing the result of the pf
-* Adding a service to reset the filter bank of the particle filter. Creates a new filter even for previously observed humans.
-* Making model dir a parameter and removing the simple rules instantiation.
-* adding goal republisher.
-* Creating qtc relations between robot-human and robot_goal-human in online creator. Using this to learn mappings from observations to robot behaviour and for finally working particle filtering.
-* Adding more simple prediction models, using dyn reconf, making particle filter work... somehow.
-* Adding simple particle filter based state prediction of qtcbc
-* Adding prediction based on qtcbcs_argprobd to state predictor
-* * Renaming hrsi_prediction package to hrsi_velocity_costmaps
-  * Including QTCc states
-  * Removed prediction part
-  * Online qtc creator now also uses argprobd to publish distance values:
-  * int: intimate space
-  * per: personal space
-  * soc: social space
-  * pub: public space
-  * Creating hrsi_state_prediction package that currently only uses a very simple model as a proof of concept.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.0.13 (2015-05-17)
 -------------------

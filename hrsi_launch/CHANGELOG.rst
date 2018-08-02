@@ -4,25 +4,32 @@ Changelog for package hrsi_launch
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.2.1 (2018-08-02)
 ------------------
+* updated changelogs
 * Namespaces and topics specified as parameters. (`#154 <https://github.com/strands-project/strands_hri/issues/154>`_)
   * Namespaces and topic parametrized. Minor changes
   * Removed typos in default topic names
   * Missing file
-* Contributors: Manuel Fernandez-Carmona
+* Contributors: LCAS build farm, Manuel Fernandez-Carmona
 
 0.2.0 (2017-09-07)
 ------------------
+* changelogs
 * changelogs
 * Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.1.1 (2016-07-02)
 ------------------
+* updated changelogs
 * Visualising classification results from state prediction and adding models (`#143 <https://github.com/strands-project/strands_hri/issues/143>`_)
   * Adding models for passby and crossing
   * Fixed an error where the models were overridden every time a new one was created.
@@ -32,15 +39,13 @@ Forthcoming
   * Using state_prediction launch file in hrsi_launch
   * Adding install targets for new directories.
   * Adding visualisation markers for classification results.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.1.0 (2016-01-20)
 ------------------
+* updated changelogs
 * Creating hrsi_launch package that start everything necessary to run the velocity costmaps approach using the particle filter classification.
-* Contributors: Christian Dondrup
-
-* Creating hrsi_launch package that start everything necessary to run the velocity costmaps approach using the particle filter classification.
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.0.13 (2015-05-17)
 -------------------

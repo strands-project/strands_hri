@@ -4,35 +4,40 @@ Changelog for package hrsi_representation
 
 Forthcoming
 -----------
+* changelogs
+* Contributors: Marc Hanheide
 
 0.2.1 (2018-08-02)
 ------------------
+* updated changelogs
 * Namespaces and topics specified as parameters. (`#154 <https://github.com/strands-project/strands_hri/issues/154>`_)
   * Namespaces and topic parametrized. Minor changes
   * Removed typos in default topic names
   * Missing file
 * Updated email to new Oxford address
-* Contributors: Manuel Fernandez-Carmona, Nick Hawes
+* Contributors: LCAS build farm, Manuel Fernandez-Carmona, Nick Hawes
 
 0.2.0 (2017-09-07)
 ------------------
 * changelogs
-* removed `'` as they are not allowed anymore (`#153 <https://github.com/strands-project/strands_hri/issues/153>`_)
-  see https://lcas.lincoln.ac.uk/buildfarm/job/Kdev__strands_hri__ubuntu_xenial_amd64/3/console
-* Contributors: Marc Hanheide
-
+* changelogs
 * removed `'` as they are not allowed anymore (`#153 <https://github.com/strands-project/strands_hri/issues/153>`_)
   see https://lcas.lincoln.ac.uk/buildfarm/job/Kdev__strands_hri__ubuntu_xenial_amd64/3/console
 * Contributors: Marc Hanheide
 
 0.1.2 (2016-11-03)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.1.1 (2016-07-02)
 ------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.1.0 (2016-01-20)
 ------------------
+* updated changelogs
 * Updating install targets for hrsi_representation and removing test due to completely changed output and message type, the rosbag used for the test does not contain the right data. Will have to record new test data.
 * Online_qtc_creator nor publishes the original string coming out of the qsr_lib.
   Creating qtc states for human-robot and human-robot's goal
@@ -75,10 +80,11 @@ Forthcoming
 * Using new dynamic_args feature of qtc and qsr lib for parameter specification.
 * Removing unnecessary prints.
 * Adding correct smoothing and unittest
-* Contributors: Christian Dondrup, Marc Hanheide
+* Contributors: Christian Dondrup, Jenkins, Marc Hanheide
 
 0.0.13 (2015-05-17)
 -------------------
+* updated changelogs
 * Merge pull request `#112 <https://github.com/strands-project/strands_hri/issues/112>`_ from cdondrup/qsrs_for
   [hrsi_representation] Using 'qsrs_for' to prevent redundancy.
 * 0.0.12
@@ -89,23 +95,32 @@ Forthcoming
 
 0.0.12 (2015-05-10)
 -------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.0.11 (2015-04-17)
 -------------------
+* updated changelogs
+* Contributors: Jenkins
 
-0.0.10 (2015-04-10)
--------------------
+0.0.10 (2015-04-10 11:06)
+-------------------------
+* updated changelogs
+* Contributors: Jenkins
 
-0.0.9 (2015-04-10)
-------------------
+0.0.9 (2015-04-10 10:21)
+------------------------
+* updated changelogs
+* Contributors: Jenkins
 
 0.0.8 (2015-04-02)
 ------------------
+* updated changelogs
 * Adjusted cmake and package files
 * First working version of the onlie qtc creation.
 * Training now works.
 * Basic functionality of reading files and transforming the content into qtc
-* Contributors: Christian Dondrup
+* Contributors: Christian Dondrup, Jenkins
 
 0.0.7 (2014-12-01)
 ------------------
