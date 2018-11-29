@@ -27,7 +27,7 @@
   <arg name="robot_topic"         default = "/robot_pose"/>
   <arg name="robotST_topic"       default = "/robot_poseST"/>
   <arg name="qtc_arr_topic"       default="/online_qtc_creator/qtc_array"/>
-
+  <arg name="target_frame"        default="/map"/>
 
 
 
@@ -57,7 +57,7 @@
     <param name="qtc_arr_topic"       type="string"  value="$(arg qtc_arr_topic)"/>
     <param name="robot_topic"         type="string"  value="$(arg robot_topic)"/>
     <param name="robotST_topic"       type="string"  value="$(arg robotST_topic)"/>
-
+    <param name="target_frame"        type="string"  value="$(arg target_frame)"/>
   </node>
   
   <node pkg="qsr_prob_rep" type="qsr_prob_rep_ros_server.py" name="prob_rep_ros_server" output="screen" respawn="true" if="$(arg with_qsr_prob_rep)"/>
