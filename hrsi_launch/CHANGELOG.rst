@@ -2,6 +2,11 @@
 Changelog for package hrsi_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update hrsi.launch (`#157 <https://github.com/strands-project/strands_hri/issues/157>`_)
+* Contributors: Tejas Prakash Madhukar Parekh
+
 0.2.2 (2018-08-02)
 ------------------
 * changelogs

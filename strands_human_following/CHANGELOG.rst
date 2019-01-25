@@ -2,6 +2,16 @@
 Changelog for package strands_human_following
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* genjava fail patch (`#158 <https://github.com/strands-project/strands_hri/issues/158>`_)
+  * Namespaces and topic parametrized. Minor changes
+  * Removed typos in default topic names
+  * Missing file
+  * added dependencies to solve errors when compiling with genjava
+  * m.ch.
+* Contributors: Manuel Fernandez-Carmona
+
 0.2.2 (2018-08-02)
 ------------------
 * changelogs
