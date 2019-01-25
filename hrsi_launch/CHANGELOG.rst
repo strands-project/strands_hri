@@ -2,6 +2,9 @@
 Changelog for package hrsi_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.3 (2019-01-25)
 ------------------
 * Update hrsi.launch (`#157 <https://github.com/strands-project/strands_hri/issues/157>`_)

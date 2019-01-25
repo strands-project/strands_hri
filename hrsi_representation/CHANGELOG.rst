@@ -2,6 +2,9 @@
 Changelog for package hrsi_representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.3 (2019-01-25)
 ------------------
 * genjava fail patch (`#158 <https://github.com/strands-project/strands_hri/issues/158>`_)
