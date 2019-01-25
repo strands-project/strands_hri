@@ -47,6 +47,14 @@ class DynamicVelocityReconfigure():
         self.min_dist = 1.5
         self.detection_angle = 90.0
 
+        # More Magic numbers by @jailander
+        self.fast_param = {
+            "max_vel_x" : 0.55,
+            "max_trans_vel" : 0.55,
+            "max_rot_vel" : 1.0
+        }
+
+
         self.dyn_srv = DynServer(HumanAwareNavigationConfig, self.dyn_callback)
 
         current_time = rospy.get_time()
