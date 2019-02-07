@@ -34,13 +34,14 @@
 
 
   <node name="qsr_lib" pkg="qsr_lib" type="qsrlib_ros_server.py" output="screen" respawn="true" if="$(arg with_qsr_lib)"/>
-  
+
   <!-- What's this for? Couldn't be done using robot_pose_publisher? -->
     <node name="goal_pose_republisher" pkg="hrsi_representation" type="goal_pose_republisher.py" output="screen" respawn="true">
-      <param name="move_base_topic"                     type="string"   value="$(arg move_base_topic)"/>   
+      <param name="in_topic"                     type="string"   value="$(arg goal_topic)"/>
+      <param name="out_topic"                     type="string"   value="$(arg goal_topic)_latched"/>
     </node>
-  
-  
+
+
   <node pkg="hrsi_representation" type="online_qtc_creator.py" name="online_qtc_creator" output="screen" respawn="true">
     <param name="ppl_topic"           type="string"  value="$(arg ppl_topic)"/>
     <param name="processing_rate"     type="int"     value="$(arg processing_rate)"/>
@@ -53,22 +54,22 @@
     <param name="no_collapse"         type="bool"    value="$(arg no_collapse)"/>
     <param name="prune_buffer"        type="bool"    value="$(arg prune_buffer)"/>
     <param name="validate"            type="bool"    value="$(arg validate)"/>
-    <param name="goal_topic"          type="string"  value="$(arg goal_topic)"/>
+    <param name="goal_topic"          type="string"  value="$(arg goal_topic)_latched"/>
     <param name="qtc_arr_topic"       type="string"  value="$(arg qtc_arr_topic)"/>
     <param name="robot_topic"         type="string"  value="$(arg robot_topic)"/>
     <param name="robotST_topic"       type="string"  value="$(arg robotST_topic)"/>
     <param name="target_frame"        type="string"  value="$(arg target_frame)"/>
   </node>
-  
+
   <node pkg="qsr_prob_rep" type="qsr_prob_rep_ros_server.py" name="prob_rep_ros_server" output="screen" respawn="true" if="$(arg with_qsr_prob_rep)"/>
-  
+
   <include file="$(find hrsi_state_prediction)/launch/state_predictor.launch">
-    <arg name="visualisation_file" value="$(arg predictor_visualisation_file)"/>    
+    <arg name="visualisation_file" value="$(arg predictor_visualisation_file)"/>
     <arg name="model_dir"          value="$(arg model_dir)"/>
     <arg name="ppl_topic"          value="$(arg ppl_topic)"/>
     <arg name="qtc_topic"          value="$(arg qtc_arr_topic)"/>
   </include>
-  
+
   <node pkg="hrsi_velocity_costmaps" type="velocity_costmap_server.py" name="velocity_costmap_server" output="screen" respawn="true">
     <param name="qtc_topic"                           type = "string"   value="$(arg qtc_topic)"/>
     <param name="vis_marker_topic"                    type = "string" value= "$(arg vis_marker_topic)"/>
@@ -76,7 +77,7 @@
     <param name="origin_topic"                        type = "string" value= "$(arg origin_topic)"/>
     <param name="base_link_tf"                        type = "string" value= "$(arg base_link_tf)"/>
     <param name="ppl_topic"                           type = "string"   value="$(arg ppl_topic)"/>
-    <param name="move_base_topic"                     type = "string"   value="$(arg move_base_topic)"/>   
+    <param name="move_base_topic"                     type = "string"   value="$(arg move_base_topic)"/>
   </node>
 
 </launch>
